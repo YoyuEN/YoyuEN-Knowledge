@@ -1,0 +1,56 @@
+/* Lightweight base styles: font, reset, layout helpers */
+:root {
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", "Microsoft Yahei", sans-serif;
+    --base-font-size: 16px;
+    --line-height: 1.5;
+    --transition: 200ms ease;
+}
+
+/* Simple reset */
+* {
+    box-sizing: border-box
+}
+
+html,
+body,
+#app {
+    height: 100%
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family);
+    font-size: var(--base-font-size);
+    line-height: var(--line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--fg, #111827);
+    background: var(--bg, #ffffff)
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block
+}
+
+a {
+    color: inherit;
+    text-decoration: none
+}
+
+button {
+    font-family: inherit
+}
+
+/* Utility helpers */
+.container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 16px
+}
+
+/* Keep transitions consistent */
+* {
+    transition: color var(--transition), background var(--transition)
+}
