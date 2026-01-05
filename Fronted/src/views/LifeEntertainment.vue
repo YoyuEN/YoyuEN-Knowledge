@@ -1,10 +1,5 @@
 <template>
   <div class="life-entertainment-container">
-    <el-card>
-      <div class="content">
-        <el-empty description="生活娱乐模块开发中..." />
-      </div>
-    </el-card>
   </div>
 </template>
 

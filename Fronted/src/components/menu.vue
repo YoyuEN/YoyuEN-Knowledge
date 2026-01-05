@@ -1,13 +1,13 @@
 <template>
   <div class="menu-container">
-    <div class="collapse-button">
+    <!-- <div class="collapse-button">
       <el-button
         :icon="isCollapse ? Expand : Fold"
         @click="toggleCollapse"
         text
         circle
       />
-    </div>
+    </div> -->
     <el-menu
       :default-active="activeIndex"
       class="el-menu-vertical-demo"
@@ -15,6 +15,7 @@
       router
       @open="handleOpen"
       @close="handleClose"
+      @select="handleSelect"
     >
       <el-menu-item index="/">
         <el-icon><ChatDotRound /></el-icon>
@@ -60,7 +61,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['toggle-collapse'])
+const emit = defineEmits(['toggle-collapse', 'menu-item-click'])
 
 const route = useRoute()
 const activeIndex = computed(() => route.path)
@@ -75,6 +76,11 @@ const handleOpen = (key, keyPath) => {
 
 const handleClose = (key, keyPath) => {
   console.log(key, keyPath)
+}
+
+const handleSelect = (key, keyPath) => {
+  console.log(key, keyPath)
+  emit('menu-item-click')
 }
 </script>
 
@@ -108,6 +114,7 @@ const handleClose = (key, keyPath) => {
   flex: 1;
   background-color: var(--bg-aside);
   transition: background-color 0.3s;
+  border-radius: 16px;
 }
 
 /* 确保菜单图标颜色适配主题 */

@@ -29,10 +29,9 @@ body {
 }
 
 /* 浅色主题 CSS 变量 */
-:root,
-.light-theme {
+:root {
   --bg-primary: #ffffff;
-  --bg-secondary: #f0f2f5;
+  --bg-secondary: #f5f5f5;
   --bg-header: #ffffff;
   --bg-aside: #ffffff;
   --text-primary: #303133;
@@ -45,6 +44,16 @@ body {
   --icon-primary: #409eff;
   --card-bg: #ffffff;
   --hover-bg: #f5f5f5;
+  --menu-panel-bg: rgba(255, 255, 255, 0.85);
+  --diary-page-bg: #ffffff;
+  --diary-border-color: rgba(0, 0, 0, 0.1);
+  --diary-text-color: #333;
+  --diary-content-color: #444;
+  --panel-section-bg: rgba(255, 255, 255, 0.6);
+  --calendar-bg: #ffffff;
+  --calendar-text: #333;
+  --article-title: #303133;
+  --article-date: #909399;
 }
 
 /* 深色主题 CSS 变量 */
@@ -63,11 +72,25 @@ body {
   --icon-primary: #ffffff;
   --card-bg: #242424;
   --hover-bg: #2d2d2d;
+  --menu-panel-bg: rgba(0, 0, 0, 0.85);
+  --diary-page-bg: #2d2d2d;
+  --diary-border-color: rgba(255, 255, 255, 0.1);
+  --diary-text-color: #ffffff;
+  --diary-content-color: #e4e7ed;
+  --panel-section-bg: rgba(45, 45, 45, 0.6);
+  --calendar-bg: #2d2d2d;
+  --calendar-text: #ffffff;
+  --article-title: #ffffff;
+  --article-date: #a8abb2;
 }
 
 /* 确保主题变量应用到整个应用 */
 body {
-  background-color: var(--bg-secondary);
+  background-image: url('./assets/pciture/image.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text-primary);
   transition: background-color 0.3s, color 0.3s;
 }
