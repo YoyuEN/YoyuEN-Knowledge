@@ -1,10 +1,5 @@
 <template>
   <div class="work-life-container">
-    <el-card>
-      <div class="content">
-        <el-empty description="工作生活模块开发中..." />
-      </div>
-    </el-card>
   </div>
 </template>
 
