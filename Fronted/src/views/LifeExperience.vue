@@ -64,7 +64,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
 // 导入本地头像图片
-import avatarImage from '../assets/pciture/YoyuEN.png'
+import avatarImage from '../assets/picture/YoyuEN.png'
 
 const currentPage = ref(0)
 let swiperInstance = null
