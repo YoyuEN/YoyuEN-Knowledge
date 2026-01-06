@@ -1,0 +1,27 @@
+```
+CREATE TABLE kb_client_user (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '客户端用户ID',
+  display_name VARCHAR(100) NOT NULL COMMENT '前台展示名称',
+  avatar VARCHAR(255) COMMENT '头像URL',
+  introduction TEXT COMMENT '个人简介',
+  profession VARCHAR(100) COMMENT '职业/身份',
+  status TINYINT DEFAULT 1 COMMENT '1启用 0禁用',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT='客户端用户（数字人格/内容作者）表';
+
+CREATE TABLE sys_admin (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '管理员ID',
+  username VARCHAR(50) NOT NULL UNIQUE COMMENT '登录账号',
+  password VARCHAR(255) NOT NULL COMMENT '登录密码（加密存储）',
+  nickname VARCHAR(50) COMMENT '管理员昵称',
+  avatar VARCHAR(255) COMMENT '管理员头像',
+  status TINYINT DEFAULT 1 COMMENT '1正常 0禁用',
+  last_login_time DATETIME COMMENT '最后登录时间',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) COMMENT='后台管理员用户表';
+
+
+```
+
