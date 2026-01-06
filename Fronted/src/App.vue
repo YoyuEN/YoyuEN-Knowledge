@@ -86,7 +86,7 @@ body {
 
 /* 确保主题变量应用到整个应用 */
 body {
-  background-image: url('./assets/pciture/image.png');
+  background-image: url('./assets/picture/image.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
