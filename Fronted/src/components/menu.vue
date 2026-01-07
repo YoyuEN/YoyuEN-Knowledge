@@ -25,10 +25,28 @@
         <el-icon><Document /></el-icon>
         <template #title>知识博客</template>
       </el-menu-item>
-      <el-menu-item index="/life-entertainment">
-        <el-icon><VideoPlay /></el-icon>
-        <template #title>生活娱乐</template>
-      </el-menu-item>
+      <el-sub-menu index="/life-entertainment">
+        <template #title>
+          <el-icon><VideoPlay /></el-icon>
+          <span>生活娱乐</span>
+        </template>
+        <el-menu-item index="/life-entertainment/games">
+          <el-icon><Grid /></el-icon>
+          <template #title>游戏</template>
+        </el-menu-item>
+        <el-menu-item index="/life-entertainment/music">
+          <el-icon><Headset /></el-icon>
+          <template #title>音乐</template>
+        </el-menu-item>
+        <el-menu-item index="/life-entertainment/video">
+          <el-icon><VideoCamera /></el-icon>
+          <template #title>视频</template>
+        </el-menu-item>
+        <el-menu-item index="/life-entertainment/reading">
+          <el-icon><Reading /></el-icon>
+          <template #title>阅读</template>
+        </el-menu-item>
+      </el-sub-menu>
       <el-menu-item index="/life-experience">
         <el-icon><Reading /></el-icon>
         <template #title>人生经历</template>
@@ -52,6 +70,9 @@ import {
   Briefcase,
   Expand,
   Fold,
+  Grid,
+  Headset,
+  VideoCamera,
 } from '@element-plus/icons-vue'
 
 const props = defineProps({

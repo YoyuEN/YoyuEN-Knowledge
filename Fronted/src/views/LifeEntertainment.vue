@@ -10,46 +10,65 @@
         class="sub-nav-menu"
         @select="handleCategorySelect"
       >
+        <el-menu-item index="games">
+          <el-icon><Grid /></el-icon>
+          <span>游戏</span>
+        </el-menu-item>
         <el-menu-item index="music">
           <el-icon><Headset /></el-icon>
           <span>音乐</span>
-        </el-menu-item>
-        <el-menu-item index="game">
-          <el-icon><Trophy /></el-icon>
-          <span>游戏</span>
         </el-menu-item>
         <el-menu-item index="video">
           <el-icon><VideoCamera /></el-icon>
           <span>视频</span>
         </el-menu-item>
+        <el-menu-item index="reading">
+          <el-icon><Reading /></el-icon>
+          <span>阅读</span>
+        </el-menu-item>
       </el-menu>
     </div>
     <div class="content-area">
-      <div v-if="activeCategory === 'music'" class="category-content">
-        <Music />
-      </div>
-      <div v-else-if="activeCategory === 'game'" class="category-content">
+      <div v-if="activeCategory === 'games'" class="category-content">
         <Game />
+      </div>
+      <div v-else-if="activeCategory === 'music'" class="category-content">
+        <Music />
       </div>
       <div v-else-if="activeCategory === 'video'" class="category-content">
         <Video />
+      </div>
+      <div v-else-if="activeCategory === 'reading'" class="category-content">
+        <h3>阅读</h3>
+        <p>阅读内容将在此处显示</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Headset, Trophy, VideoCamera } from '@element-plus/icons-vue'
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { Headset, Grid, VideoCamera, Reading } from '@element-plus/icons-vue'
 import Music from '../components/Music.vue'
 import Game from '../components/Game.vue'
 import Video from '../components/Video.vue'
 
-const activeCategory = ref('music')
+const route = useRoute()
+const router = useRouter()
 
+// 从路由参数获取当前活跃分类
+const activeCategory = computed(() => route.params.category || 'music')
+
+// 处理分类选择
 const handleCategorySelect = (index) => {
-  activeCategory.value = index
+  router.push(`/life-entertainment/${index}`)
 }
+
+// 监听路由变化，更新内部状态
+watch(() => route.params.category, (newCategory) => {
+  // 路由变化时自动更新，无需手动设置
+})
 </script>
 
 <style scoped>

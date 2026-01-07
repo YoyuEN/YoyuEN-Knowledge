@@ -22,20 +22,6 @@
           </template>
         </el-input>
       </div>
-      <div class="header-entertainment" v-show="!showDrawer && entertainmentItems.length > 0">
-        <nav class="entertainment-nav">
-          <router-link 
-            v-for="item in entertainmentItems" 
-            :key="item.path"
-            :to="item.path"
-            class="entertainment-item"
-            :class="{ active: isEntertainmentRoute(item.path) }"
-          >
-            <el-icon><component :is="item.icon" /></el-icon>
-            <span>{{ item.label }}</span>
-          </router-link>
-        </nav>
-      </div>
       <div class="header-right">
         <el-button
           :icon="currentTheme === 'dark' ? Sunny : Moon"
@@ -126,7 +112,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Menu from './menu.vue'
-import { Menu as MenuIcon, Sunny, Moon, House, Document, Setting, User, Close, Message, Bell, Search, Calendar, Clock, Grid, Headset, VideoCamera, Reading } from '@element-plus/icons-vue'
+import { Menu as MenuIcon, Sunny, Moon, House, Document, Setting, User, Close, Message, Bell, Search, Calendar, Clock } from '@element-plus/icons-vue'
 import { useTheme } from '../composables/useTheme'
 
 const router = useRouter()
@@ -140,17 +126,6 @@ const currentTime = ref(new Date())
 const dailyQuote = ref('')
 const dailyQuoteSource = ref('')
 let timeInterval = null
-
-const entertainmentItems = [
-  { path: '/life-entertainment/games', label: '游戏', icon: 'Grid' },
-  { path: '/life-entertainment/music', label: '音乐', icon: 'Headset' },
-  { path: '/life-entertainment/video', label: '视频', icon: 'VideoCamera' },
-  { path: '/life-entertainment/reading', label: '阅读', icon: 'Reading' }
-]
-
-const isEntertainmentRoute = (path) => {
-  return route.path.startsWith(path)
-}
 
 const handleSearchInput = () => {
 }
@@ -242,7 +217,7 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(20px);
   background-color: rgba(255, 255, 255, 0.75);
   border-bottom: 1px solid var(--border-color);
-  border-radius: 16px;
+  border-radius: 8px;
   margin: 5px 16px;
   width: calc(100% - 32px);
 }
@@ -395,50 +370,6 @@ html.dark .layout-header {
   }
 }
 
-.header-entertainment {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-}
-
-.entertainment-nav {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background-color: var(--bg-secondary);
-  border-radius: 24px;
-  padding: 4px;
-  border: 1px solid var(--border-color);
-}
-
-.entertainment-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 18px;
-  text-decoration: none;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.entertainment-item:hover {
-  color: var(--text-primary);
-  background-color: var(--hover-bg);
-}
-
-.entertainment-item.active {
-  color: var(--primary-color);
-  background-color: var(--primary-color-light);
-  font-weight: 600;
-}
-
-.entertainment-item .el-icon {
-  font-size: 14px;
-}
-
 .header-right {
   display: flex;
   align-items: center;
@@ -572,7 +503,7 @@ html.dark .layout-header {
   height: calc(100% - 30px);
   overflow: hidden;
   border-radius: 8px;
-  margin: 10px;
+  margin: 15px;
   backdrop-filter: blur(10px);
   background-color: var(--menu-panel-bg);
 }

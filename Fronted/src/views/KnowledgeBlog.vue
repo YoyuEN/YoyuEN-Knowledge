@@ -111,7 +111,27 @@ const blogList = ref([
     time: '5个月前',
     comments: 12,
     tags: ['创新', '思维', '方法']
-  }
+  },
+  {
+    id: 9,
+    image: new URL('../assets/picture/微信图片_20240504222750.jpg', import.meta.url).href,
+    avater: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
+    title: '教师职业发展路径',
+    summary: '分析教师职业发展的不同阶段和路径，为青年教师提供职业规划建议，助力教师成长与发展。',
+    time: '2个月前',
+    comments: 10,
+    tags: ['教育', '职业', '发展']
+  },
+  {
+    id: 10,
+    image: new URL('../assets/picture/微信图片_20240504222750.jpg', import.meta.url).href,
+    avater: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
+    title: '知识体系构建指南',
+    summary: '如何构建系统的知识体系？本文将从知识获取、整理、内化等方面为您提供详细的指导和建议。',
+    time: '3个月前',
+    comments: 42,
+    tags: ['学习', '知识', '系统']
+  },
 ])
 </script>
 
