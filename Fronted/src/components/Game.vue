@@ -15,6 +15,7 @@
         :key="game.id"
         :background-image="game.cover"
         class="game-card-item"
+        @click="router.push(`/detail/${game.id}`)"
       >
         <div class="card-info">
           <h4 class="game-name">{{ game.name }}</h4>
@@ -29,17 +30,17 @@
 import { ref } from 'vue'
 import { Trophy } from '@element-plus/icons-vue'
 import Card16x9 from './Card16x9.vue'
+import { useRouter } from 'vue-router'
 import defaultCover from '../assets/picture/YoyuEN.png'
+import cover1 from '../assets/picture/image.png'
+
+const router = useRouter()
 
 const gameList = ref([
-  { id: 1, name: '王者荣耀', category: 'MOBA', cover: defaultCover },
+  { id: 1, name: '王者荣耀', category: 'MOBA', cover: cover1 },
   { id: 2, name: '三角洲行动', category: '射击', cover: defaultCover },
-  { id: 3, name: '原神', category: '开放世界', cover: defaultCover },
-  { id: 4, name: '和平精英', category: '射击', cover: defaultCover },
-  { id: 5, name: '英雄联盟手游', category: 'MOBA', cover: defaultCover },
-  { id: 6, name: '崩坏星穹铁道', category: '角色扮演', cover: defaultCover },
-  { id: 7, name: '明日方舟', category: '塔防', cover: defaultCover },
-  { id: 8, name: '绝区零', category: '动作', cover: defaultCover }
+  { id: 3, name: '鸣潮', category: '开放世界', cover: defaultCover },
+  { id: 4, name: '崩坏星穹铁道', category: '角色扮演', cover: defaultCover }
 ])
 </script>
 

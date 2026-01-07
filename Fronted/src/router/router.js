@@ -4,6 +4,7 @@ import KnowledgeBlog from '../views/KnowledgeBlog.vue'
 import LifeEntertainment from '../views/LifeEntertainment.vue'
 import LifeExperience from '../views/LifeExperience.vue'
 import WorkLife from '../views/WorkLife.vue'
+import Detail from '../views/detail.vue'
 
 const routes = [
   {
@@ -11,6 +12,12 @@ const routes = [
     name: 'Home',
     component: Home,
     meta: { title: 'AI对话' }
+  },
+  {
+    path: '/detail/:id',
+    name: 'Detail',
+    component: Detail,
+    meta: { title: '游戏详情' }
   },
   {
     path: '/knowledge-blog',
@@ -22,7 +29,19 @@ const routes = [
     path: '/life-entertainment',
     name: 'LifeEntertainment',
     component: LifeEntertainment,
-    meta: { title: '生活娱乐' }
+    meta: { title: '生活娱乐' },
+    children: [
+      {
+        path: '',
+        redirect: '/life-entertainment/music'
+      },
+      {
+        path: ':category',
+        name: 'LifeEntertainmentCategory',
+        component: LifeEntertainment,
+        meta: { title: '生活娱乐' }
+      }
+    ]
   },
   {
     path: '/life-experience',
