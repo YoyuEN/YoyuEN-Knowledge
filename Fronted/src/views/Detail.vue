@@ -5,45 +5,44 @@
       <!-- 文章封面 -->
       <div class="article-cover">
         <el-image :src="data.cover" fit="cover"></el-image>
+        <div class="article-header-content">
+          <!-- 文章标题 -->
+          <h1 class="article-title">{{ data.title }}</h1>
+
+          <!-- 文章摘要 -->
+          <p class="article-summary-text">{{ data.summary }}</p>
+
+          <!-- 文章元信息 -->
+          <div class="article-meta">
+            <!-- 标签 -->
+            <div class="article-tags">
+              <el-tag
+                v-for="(tag, index) in data.tags"
+                :key="index"
+                type="primary"
+                size="small"
+              >
+                {{ tag }}
+              </el-tag>
+            </div>
+
+            <!-- 作者信息 -->
+            <div class="article-author">
+              <el-avatar :src="data.author.avatar" size="small"></el-avatar>
+              <span class="author-name">{{ data.author.name }}</span>
+            </div>
+
+            <!-- 发布时间和字数 -->
+            <div class="article-info">
+              <span class="article-time">{{ data.time }}</span>
+              <span class="article-word-count">{{ data.wordCount }}字</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- 文章内容容器 -->
       <div class="article-content-container">
-        <!-- 文章标题 -->
-        <h1 class="article-title">{{ data.title }}</h1>
-
-        <!-- 文章元信息 -->
-        <div class="article-meta">
-          <!-- 标签 -->
-          <div class="article-tags">
-            <el-tag
-              v-for="(tag, index) in data.tags"
-              :key="index"
-              type="primary"
-              size="small"
-            >
-              {{ tag }}
-            </el-tag>
-          </div>
-
-          <!-- 作者信息 -->
-          <div class="article-author">
-            <el-avatar :src="data.author.avatar" size="small"></el-avatar>
-            <span class="author-name">{{ data.author.name }}</span>
-          </div>
-
-          <!-- 发布时间和字数 -->
-          <div class="article-info">
-            <span class="article-time">{{ data.time }}</span>
-            <span class="article-word-count">{{ data.wordCount }}字</span>
-          </div>
-        </div>
-
-        <!-- 文章摘要 -->
-        <div class="article-summary">
-          <h3>摘要</h3>
-          <p>{{ data.summary }}</p>
-        </div>
 
         <!-- AI总结 -->
         <div class="article-ai-summary">
@@ -135,13 +134,22 @@
       <div class="comment-form-container">
         <el-form :model="newComment" label-position="top">
           <el-form-item label="评论内容" required>
+            <el-input
+              v-model="newComment.content"
+              type="textarea"
+              :rows="4"
+              placeholder="分享您的想法..."
+              resize="none"
+              class="comment-textarea"
+            ></el-input>
+            
             <!-- 评论工具栏 -->
             <div class="comment-toolbar">
               <div class="toolbar-left">
                 <!-- 直接展示一排表情 -->
                 <div class="inline-emoji-picker">
                   <span
-                    v-for="emoji in emojis.slice(0, 10)"
+                    v-for="emoji in emojis.slice(0, 25)"
                     :key="emoji"
                     class="emoji-item"
                     @click="addEmoji(emoji)"
@@ -157,22 +165,6 @@
                     ...
                   </el-button>
                 </div>
-              </div>
-              <div class="toolbar-right">
-                <!-- 上传组件改为小图标 -->
-                <el-upload
-                  action="#"
-                  list-type="picture-card"
-                  :auto-upload="false"
-                  :on-change="handleImageChange"
-                  accept="image/*"
-                  :limit="1"
-                  class="image-upload-btn"
-                >
-                  <div style="width: 20px; height: 20px; font-size: 16px">
-                    📷
-                  </div>
-                </el-upload>
               </div>
             </div>
             <!-- 完整表情选择器 -->
@@ -194,23 +186,61 @@
               </div>
             </el-popover>
 
-            <!-- 提交评论按钮 -->
-            <el-button
-              type="primary"
-              @click="submitComment"
-              :disabled="!newComment.content.trim()"
-              class="submit-comment-btn"
-            >
-              发布评论
-            </el-button>
-            <el-input
-              v-model="newComment.content"
-              type="textarea"
-              :rows="4"
-              placeholder="分享您的想法..."
-              resize="none"
-              class="comment-textarea"
-            ></el-input>
+            <!-- 用户信息输入和操作按钮行 -->
+            <div class="user-info-inputs">
+              <el-form-item>
+                <el-upload
+                  action="#"
+                  list-type="picture-card"
+                  :auto-upload="false"
+                  :on-change="handleAvatarChange"
+                  accept="image/*"
+                  :limit="1"
+                  class="avatar-upload-btn"
+                >
+                  <img v-if="newComment.avatar" :src="newComment.avatar" alt="头像" style="width: 100%; height: 100%; object-fit: cover;" />
+                  <i v-else class="el-icon-plus"></i>
+                </el-upload>
+              </el-form-item>
+              
+              <el-form-item>
+                <el-input
+                  v-model="newComment.nickname"
+                  placeholder="昵称"
+                  class="short-input"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item>
+                <el-input
+                  v-model="newComment.email"
+                  type="email"
+                  placeholder="邮箱"
+                  class="short-input"
+                ></el-input>
+              </el-form-item>
+              
+              <el-form-item>
+                <el-input
+                  v-model="newComment.url"
+                  type="url"
+                  placeholder="链接"
+                  class="short-input"
+                ></el-input>
+              </el-form-item>
+
+              <!-- 提交评论按钮 -->
+              <el-form-item>
+                <el-button
+                  type="primary"
+                  @click="submitComment"
+                  :disabled="!newComment.content.trim()"
+                  class="submit-comment-btn"
+                >
+                  <img src="../assets/icons/comment.png" alt="发布评论" style="width: 18px; height: 18px; vertical-align: middle;" />
+                </el-button>
+              </el-form-item>
+            </div>
           </el-form-item>
         </el-form>
       </div>
@@ -336,60 +366,42 @@ const articles = [
     time: "2024-01-07",
     wordCount: 5280,
     author: {
-      name: "张小明",
+      name: "YoyuEN",
       avatar: "/src/assets/picture/YoyuEN.png",
     },
     aiSummary:
       "本文主要介绍了人工智能在游戏开发中的应用，包括NPC智能、 procedural content generation、玩家行为分析等方面。AI技术不仅提升了游戏的可玩性和沉浸感，还降低了开发成本。未来，随着大语言模型和强化学习的发展，游戏AI将更加智能和个性化。",
-    content: `# 人工智能在游戏开发中的应用与未来趋势
-
-## 一、引言
+    content: `
 
 随着人工智能技术的快速发展，其在游戏开发中的应用越来越广泛。从早期的简单规则AI到如今的深度学习模型，人工智能已经成为现代游戏开发中不可或缺的重要组成部分。本文将探讨人工智能在游戏开发中的应用现状、关键技术以及未来发展趋势。
 
-## 二、AI在游戏中的核心应用
-
-### 2.1 NPC智能
-
 传统游戏中的NPC（非玩家角色）通常只能按照预设的脚本行动，行为模式单一。而现代游戏中，AI技术使得NPC能够具备更复杂的行为和决策能力。通过使用行为树、有限状态机和强化学习等技术，NPC可以根据游戏环境和玩家行为做出动态响应，提供更加真实和具有挑战性的游戏体验。
-
-### 2.2 程序化内容生成
 
 程序化内容生成（PCG）是指利用算法自动生成游戏内容，如地图、关卡、道具等。AI技术的引入使得PCG更加智能和高效。通过使用生成对抗网络（GAN）和变分自编码器（VAE）等深度学习模型，可以生成更加多样化和高质量的游戏内容，大大降低了开发成本，同时增加了游戏的可重玩性。
 
-### 2.3 玩家行为分析
 
 AI技术可以实时分析玩家的游戏行为数据，包括游戏风格、技能水平和偏好等。基于这些分析，游戏可以动态调整难度、提供个性化推荐，并优化游戏体验。例如，对于新手玩家，可以降低游戏难度并提供更多提示；对于高级玩家，可以增加挑战性内容以保持游戏的吸引力。
 
-## 三、关键技术
 
-### 3.1 深度学习
 
 深度学习在游戏AI中的应用主要包括图像识别、自然语言处理和强化学习等。卷积神经网络（CNN）可以用于游戏场景理解和目标检测；循环神经网络（RNN）和Transformer模型可以用于NPC的自然语言交互；强化学习（RL）则可以用于训练智能游戏代理。
 
-### 3.2 强化学习
+
 
 强化学习是游戏AI中的一项重要技术，通过让AI代理在游戏环境中不断尝试和学习，优化其行为策略。DeepMind的AlphaGo和AlphaStar项目展示了强化学习在复杂游戏中的强大能力。在游戏开发中，强化学习可以用于训练NPC、设计游戏关卡和平衡游戏机制。
 
-### 3.3 大语言模型
 
 近年来，大语言模型（LLM）如GPT-4和Claude在游戏开发中的应用越来越受到关注。LLM可以用于生成游戏对话、剧情和任务描述，甚至可以作为游戏中的虚拟角色与玩家进行自然语言交互。这大大增强了游戏的叙事能力和沉浸感。
 
-## 四、未来趋势
-
-### 4.1 个性化游戏体验
 
 未来的游戏AI将更加注重个性化体验，通过分析玩家的行为数据和偏好，为每个玩家提供量身定制的游戏内容和挑战。这将使得游戏更加具有吸引力和粘性。
 
-### 4.2 跨游戏AI代理
 
 随着元宇宙概念的兴起，跨游戏AI代理将成为可能。玩家可以拥有一个能够在不同游戏中通用的AI代理，该代理可以积累经验和技能，并在不同游戏环境中应用这些知识。
 
-### 4.3 AI辅助游戏设计
 
 AI技术将在游戏设计过程中发挥更加重要的作用，从概念设计到关卡创建，再到游戏测试和优化，AI都可以提供有力的支持。这将大大提高游戏开发效率，缩短开发周期。
 
-## 五、结论
 
 人工智能技术正在深刻改变游戏开发和玩家体验。从NPC智能到程序化内容生成，再到玩家行为分析，AI技术的应用使得游戏更加智能、多样化和个性化。未来，随着技术的不断发展，人工智能将在游戏领域发挥更加重要的作用，为玩家带来更加丰富和沉浸式的游戏体验。`,
   },
@@ -610,6 +622,10 @@ const comments = ref([
 // 新评论表单数据
 const newComment = ref({
   content: "",
+  nickname: "",
+  email: "",
+  url: "",
+  avatar: "",
 });
 
 // 表情相关数据
@@ -725,6 +741,15 @@ const handleImageChange = (file) => {
   const imageUrl = URL.createObjectURL(file.raw);
   // 在评论内容中添加图片链接
   newComment.value.content += `![图片](${imageUrl})`;
+};
+
+// 处理头像上传
+const handleAvatarChange = (file) => {
+  // 实际项目中应该上传图片到服务器，这里简化处理
+  // 创建图片URL
+  const imageUrl = URL.createObjectURL(file.raw);
+  // 保存头像URL到评论数据
+  newComment.value.avatar = imageUrl;
 };
 
 // 回复评论相关数据
@@ -919,7 +944,7 @@ const submitReply = (commentId) => {
 <style scoped>
 .detail-container {
   padding: 24px;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
@@ -931,16 +956,44 @@ const submitReply = (commentId) => {
 
 /* 文章封面样式 */
 .article-cover {
+  position: relative;
   width: 100%;
-  height: 350px;
-  border-radius: 12px;
+  height: 600px;
   overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .article-cover :deep(.el-image) {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  z-index: 1;
+}
+
+/* 封面文字内容容器 */
+.article-header-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  text-align: center;
+  padding: 0 20px 20px 20px;
+  max-width: 800px;
+}
+
+/* 封面半透明遮罩 */
+.article-cover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+  z-index: 1;
 }
 
 /* 文章内容容器样式 */
@@ -953,11 +1006,24 @@ const submitReply = (commentId) => {
 
 /* 文章标题样式 */
 .article-title {
-  margin: 0 0 24px 0;
-  font-size: 36px;
+  margin: 20px 0 16px 0;
+  font-size: 48px;
   font-weight: 700;
-  color: #333;
+  color: white;
   line-height: 1.3;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* 文章摘要样式 */
+.article-summary-text {
+  margin: 0 0 24px 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* 文章元信息样式 */
@@ -965,16 +1031,22 @@ const submitReply = (commentId) => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  justify-content: center;
   gap: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e8e8e8;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 /* 标签样式 */
 .article-tags {
   display: flex;
   gap: 8px;
+  justify-content: center;
+}
+
+.article-tags :deep(.el-tag) {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
 }
 
 /* 作者信息样式 */
@@ -984,9 +1056,15 @@ const submitReply = (commentId) => {
   gap: 8px;
 }
 
+.article-author :deep(.el-avatar) {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
 .author-name {
-  font-size: 14px;
-  color: #666;
+  font-size: 16px;
+  color: white;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* 发布时间和字数样式 */
@@ -994,7 +1072,14 @@ const submitReply = (commentId) => {
   display: flex;
   gap: 16px;
   font-size: 14px;
-  color: #999;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.article-info span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* 文章摘要样式 */
@@ -1021,11 +1106,8 @@ const submitReply = (commentId) => {
 
 /* AI总结样式 */
 .article-ai-summary {
-  background-color: #e6f7ff;
-  padding: 20px;
   border-radius: 8px;
   margin-bottom: 32px;
-  border-left: 4px solid #1890ff;
 }
 
 .article-ai-summary h3 {
@@ -1050,42 +1132,42 @@ const submitReply = (commentId) => {
 }
 
 /* 正文标题样式 */
-.article-main-content h1 {
+.article-main-content :deep(h1) {
   font-size: 28px;
   font-weight: 700;
   color: #333;
   margin: 40px 0 20px 0;
 }
 
-.article-main-content h2 {
+.article-main-content :deep(h2) {
   font-size: 24px;
   font-weight: 700;
   color: #333;
   margin: 36px 0 18px 0;
 }
 
-.article-main-content h3 {
+.article-main-content :deep(h3) {
   font-size: 20px;
   font-weight: 700;
   color: #333;
   margin: 32px 0 16px 0;
 }
 
-.article-main-content h4 {
+.article-main-content :deep(h4) {
   font-size: 18px;
   font-weight: 700;
   color: #333;
   margin: 28px 0 14px 0;
 }
 
-.article-main-content h5 {
+.article-main-content :deep(h5) {
   font-size: 16px;
   font-weight: 700;
   color: #333;
   margin: 24px 0 12px 0;
 }
 
-.article-main-content h6 {
+.article-main-content :deep(h6) {
   font-size: 14px;
   font-weight: 700;
   color: #333;
@@ -1093,9 +1175,57 @@ const submitReply = (commentId) => {
 }
 
 /* 正文段落样式 */
-.article-main-content p {
-  margin: 0 0 16px 0;
+.article-main-content :deep(p) {
+  margin: 0 0 32px 0;
   text-align: justify;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .article-cover {
+    height: 500px;
+  }
+  
+  .article-title {
+    font-size: 42px;
+  }
+}
+
+@media (max-width: 768px) {
+  .article-cover {
+    height: 400px;
+  }
+  
+  .article-title {
+    font-size: 36px;
+  }
+  
+  .article-summary-text {
+    font-size: 16px;
+  }
+  
+  .article-meta {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .article-cover {
+    height: 350px;
+  }
+  
+  .article-title {
+    font-size: 28px;
+  }
+  
+  .article-summary-text {
+    font-size: 14px;
+  }
+  
+  .article-tags {
+    flex-wrap: wrap;
+  }
 }
 
 /* 加载状态样式 */
@@ -1302,25 +1432,29 @@ const submitReply = (commentId) => {
 
 /* 评论工具栏样式 */
 .comment-toolbar {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.toolbar-left {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  background-color: #fafafa;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  flex: 1;
+  margin-right: 12px;
 }
 
 /* 提交评论按钮样式 */
 .submit-comment-btn {
-  margin-left: 12px;
   font-size: 14px;
-  padding: 9px 20px;
-  border-radius: 20px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
   font-weight: 600;
   background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   box-shadow: 0 3px 8px rgba(24, 144, 255, 0.2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1361,21 +1495,16 @@ const submitReply = (commentId) => {
 }
 
 .emoji-item {
-  font-size: 26px;
+  font-size: 22px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-right: 4px;
 }
 
 .emoji-item:hover {
-  background-color: rgba(24, 144, 255, 0.1);
-  transform: scale(1.2);
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+  transform: translateY(-3px) scale(1.2);
 }
 
 /* 表情展开按钮样式 */
@@ -1397,13 +1526,27 @@ const submitReply = (commentId) => {
 .inline-emoji-picker {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  width: 100%;
   margin: 0;
   padding: 0;
   background-color: transparent;
   border-radius: 0;
   box-shadow: none;
   border: none;
+  overflow: hidden;
+}
+
+.inline-emoji-picker .emoji-item {
+  flex: 1;
+  text-align: center;
+  max-width: calc(100% / 21); /* 20个表情 + 1个展开按钮 */
+}
+
+.emoji-expand-btn {
+  flex-shrink: 0;
+  margin-left: 2px;
+  padding: 2px 6px;
 }
 
 /* 调整上传组件样式 */
@@ -1533,6 +1676,7 @@ const submitReply = (commentId) => {
 
 .comment-form-container :deep(.el-form-item) {
   margin-bottom: 20px;
+  display: block;
 }
 
 .comment-form-container :deep(.el-form-item__label) {
@@ -1540,6 +1684,84 @@ const submitReply = (commentId) => {
   color: #333;
   font-size: 16px;
   margin-bottom: 12px;
+}
+
+/* 用户信息输入和操作按钮行样式 */
+.user-info-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.user-info-inputs :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 0;
+}
+
+.avatar-upload-btn {
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-upload-btn :deep(.el-upload--picture-card) {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px dashed #d9d9d9;
+  transition: all 0.2s ease;
+}
+
+.avatar-upload-btn :deep(.el-upload--picture-card:hover) {
+  border-color: #1890ff;
+  transform: translateY(-2px);
+}
+
+.short-input {
+  flex: 1.5;
+  min-width: 120px;
+}
+
+.short-input :deep(.el-input__inner) {
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  padding: 8px 10px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.short-input :deep(.el-input__inner:focus) {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.image-upload-btn :deep(.el-upload--picture-card) {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px dashed #d9d9d9;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-upload-btn :deep(.el-upload--picture-card:hover) {
+  border-color: #1890ff;
+  transform: translateY(-2px);
+}
+
+.submit-comment-btn {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* 响应式设计 */

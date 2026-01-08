@@ -50,12 +50,18 @@
     
     <!-- 右侧列表区域 -->
     <div class="right-section">
-      <div class="section-title">列表</div>
-      <el-table :data="listData" style="width: 100%">
-        <el-table-column prop="date" label="日期" width="180" />
-        <el-table-column prop="name" label="名称" width="180" />
-        <el-table-column prop="address" label="地址" />
-      </el-table>
+      <div class="article-list">
+        <div v-for="(article, index) in listData" :key="index" class="article-item">
+          <div class="article-cover">
+            <img :src="article.cover" :alt="article.title" />
+          </div>
+          <div class="article-info">
+            <div class="article-title">{{ article.title }}</div>
+            <div class="article-date">{{ article.date }}</div>
+            <div class="article-excerpt">{{ article.content }}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -101,23 +107,27 @@ const sendMessage = async () => {
 const listData = ref([
   {
     date: '2023-05-10',
-    name: '张三',
-    address: '北京市朝阳区'
+    title: 'Vue 3 Composition API 入门指南',
+    content: '本文详细介绍了Vue 3 Composition API的核心概念和使用方法，包括setup函数、响应式API、生命周期钩子等内容，帮助开发者快速上手Vue 3开发。',
+    cover: 'https://picsum.photos/id/1/300/200'
   },
   {
     date: '2023-05-11',
-    name: '李四',
-    address: '上海市浦东新区'
+    title: 'Element Plus 组件库使用技巧',
+    content: 'Element Plus是Vue 3生态中最流行的UI组件库之一，本文分享了一些实用的使用技巧，包括自定义主题、组件扩展、性能优化等内容。',
+    cover: 'https://picsum.photos/id/2/300/200'
   },
   {
     date: '2023-05-12',
-    name: '王五',
-    address: '广州市天河区'
+    title: '前端性能优化实战',
+    content: '性能优化是前端开发中的重要课题，本文从网络请求、渲染性能、资源加载等方面，介绍了一些实用的性能优化技巧和工具。',
+    cover: 'https://picsum.photos/id/3/300/200'
   },
   {
     date: '2023-05-13',
-    name: '赵六',
-    address: '深圳市南山区'
+    title: 'TypeScript 入门教程',
+    content: 'TypeScript是JavaScript的超集，提供了静态类型检查等特性，本文介绍了TypeScript的基础语法、类型系统、接口等核心内容。',
+    cover: 'https://picsum.photos/id/4/300/200'
   }
 ])
 </script>
@@ -247,9 +257,75 @@ const listData = ref([
   color: #9ca3af;
 }
 
-/* 列表样式 */
-:deep(.el-table) {
-  border-radius: 8px;
+/* 文章列表样式 */
+.article-list {
+  overflow-y: auto;
+  height: calc(100% - 60px);
+  padding-right: 10px;
+}
+
+.article-item {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.article-item:last-child {
+  border-bottom: none;
+}
+
+.article-item:hover {
+  background-color: #fafafa;
+}
+
+.article-cover {
+  width: 120px;
+  height: 80px;
+  flex-shrink: 0;
   overflow: hidden;
+  border-radius: 8px;
+}
+
+.article-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.article-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.article-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.article-date {
+  font-size: 13px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.article-excerpt {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
