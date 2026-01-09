@@ -58,77 +58,12 @@
         </div>
       </div>
     </div>
-
-    <!-- 游戏内容 -->
-    <div v-else-if="data && data.type === 'game'" class="game-detail">
-      <!-- 游戏封面 -->
-      <div class="game-cover">
-        <el-image :src="data.cover" fit="cover"></el-image>
-      </div>
-
-      <!-- 游戏内容容器 -->
-      <div class="game-content-container">
-        <!-- 游戏标题 -->
-        <h1 class="game-title">{{ data.name }}</h1>
-
-        <!-- 游戏元信息 -->
-        <div class="game-meta">
-          <!-- 分类标签 -->
-          <div class="game-category">
-            <el-tag type="success" size="small">{{ data.category }}</el-tag>
-            <el-tag
-              v-if="data.status"
-              :type="data.status === '已上线' ? 'primary' : 'warning'"
-              size="small"
-              >{{ data.status }}</el-tag
-            >
-          </div>
-        </div>
-
-        <!-- 游戏简介 -->
-        <div class="game-description">
-          <h3>游戏简介</h3>
-          <p>{{ data.description }}</p>
-        </div>
-
-        <!-- 游戏详细介绍 -->
-        <div class="game-introduction">
-          <h3>详细介绍</h3>
-          <p>{{ data.introduction }}</p>
-        </div>
-
-        <!-- 配置要求 -->
-        <div class="game-requirements">
-          <h3>配置要求</h3>
-          <ul>
-            <li><strong>操作系统：</strong>{{ data.requirements.os }}</li>
-            <li><strong>CPU：</strong>{{ data.requirements.cpu }}</li>
-            <li><strong>内存：</strong>{{ data.requirements.ram }}</li>
-            <li><strong>存储空间：</strong>{{ data.requirements.storage }}</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div v-else-if="data === null" class="error-message">
-      <el-empty description="未找到相关内容" :image-size="200"></el-empty>
-      <el-button
-        type="primary"
-        @click="$router.push('/')"
-        style="margin-top: 20px"
-      >
-        返回首页
-      </el-button>
-    </div>
     <div v-else class="loading">
       <el-skeleton :rows="8" animated />
     </div>
 
     <!-- 评论模块 -->
     <div v-if="data" class="comments-section">
-      <div class="comments-header">
-        <h2 class="comments-title">评论</h2>
-        <span class="comments-count">{{ getTotalComments() }}条评论</span>
-      </div>
 
       <!-- 评论表单 -->
       <div class="comment-form-container">
@@ -149,7 +84,7 @@
                 <!-- 直接展示一排表情 -->
                 <div class="inline-emoji-picker">
                   <span
-                    v-for="emoji in emojis.slice(0, 25)"
+                    v-for="emoji in emojis.slice(0, 15)"
                     :key="emoji"
                     class="emoji-item"
                     @click="addEmoji(emoji)"
@@ -191,15 +126,17 @@
               <el-form-item>
                 <el-upload
                   action="#"
-                  list-type="picture-card"
                   :auto-upload="false"
                   :on-change="handleAvatarChange"
                   accept="image/*"
-                  :limit="1"
+                  :show-file-list="false"
+                  :key="uploadKey"
                   class="avatar-upload-btn"
                 >
-                  <img v-if="newComment.avatar" :src="newComment.avatar" alt="头像" style="width: 100%; height: 100%; object-fit: cover;" />
-                  <i v-else class="el-icon-plus"></i>
+                  <el-avatar
+                    :src="newComment.avatar"
+                    size="32"
+                  ></el-avatar>
                 </el-upload>
               </el-form-item>
               
@@ -263,7 +200,8 @@
               <div class="comment-content">
                 <div class="comment-header">
                   <div class="comment-meta">
-                    <span class="comment-author">{{ mainComment.author }}</span>
+                    <a :href="mainComment.url" v-if="mainComment.url" class="comment-author" target="_blank" rel="noopener noreferrer">{{ mainComment.author }}</a>
+                    <span v-else class="comment-author">{{ mainComment.author }}</span>
                     <span class="comment-time">{{ mainComment.time }}</span>
                   </div>
                   <!-- 回复按钮 -->
@@ -297,7 +235,8 @@
                 <div class="comment-content">
                   <div class="comment-header">
                     <div class="comment-meta">
-                      <span class="comment-author">{{ reply.author }}</span>
+                      <a :href="reply.url" v-if="reply.url" class="comment-author" target="_blank" rel="noopener noreferrer">{{ reply.author }}</a>
+                      <span v-else class="comment-author">{{ reply.author }}</span>
                       <span class="comment-time">{{ reply.time }}</span>
                     </div>
                     <!-- 回复按钮 -->
@@ -333,10 +272,100 @@
                   :rows="3"
                   :placeholder="`回复 @${replyToUsername}：`"
                   resize="none"
+                  class="comment-textarea"
                 ></el-input>
+                
+                <!-- 评论工具栏 - 复用主评论的表情选择器 -->
+                <div class="comment-toolbar">
+                  <div class="toolbar-left">
+                    <!-- 直接展示一排表情 -->
+                    <div class="inline-emoji-picker">
+                      <span
+                        v-for="emoji in emojis.slice(0, 25)"
+                        :key="emoji"
+                        class="emoji-item"
+                        @click="addReplyEmoji(emoji)"
+                      >
+                        {{ emoji }}
+                      </span>
+                      <el-button
+                        type="text"
+                        size="small"
+                        @click="toggleReplyEmojiPicker"
+                        class="emoji-expand-btn"
+                      >
+                        ...
+                      </el-button>
+                    </div>
+                  </div>
+                </div>
+                <!-- 完整表情选择器 -->
+                <el-popover
+                  v-model:visible="showReplyEmojiPicker"
+                  placement="top"
+                  :width="'300px'"
+                  trigger="click"
+                >
+                  <div class="emoji-picker">
+                    <span
+                      v-for="emoji in emojis"
+                      :key="emoji"
+                      class="emoji-item"
+                      @click="addReplyEmoji(emoji)"
+                    >
+                      {{ emoji }}
+                    </span>
+                  </div>
+                </el-popover>
+                
+                <!-- 用户信息输入和操作按钮行 -->
+                <div class="user-info-inputs">
+                  <el-form-item>
+                    <el-upload
+                      action="#"
+                      :auto-upload="false"
+                      :on-change="handleReplyAvatarChange"
+                      accept="image/*"
+                      :show-file-list="false"
+                      :key="replyUploadKey"
+                      class="avatar-upload-btn"
+                    >
+                      <el-avatar
+                        :src="replyComment.avatar"
+                        size="32"
+                      ></el-avatar>
+                    </el-upload>
+                  </el-form-item>
+                  
+                  <el-form-item>
+                    <el-input
+                      v-model="replyComment.nickname"
+                      placeholder="昵称"
+                      class="short-input"
+                    ></el-input>
+                  </el-form-item>
+                  
+                  <el-form-item>
+                    <el-input
+                      v-model="replyComment.email"
+                      type="email"
+                      placeholder="邮箱"
+                      class="short-input"
+                    ></el-input>
+                  </el-form-item>
+                  
+                  <el-form-item>
+                    <el-input
+                      v-model="replyComment.url"
+                      type="url"
+                      placeholder="链接"
+                      class="short-input"
+                    ></el-input>
+                  </el-form-item>
+                </div>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="submitReply(mainComment.id)">
+                <el-button type="primary" @click="submitReply(mainComment.id)" :disabled="!replyComment.content.trim()">
                   提交回复
                 </el-button>
                 <el-button @click="cancelReply"> 取消 </el-button>
@@ -625,7 +654,7 @@ const newComment = ref({
   nickname: "",
   email: "",
   url: "",
-  avatar: "",
+  avatar: "/src/assets/picture/YoyuEN.png", // 默认头像
 });
 
 // 表情相关数据
@@ -734,14 +763,21 @@ const addEmoji = (emoji) => {
   showEmojiPicker.value = false;
 };
 
-// 处理图片上传
-const handleImageChange = (file) => {
-  // 实际项目中应该上传图片到服务器，这里简化处理
-  // 创建图片URL
-  const imageUrl = URL.createObjectURL(file.raw);
-  // 在评论内容中添加图片链接
-  newComment.value.content += `![图片](${imageUrl})`;
+// 回复评论表情选择器
+const showReplyEmojiPicker = ref(false);
+
+// 切换回复表情选择器显示/隐藏
+const toggleReplyEmojiPicker = () => {
+  showReplyEmojiPicker.value = !showReplyEmojiPicker.value;
 };
+
+// 添加表情到回复内容
+const addReplyEmoji = (emoji) => {
+  replyComment.value.content += emoji;
+  showReplyEmojiPicker.value = false;
+};
+
+
 
 // 处理头像上传
 const handleAvatarChange = (file) => {
@@ -750,12 +786,37 @@ const handleAvatarChange = (file) => {
   const imageUrl = URL.createObjectURL(file.raw);
   // 保存头像URL到评论数据
   newComment.value.avatar = imageUrl;
+  
+  // 重置上传组件，允许再次选择相同文件
+  // 通过强制更新组件的key来重置上传组件状态
+  uploadKey.value = Date.now();
 };
+
+// 处理回复评论头像上传
+const handleReplyAvatarChange = (file) => {
+  // 实际项目中应该上传图片到服务器，这里简化处理
+  // 创建图片URL
+  const imageUrl = URL.createObjectURL(file.raw);
+  // 保存头像URL到回复评论数据
+  replyComment.value.avatar = imageUrl;
+  
+  // 重置上传组件，允许再次选择相同文件
+  // 通过强制更新组件的key来重置上传组件状态
+  replyUploadKey.value = Date.now();
+};
+
+// 用于重置上传组件的key
+const uploadKey = ref(0);
+const replyUploadKey = ref(0);
 
 // 回复评论相关数据
 const replyToCommentId = ref(null);
 const replyComment = ref({
   content: "",
+  nickname: "",
+  email: "",
+  url: "",
+  avatar: "https://picsum.photos/id/237/100/100", // 默认头像
 });
 
 // 简单的Markdown渲染函数（实际项目中应使用专业的Markdown解析库）
@@ -875,8 +936,9 @@ const submitComment = () => {
   // 创建新评论对象
   const comment = {
     id: newId,
-    avatar: "/src/assets/picture/YoyuEN.png", // 默认头像
-    author: "匿名用户", // 默认用户名
+    avatar: newComment.value.avatar || "/src/assets/picture/YoyuEN.png", // 使用用户上传的头像或默认头像
+    author: newComment.value.nickname || "匿名用户", // 使用用户输入的昵称或默认用户名
+    url: newComment.value.url || "", // 保存用户输入的链接
     time: currentTime,
     content: newComment.value.content.trim(),
     replies: [], // 初始化回复数组
@@ -918,8 +980,9 @@ const submitReply = (commentId) => {
   // 创建新回复对象，包含replyTo字段指向被回复的用户
   const reply = {
     id: newId,
-    avatar: "/src/assets/picture/YoyuEN.png", // 默认头像
-    author: "匿名用户", // 默认用户名
+    avatar: replyComment.value.avatar || "/src/assets/picture/YoyuEN.png", // 使用用户上传的头像或默认头像
+    author: replyComment.value.nickname || "匿名用户", // 使用用户输入的昵称或默认用户名
+    url: replyComment.value.url || "", // 保存用户输入的链接
     time: currentTime,
     content: replyComment.value.content.trim(),
     replyTo: replyToUsername.value, // 指向被回复的用户名
@@ -944,21 +1007,58 @@ const submitReply = (commentId) => {
 <style scoped>
 .detail-container {
   padding: 24px;
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
 }
 
+/* 文章内容区域 - 左侧 */
 .article-detail {
+  width: 60%;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+
+/* 文章和评论之间的分割线 */
+.article-detail::after {
+  content: '';
+  position: absolute;
+  right: -16px;
+  top: 50px;
+  bottom: 50px;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, #e8e8e8, transparent);
+  z-index: 1;
+}
+
+/* 响应式设计 */
+@media (max-width: 1100px) {
+  .article-detail::after {
+    display: none;
+  }
+}
+
+/* 评论区域 - 右侧 */
+.comments-section {
+  flex: 1;
+  margin-top: 0;
+  position: sticky;
+  top: 24px;
+  align-self: flex-start;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding-right: 8px;
 }
 
 /* 文章封面样式 */
 .article-cover {
   position: relative;
   width: 100%;
-  height: 600px;
+  height: 500px;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
@@ -980,8 +1080,12 @@ const submitReply = (commentId) => {
   z-index: 2;
   color: white;
   text-align: center;
-  padding: 0 20px 20px 20px;
-  max-width: 800px;
+  padding: 10px;
+  width: 100%;
+  /* 模糊背景效果 - 从顶部到底部逐渐加深 */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.5));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* 封面半透明遮罩 */
@@ -1001,13 +1105,12 @@ const submitReply = (commentId) => {
   background-color: #fff;
   border-radius: 12px;
   padding: 32px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* 文章标题样式 */
 .article-title {
   margin: 20px 0 16px 0;
-  font-size: 48px;
+  font-size: 32px;
   font-weight: 700;
   color: white;
   line-height: 1.3;
@@ -1028,19 +1131,43 @@ const submitReply = (commentId) => {
 
 /* 文章元信息样式 */
 .article-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 24px;
+  position: relative;
+  display: block;
   margin-bottom: 16px;
 }
 
-/* 标签样式 */
+/* 标签居中显示 */
 .article-tags {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 8px;
   justify-content: center;
+}
+
+/* 作者信息左下角 */
+.article-author {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 发布时间和字数右下角 */
+.article-info {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  gap: 16px;
+}
+
+/* 调整元信息容器高度，确保绝对定位元素有足够空间 */
+.article-meta {
+  height: 80px;
 }
 
 .article-tags :deep(.el-tag) {
@@ -1319,9 +1446,45 @@ const submitReply = (commentId) => {
 }
 
 /* 评论模块样式 */
-.comments-section {
-  margin-top: 40px;
-  padding: 0;
+/* 主样式已在上方定义 */
+
+/* 滚动条样式优化 */
+.comments-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.comments-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.comments-section::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.comments-section::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 响应式设计 */
+@media (max-width: 1100px) {
+  .detail-container {
+    flex-direction: column;
+    max-width: 800px;
+  }
+  
+  .comments-section {
+    position: static;
+    max-height: none;
+    max-width: 100%;
+    margin-top: 40px;
+  }
+  
+  .article-detail {
+    max-width: 100%;
+    min-width: auto;
+  }
 }
 
 .comments-header {
@@ -1350,9 +1513,6 @@ const submitReply = (commentId) => {
   margin-bottom: 32px;
   padding: 28px;
   background-color: #fff;
-  border-radius: 16px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f0f0f0;
   transition: all 0.2s ease;
 }
 
@@ -1365,8 +1525,7 @@ const submitReply = (commentId) => {
 
 /* 单个评论区样式 */
 .single-comment-section {
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
+  border-bottom: 1px solid #e8e8e8;
   padding: 20px;
   background-color: #fff;
 }
@@ -1418,6 +1577,11 @@ const submitReply = (commentId) => {
   font-size: 14px;
 }
 
+.comment-author:is(a) {
+  text-decoration: underline;
+  color: #646cff;
+}
+
 .comment-time {
   font-size: 12px;
   color: #999;
@@ -1447,7 +1611,6 @@ const submitReply = (commentId) => {
 .submit-comment-btn {
   font-size: 14px;
   width: 40px;
-  height: 40px;
   padding: 0;
   border-radius: 50%;
   font-weight: 600;
@@ -1549,12 +1712,7 @@ const submitReply = (commentId) => {
   padding: 2px 6px;
 }
 
-/* 调整上传组件样式 */
-.image-upload-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+
 
 :deep(.el-upload--picture-card) {
   width: 40px;
@@ -1675,7 +1833,6 @@ const submitReply = (commentId) => {
 }
 
 .comment-form-container :deep(.el-form-item) {
-  margin-bottom: 20px;
   display: block;
 }
 
@@ -1691,9 +1848,9 @@ const submitReply = (commentId) => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   width: 100%;
+  justify-content: space-between;
 }
 
 .user-info-inputs :deep(.el-form-item) {
@@ -1701,14 +1858,9 @@ const submitReply = (commentId) => {
   margin-right: 0;
 }
 
-.avatar-upload-btn {
-  width: 40px;
-  height: 40px;
-}
-
 .avatar-upload-btn :deep(.el-upload--picture-card) {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   border: 1px dashed #d9d9d9;
   transition: all 0.2s ease;
@@ -1719,43 +1871,49 @@ const submitReply = (commentId) => {
   transform: translateY(-2px);
 }
 
-.short-input {
-  flex: 1.5;
+.user-info-inputs :deep(.el-form-item:nth-child(1)) {
+  flex: 0 0 auto;
+}
+
+.user-info-inputs :deep(.el-form-item:nth-child(2)) {
+  flex: 1;
+  min-width: 100px;
+}
+
+.user-info-inputs :deep(.el-form-item:nth-child(3)) {
+  flex: 1.2;
   min-width: 120px;
 }
 
+.user-info-inputs :deep(.el-form-item:nth-child(4)) {
+  flex: 1.2;
+  min-width: 120px;
+}
+
+.user-info-inputs :deep(.el-form-item:nth-child(5)) {
+  flex: 0 0 auto;
+}
+
+.short-input {
+  width: 100%;
+}
+
 .short-input :deep(.el-input__inner) {
-  border-radius: 8px;
-  border: 1px solid #e8e8e8;
-  padding: 8px 10px;
+  border-radius: 4px;
+  padding: 8px 11px;
   font-size: 14px;
   transition: all 0.2s ease;
 }
 
-.short-input :deep(.el-input__inner:focus) {
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+:deep(.el-input__wrapper) {
+  padding: 1px 1px;
 }
 
-.image-upload-btn :deep(.el-upload--picture-card) {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1px dashed #d9d9d9;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 
-.image-upload-btn :deep(.el-upload--picture-card:hover) {
-  border-color: #1890ff;
-  transform: translateY(-2px);
-}
+
 
 .submit-comment-btn {
   width: 40px;
-  height: 40px;
   padding: 0;
   font-size: 14px;
   border-radius: 50%;
