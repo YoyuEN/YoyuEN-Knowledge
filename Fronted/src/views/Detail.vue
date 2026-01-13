@@ -2,45 +2,6 @@
   <div class="detail-container">
     <!-- 文章内容 -->
     <div v-if="data && data.type === 'article'" class="article-detail">
-      <!-- 文章封面 -->
-      <div class="article-cover">
-        <el-image :src="data.cover" fit="cover"></el-image>
-        <div class="article-header-content">
-          <!-- 文章标题 -->
-          <h1 class="article-title">{{ data.title }}</h1>
-
-          <!-- 文章摘要 -->
-          <p class="article-summary-text">{{ data.summary }}</p>
-
-          <!-- 文章元信息 -->
-          <div class="article-meta">
-            <!-- 标签 -->
-            <div class="article-tags">
-              <el-tag
-                v-for="(tag, index) in data.tags"
-                :key="index"
-                type="primary"
-                size="small"
-              >
-                {{ tag }}
-              </el-tag>
-            </div>
-
-            <!-- 作者信息 -->
-            <div class="article-author">
-              <el-avatar :src="data.author.avatar" size="small"></el-avatar>
-              <span class="author-name">{{ data.author.name }}</span>
-            </div>
-
-            <!-- 发布时间和字数 -->
-            <div class="article-info">
-              <span class="article-time">{{ data.time }}</span>
-              <span class="article-word-count">{{ data.wordCount }}字</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <!-- 文章内容容器 -->
       <div class="article-content-container">
         <!-- AI总结 -->
@@ -56,344 +17,227 @@
           <div v-html="renderMarkdown(data.content)"></div>
         </div>
       </div>
-      <!-- 评论模块 -->
-      <div v-if="data" class="comments-section">
-        <!-- 评论区列表 -->
-        <div class="comment-sections-list">
-          <!-- 每个主评论作为独立评论区 -->
-          <div
-            v-for="mainComment in comments"
-            :key="mainComment.id"
-            class="single-comment-section"
-          >
-            <!-- 评论区内容列表 -->
-            <div class="comment-section-content">
-              <!-- 第一条评论：对文章的评论 -->
-              <div class="comment-item">
+    </div>
+    <!-- 评论模块 -->
+    <div v-if="data" class="comments-section">
+      <!-- 评论区列表 -->
+      <div class="comment-sections-list">
+        <!-- 每个主评论作为独立评论区 -->
+        <div
+          v-for="mainComment in comments"
+          :key="mainComment.id"
+          class="single-comment-section"
+        >
+          <!-- 评论区内容列表 -->
+          <div class="comment-section-content">
+            <!-- 第一条评论：对文章的评论 -->
+            <div class="comment-item">
+              <div class="comment-avatar">
+                <el-avatar :src="mainComment.avatar" size="medium"></el-avatar>
+              </div>
+              <div class="comment-content">
+                <div class="comment-header">
+                  <div class="comment-meta">
+                    <a
+                      :href="mainComment.url"
+                      v-if="mainComment.url"
+                      class="comment-author"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      >{{ mainComment.author }}</a
+                    >
+                    <span v-else class="comment-author">{{
+                      mainComment.author
+                    }}</span>
+                    <span class="comment-time">{{ mainComment.time }}</span>
+                  </div>
+                  <!-- 回复按钮 -->
+                  <div class="comment-actions">
+                    <el-button
+                      type="text"
+                      size="small"
+                      @click="showReplyForm(mainComment.id, mainComment.author)"
+                      :icon="ChatDotRound"
+                    >
+                    </el-button>
+                  </div>
+                </div>
+                <div
+                  class="comment-text"
+                  v-html="renderMarkdown(mainComment.content)"
+                ></div>
+              </div>
+            </div>
+
+            <!-- 其他评论：对评论的评论 -->
+            <div v-if="mainComment.replies && mainComment.replies.length > 0">
+              <div
+                v-for="reply in mainComment.replies"
+                :key="reply.id"
+                class="comment-item"
+              >
                 <div class="comment-avatar">
-                  <el-avatar
-                    :src="mainComment.avatar"
-                    size="medium"
-                  ></el-avatar>
+                  <el-avatar :src="reply.avatar" size="small"></el-avatar>
                 </div>
                 <div class="comment-content">
                   <div class="comment-header">
                     <div class="comment-meta">
                       <a
-                        :href="mainComment.url"
-                        v-if="mainComment.url"
+                        :href="reply.url"
+                        v-if="reply.url"
                         class="comment-author"
                         target="_blank"
                         rel="noopener noreferrer"
-                        >{{ mainComment.author }}</a
+                        >{{ reply.author }}</a
                       >
                       <span v-else class="comment-author">{{
-                        mainComment.author
+                        reply.author
                       }}</span>
-                      <span class="comment-time">{{ mainComment.time }}</span>
+                      <span class="comment-time">{{ reply.time }}</span>
                     </div>
                     <!-- 回复按钮 -->
                     <div class="comment-actions">
                       <el-button
                         type="text"
                         size="small"
-                        @click="
-                          showReplyForm(mainComment.id, mainComment.author)
-                        "
+                        @click="showReplyForm(mainComment.id, reply.author)"
                         :icon="ChatDotRound"
                       >
                       </el-button>
                     </div>
                   </div>
-                  <div
-                    class="comment-text"
-                    v-html="renderMarkdown(mainComment.content)"
-                  ></div>
-                </div>
-              </div>
-
-              <!-- 其他评论：对评论的评论 -->
-              <div v-if="mainComment.replies && mainComment.replies.length > 0">
-                <div
-                  v-for="reply in mainComment.replies"
-                  :key="reply.id"
-                  class="comment-item"
-                >
-                  <div class="comment-avatar">
-                    <el-avatar :src="reply.avatar" size="small"></el-avatar>
-                  </div>
-                  <div class="comment-content">
-                    <div class="comment-header">
-                      <div class="comment-meta">
-                        <a
-                          :href="reply.url"
-                          v-if="reply.url"
-                          class="comment-author"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          >{{ reply.author }}</a
-                        >
-                        <span v-else class="comment-author">{{
-                          reply.author
-                        }}</span>
-                        <span class="comment-time">{{ reply.time }}</span>
-                      </div>
-                      <!-- 回复按钮 -->
-                      <div class="comment-actions">
-                        <el-button
-                          type="text"
-                          size="small"
-                          @click="showReplyForm(mainComment.id, reply.author)"
-                          :icon="ChatDotRound"
-                        >
-                        </el-button>
-                      </div>
-                    </div>
-                    <div class="comment-text">
-                      <span class="reply-to">回复 @{{ reply.replyTo }}：</span>
-                      <span v-html="renderMarkdown(reply.content)"></span>
-                    </div>
+                  <div class="comment-text">
+                    <span class="reply-to">回复 @{{ reply.replyTo }}：</span>
+                    <span v-html="renderMarkdown(reply.content)"></span>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <!-- 回复表单 -->
-            <div
-              v-if="replyToCommentId === mainComment.id"
-              class="reply-form-container"
-            >
-              <el-form :model="replyComment" label-position="top">
-                <el-form-item label="回复内容" required>
-                  <el-input
-                    v-model="replyComment.content"
-                    type="textarea"
-                    :rows="3"
-                    :placeholder="`回复 @${replyToUsername}：`"
-                    resize="none"
-                    class="comment-textarea"
-                  ></el-input>
-
-                  <!-- 评论工具栏 - 复用主评论的表情选择器 -->
-                  <div class="comment-toolbar">
-                    <div class="toolbar-left">
-                      <!-- 直接展示一排表情 -->
-                      <div class="inline-emoji-picker">
-                        <span
-                          v-for="emoji in emojis.slice(0, 25)"
-                          :key="emoji"
-                          class="emoji-item"
-                          @click="addReplyEmoji(emoji)"
-                        >
-                          {{ emoji }}
-                        </span>
-                        <el-button
-                          type="text"
-                          size="small"
-                          @click="toggleReplyEmojiPicker"
-                          class="emoji-expand-btn"
-                        >
-                          ...
-                        </el-button>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- 完整表情选择器 -->
-                  <el-popover
-                    v-model:visible="showReplyEmojiPicker"
-                    placement="top"
-                    :width="'300px'"
-                    trigger="click"
-                  >
-                    <div class="emoji-picker">
-                      <span
-                        v-for="emoji in emojis"
-                        :key="emoji"
-                        class="emoji-item"
-                        @click="addReplyEmoji(emoji)"
-                      >
-                        {{ emoji }}
-                      </span>
-                    </div>
-                  </el-popover>
-
-                  <!-- 用户信息输入和操作按钮行 -->
-                  <div class="user-info-inputs">
-                    <el-form-item>
-                      <el-upload
-                        action="#"
-                        :auto-upload="false"
-                        :on-change="handleReplyAvatarChange"
-                        accept="image/*"
-                        :show-file-list="false"
-                        :key="replyUploadKey"
-                        class="avatar-upload-btn"
-                      >
-                        <el-avatar
-                          :src="replyComment.avatar"
-                          size="32"
-                        ></el-avatar>
-                      </el-upload>
-                    </el-form-item>
-
-                    <el-form-item>
-                      <el-input
-                        v-model="replyComment.nickname"
-                        placeholder="昵称"
-                        class="short-input"
-                      ></el-input>
-                    </el-form-item>
-
-                    <el-form-item>
-                      <el-input
-                        v-model="replyComment.email"
-                        type="email"
-                        placeholder="邮箱"
-                        class="short-input"
-                      ></el-input>
-                    </el-form-item>
-
-                    <el-form-item>
-                      <el-input
-                        v-model="replyComment.url"
-                        type="url"
-                        placeholder="链接"
-                        class="short-input"
-                      ></el-input>
-                    </el-form-item>
-                  </div>
-                </el-form-item>
-                <el-form-item>
-                  <el-button
-                    type="primary"
-                    @click="submitReply(mainComment.id)"
-                    :disabled="!replyComment.content.trim()"
-                  >
-                    提交回复
-                  </el-button>
-                  <el-button @click="cancelReply"> 取消 </el-button>
-                </el-form-item>
-              </el-form>
             </div>
           </div>
         </div>
-        <!-- 评论表单 -->
-        <div class="comment-form-container">
-          <el-form :model="newComment" label-position="top">
-            <el-form-item required>
+      </div>
+      <!-- 评论表单 -->
+      <div class="comment-form-container">
+        <el-form :model="newComment" label-position="top">
+          <el-form-item required>
+            <!-- 评论输入区域容器 -->
+            <div class="comment-input-wrapper">
+              <!-- 评论输入框 -->
               <el-input
                 v-model="newComment.content"
                 type="textarea"
-                :rows="4"
-                placeholder="分享您的想法..."
-                resize="none"
+                :rows="5"
+                :placeholder="
+                  replyToUsername
+                    ? `回复 @${replyToUsername}：`
+                    : '分享您的想法...'
+                "
+                resize="vertical"
                 class="comment-textarea"
               ></el-input>
+
+              <!-- 分隔线 -->
+              <div class="comment-divider"></div>
 
               <!-- 评论工具栏 -->
               <div class="comment-toolbar">
                 <div class="toolbar-left">
-                  <!-- 直接展示一排表情 -->
-                  <div class="inline-emoji-picker">
-                    <span
-                      v-for="emoji in emojis.slice(0, 15)"
-                      :key="emoji"
-                      class="emoji-item"
-                      @click="addEmoji(emoji)"
-                    >
-                      {{ emoji }}
-                    </span>
+                  <!-- 表情按钮 -->
+                  <div class="emoji-button-container">
                     <el-button
                       type="text"
                       size="small"
                       @click="toggleEmojiPicker"
-                      class="emoji-expand-btn"
+                      class="emoji-button"
                     >
-                      ...
+                      😊
                     </el-button>
+                    <!-- 表情选择器 -->
+                    <div v-if="showEmojiPicker" class="emoji-picker-container">
+                      <div class="emoji-picker">
+                        <span
+                          v-for="emoji in emojis"
+                          :key="emoji"
+                          class="emoji-item"
+                          @click="addEmoji(emoji)"
+                        >
+                          {{ emoji }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-              <!-- 完整表情选择器 -->
-              <el-popover
-                v-model:visible="showEmojiPicker"
-                placement="top"
-                :width="'300px'"
-                trigger="click"
-              >
-                <div class="emoji-picker">
-                  <span
-                    v-for="emoji in emojis"
-                    :key="emoji"
-                    class="emoji-item"
-                    @click="addEmoji(emoji)"
-                  >
-                    {{ emoji }}
-                  </span>
-                </div>
-              </el-popover>
+            </div>
 
-              <!-- 用户信息输入和操作按钮行 -->
-              <div class="user-info-inputs">
-                <el-form-item>
-                  <el-upload
-                    action="#"
-                    :auto-upload="false"
-                    :on-change="handleAvatarChange"
-                    accept="image/*"
-                    :show-file-list="false"
-                    :key="uploadKey"
-                    class="avatar-upload-btn"
-                  >
-                    <el-avatar :src="newComment.avatar" size="32"></el-avatar>
-                  </el-upload>
-                </el-form-item>
+            <!-- 用户信息输入和操作按钮行 -->
+            <div class="user-info-inputs">
+              <el-form-item>
+                <el-upload
+                  action="#"
+                  :auto-upload="false"
+                  :on-change="handleAvatarChange"
+                  accept="image/*"
+                  :show-file-list="false"
+                  :key="uploadKey"
+                  class="avatar-upload-btn"
+                >
+                  <el-avatar :src="newComment.avatar" size="32"></el-avatar>
+                </el-upload>
+              </el-form-item>
 
-                <el-form-item>
-                  <el-input
-                    v-model="newComment.nickname"
-                    placeholder="昵称"
-                    class="short-input"
-                  ></el-input>
-                </el-form-item>
+              <el-form-item>
+                <el-input
+                  v-model="newComment.nickname"
+                  placeholder="昵称"
+                  class="short-input"
+                ></el-input>
+              </el-form-item>
 
-                <el-form-item>
-                  <el-input
-                    v-model="newComment.email"
-                    type="email"
-                    placeholder="邮箱"
-                    class="short-input"
-                  ></el-input>
-                </el-form-item>
+              <el-form-item>
+                <el-input
+                  v-model="newComment.email"
+                  type="email"
+                  placeholder="邮箱"
+                  class="short-input"
+                ></el-input>
+              </el-form-item>
 
-                <el-form-item>
-                  <el-input
-                    v-model="newComment.url"
-                    type="url"
-                    placeholder="链接"
-                    class="short-input"
-                  ></el-input>
-                </el-form-item>
+              <el-form-item>
+                <el-input
+                  v-model="newComment.url"
+                  type="url"
+                  placeholder="链接"
+                  class="short-input"
+                ></el-input>
+              </el-form-item>
 
-                <!-- 提交评论按钮 -->
-                <el-form-item>
-                  <el-button
-                    type="primary"
-                    @click="submitComment"
-                    :disabled="!newComment.content.trim()"
-                    class="submit-comment-btn"
-                  >
-                    <img
-                      src="../assets/icons/comment.png"
-                      alt="发布评论"
-                      style="width: 18px; height: 18px; vertical-align: middle"
-                    />
-                  </el-button>
-                </el-form-item>
-              </div>
-            </el-form-item>
-          </el-form>
-        </div>
+              <!-- 提交评论和取消回复按钮 -->
+              <el-form-item>
+                <el-button
+                  type="primary"
+                  @click="submitComment"
+                  :disabled="!newComment.content.trim()"
+                  class="submit-comment-btn"
+                >
+                  <img
+                    src="../assets/icons/comment.png"
+                    alt="发布评论"
+                    style="width: 18px; height: 18px; vertical-align: middle"
+                  />
+                </el-button>
+                <el-button
+                  v-if="replyToUsername"
+                  type="text"
+                  @click="cancelReply"
+                  class="cancel-reply-btn"
+                >
+                  取消回复
+                </el-button>
+              </el-form-item>
+            </div>
+          </el-form-item>
+        </el-form>
       </div>
     </div>
     <div v-else class="loading">
@@ -437,7 +281,9 @@ AI技术可以实时分析玩家的游戏行为数据，包括游戏风格、技
 
 
 
+
 深度学习在游戏AI中的应用主要包括图像识别、自然语言处理和强化学习等。卷积神经网络（CNN）可以用于游戏场景理解和目标检测；循环神经网络（RNN）和Transformer模型可以用于NPC的自然语言交互；强化学习（RL）则可以用于训练智能游戏代理。
+
 
 
 
@@ -671,37 +517,29 @@ const comments = ref([
     replies: [],
   },
   {
-    id: 2,
-    avatar: "/src/assets/picture/YoyuEN.png",
-    author: "技术专家",
-    time: "2024-01-08 14:20",
-    content: "期待看到更多关于大语言模型在游戏中的应用案例。",
-    replies: [],
-  },
-  {
-    id: 3,
+    id: 4,
     avatar: "/src/assets/picture/YoyuEN.png",
     author: "新手玩家",
-    time: "2024-01-09 09:45",
-    content: "学习了很多，希望能看到更多入门级的内容。",
+    time: "2024-01-09 12:00",
+    content: "这篇文章很有帮助，谢谢分享！",
     replies: [],
   },
   {
-    id: 2,
-    avatar: "/src/assets/picture/YoyuEN.png",
-    author: "技术专家",
-    time: "2024-01-08 14:20",
-    content: "期待看到更多关于大语言模型在游戏中的应用案例。",
-    replies: [],
-  },
-  {
-    id: 3,
+    id: 5,
     avatar: "/src/assets/picture/YoyuEN.png",
     author: "新手玩家",
-    time: "2024-01-09 09:45",
-    content: "学习了很多，希望能看到更多入门级的内容。",
+    time: "2024-01-09 14:30",
+    content: "这篇文章很有帮助，谢谢分享！",
     replies: [],
   },
+  {
+    id: 6,
+    avatar: "/src/assets/picture/YoyuEN.png",
+    author: "新手玩家",
+    time: "2024-01-09 16:15",
+    content: "这篇文章很有帮助，谢谢分享！",
+    replies: [],
+  }
 ]);
 
 // 新评论表单数据
@@ -819,20 +657,6 @@ const addEmoji = (emoji) => {
   showEmojiPicker.value = false;
 };
 
-// 回复评论表情选择器
-const showReplyEmojiPicker = ref(false);
-
-// 切换回复表情选择器显示/隐藏
-const toggleReplyEmojiPicker = () => {
-  showReplyEmojiPicker.value = !showReplyEmojiPicker.value;
-};
-
-// 添加表情到回复内容
-const addReplyEmoji = (emoji) => {
-  replyComment.value.content += emoji;
-  showReplyEmojiPicker.value = false;
-};
-
 // 处理头像上传
 const handleAvatarChange = (file) => {
   // 实际项目中应该上传图片到服务器，这里简化处理
@@ -846,32 +670,12 @@ const handleAvatarChange = (file) => {
   uploadKey.value = Date.now();
 };
 
-// 处理回复评论头像上传
-const handleReplyAvatarChange = (file) => {
-  // 实际项目中应该上传图片到服务器，这里简化处理
-  // 创建图片URL
-  const imageUrl = URL.createObjectURL(file.raw);
-  // 保存头像URL到回复评论数据
-  replyComment.value.avatar = imageUrl;
-
-  // 重置上传组件，允许再次选择相同文件
-  // 通过强制更新组件的key来重置上传组件状态
-  replyUploadKey.value = Date.now();
-};
-
 // 用于重置上传组件的key
 const uploadKey = ref(0);
-const replyUploadKey = ref(0);
 
 // 回复评论相关数据
 const replyToCommentId = ref(null);
-const replyComment = ref({
-  content: "",
-  nickname: "",
-  email: "",
-  url: "",
-  avatar: "https://picsum.photos/id/237/100/100", // 默认头像
-});
+const replyToUsername = ref(null);
 
 // 简单的Markdown渲染函数（实际项目中应使用专业的Markdown解析库）
 const renderMarkdown = (content) => {
@@ -945,20 +749,24 @@ const getTotalComments = () => {
   return total;
 };
 
-// 回复用户名
-const replyToUsername = ref("");
-
 // 显示回复表单
 const showReplyForm = (commentId, username) => {
   replyToCommentId.value = commentId;
   replyToUsername.value = username;
-  replyComment.value.content = "";
+  newComment.value.content = "";
+  // 滚动到评论表单位置
+  setTimeout(() => {
+    document
+      .querySelector(".comment-form-container")
+      .scrollIntoView({ behavior: "smooth" });
+  }, 100);
 };
 
 // 取消回复
 const cancelReply = () => {
   replyToCommentId.value = null;
-  replyComment.value.content = "";
+  replyToUsername.value = null;
+  newComment.value.content = "";
 };
 
 // 提交评论
@@ -987,79 +795,53 @@ const submitComment = () => {
   const minutes = String(now.getMinutes()).padStart(2, "0");
   const currentTime = `${year}-${month}-${day} ${hours}:${minutes}`;
 
-  // 创建新评论对象
-  const comment = {
+  // 创建新评论或回复对象
+  const commentData = {
     id: newId,
     avatar: newComment.value.avatar || "/src/assets/picture/YoyuEN.png", // 使用用户上传的头像或默认头像
     author: newComment.value.nickname || "匿名用户", // 使用用户输入的昵称或默认用户名
     url: newComment.value.url || "", // 保存用户输入的链接
     time: currentTime,
     content: newComment.value.content.trim(),
-    replies: [], // 初始化回复数组
   };
 
-  // 添加到评论列表开头
-  comments.value.unshift(comment);
+  if (replyToCommentId.value) {
+    // 如果是回复，添加到对应的主评论的replies数组中
+    const mainComment = comments.value.find(
+      (comment) => comment.id === replyToCommentId.value
+    );
+    if (mainComment) {
+      if (!mainComment.replies) {
+        mainComment.replies = [];
+      }
+      // 添加replyTo字段指向被回复的用户
+      mainComment.replies.push({
+        ...commentData,
+        replyTo: replyToUsername.value,
+      });
+    }
+    // 重置回复状态，无论mainComment是否存在
+    replyToCommentId.value = null;
+    replyToUsername.value = null;
+  } else {
+    // 如果是主评论，添加到评论列表开头
+    comments.value.unshift({
+      ...commentData,
+      replies: [], // 初始化回复数组
+    });
+  }
 
   // 清空评论表单
   newComment.value.content = "";
-};
-
-// 提交回复
-const submitReply = (commentId) => {
-  // 验证回复内容
-  if (!replyComment.value.content.trim()) {
-    return;
-  }
-
-  // 生成新回复ID
-  const allComments = [...comments.value];
-  comments.value.forEach((comment) => {
-    if (comment.replies) {
-      allComments.push(...comment.replies);
-    }
-  });
-  const newId =
-    allComments.length > 0 ? Math.max(...allComments.map((c) => c.id)) + 1 : 1;
-
-  // 获取当前时间
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const currentTime = `${year}-${month}-${day} ${hours}:${minutes}`;
-
-  // 创建新回复对象，包含replyTo字段指向被回复的用户
-  const reply = {
-    id: newId,
-    avatar: replyComment.value.avatar || "/src/assets/picture/YoyuEN.png", // 使用用户上传的头像或默认头像
-    author: replyComment.value.nickname || "匿名用户", // 使用用户输入的昵称或默认用户名
-    url: replyComment.value.url || "", // 保存用户输入的链接
-    time: currentTime,
-    content: replyComment.value.content.trim(),
-    replyTo: replyToUsername.value, // 指向被回复的用户名
-  };
-
-  // 找到对应的主评论并添加回复
-  const mainComment = comments.value.find(
-    (comment) => comment.id === commentId
-  );
-  if (mainComment) {
-    if (!mainComment.replies) {
-      mainComment.replies = [];
-    }
-    mainComment.replies.push(reply);
-  }
-
-  // 关闭回复表单
-  cancelReply();
+  newComment.value.nickname = "";
+  newComment.value.email = "";
+  newComment.value.url = "";
 };
 </script>
 
-<style scoped>
+<style>
 .detail-container {
+  height: 100%;
   padding: 24px;
   width: 100%;
   margin: 0 auto;
@@ -1070,7 +852,9 @@ const submitReply = (commentId) => {
 
 /* 文章内容区域 - 左侧 */
 .article-detail {
-  width: 100%;
+  height: 100%;
+  flex: 3;
+  min-width: 600px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -1089,77 +873,66 @@ const submitReply = (commentId) => {
   z-index: 1;
 }
 
+/* 评论区域 - 右侧 */
+.comments-section {
+  height: 100%;
+  flex: 1;
+  min-width: 350px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 0 24px;
+  position: relative;
+}
+
+/* 文章内容区域 */
+.article-content-container {
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+/* 自定义滚动条样式 */
+.article-content-container::-webkit-scrollbar,
+.comments-section::-webkit-scrollbar {
+  width: 6px;
+}
+
+.article-content-container::-webkit-scrollbar-track,
+.comments-section::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.article-content-container::-webkit-scrollbar-thumb,
+.comments-section::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.article-content-container::-webkit-scrollbar-thumb:hover,
+.comments-section::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
 /* 响应式设计 */
 @media (max-width: 1100px) {
   .article-detail::after {
     display: none;
   }
-}
 
-/* 评论区域 - 右侧 */
-.comments-section {
-  flex: 1;
-  margin-top: 0;
-  position: sticky;
-  top: 24px;
-  align-self: flex-start;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 200px);
-}
+  .article-detail {
+    flex: 1;
+    min-width: auto;
+  }
 
-/* 文章封面样式 */
-.article-cover {
-  position: relative;
-  width: 100%;
-  height: 500px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-}
-
-.article-cover :deep(.el-image) {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-}
-
-/* 封面文字内容容器 */
-.article-header-content {
-  position: relative;
-  z-index: 2;
-  color: white;
-  text-align: center;
-  padding: 10px;
-  width: 100%;
-  /* 模糊背景效果 - 从顶部到底部逐渐加深 */
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.1),
-    rgba(0, 0, 0, 0.5)
-  );
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-/* 封面半透明遮罩 */
-.article-cover::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.3),
-    rgba(0, 0, 0, 0.5)
-  );
-  z-index: 1;
+  .comments-section {
+    flex: 1;
+    min-width: auto;
+    position: static;
+    height: auto;
+  }
 }
 
 /* 文章内容容器样式 */
@@ -1174,9 +947,9 @@ const submitReply = (commentId) => {
   margin: 20px 0 16px 0;
   font-size: 32px;
   font-weight: 700;
-  color: white;
+  color: #303133;
   line-height: 1.3;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 /* 文章摘要样式 */
@@ -1184,11 +957,11 @@ const submitReply = (commentId) => {
   margin: 0 0 24px 0;
   font-size: 18px;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  color: #606266;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
+  text-align: center;
 }
 
 /* 文章元信息样式 */
@@ -1303,343 +1076,192 @@ const submitReply = (commentId) => {
   margin: 0 0 12px 0;
   font-size: 20px;
   font-weight: 600;
-  color: #1890ff;
+  color: #333;
 }
 
 .ai-summary-content p {
   margin: 0;
   font-size: 16px;
-  color: #333;
+  color: #666;
   line-height: 1.6;
+  background-color: #f5f7fa;
+  padding: 20px;
+  border-radius: 8px;
 }
 
 /* 文章正文样式 */
 .article-main-content {
+  margin-top: 32px;
   font-size: 16px;
-  color: #333;
   line-height: 1.8;
+  color: #333;
 }
 
-/* 正文标题样式 */
-.article-main-content :deep(h1) {
+/* Markdown样式 */
+.article-main-content h1,
+.article-main-content h2,
+.article-main-content h3,
+.article-main-content h4,
+.article-main-content h5,
+.article-main-content h6 {
+  margin: 24px 0 16px 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.article-main-content h1 {
   font-size: 28px;
-  font-weight: 700;
-  color: #333;
-  margin: 40px 0 20px 0;
-}
-
-.article-main-content :deep(h2) {
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-  margin: 36px 0 18px 0;
-}
-
-.article-main-content :deep(h3) {
-  font-size: 20px;
-  font-weight: 700;
-  color: #333;
-  margin: 32px 0 16px 0;
-}
-
-.article-main-content :deep(h4) {
-  font-size: 18px;
-  font-weight: 700;
-  color: #333;
-  margin: 28px 0 14px 0;
-}
-
-.article-main-content :deep(h5) {
-  font-size: 16px;
-  font-weight: 700;
-  color: #333;
-  margin: 24px 0 12px 0;
-}
-
-.article-main-content :deep(h6) {
-  font-size: 14px;
-  font-weight: 700;
-  color: #333;
-  margin: 20px 0 10px 0;
-}
-
-/* 正文段落样式 */
-.article-main-content :deep(p) {
-  margin: 0 0 32px 0;
-  text-align: justify;
-}
-
-/* 响应式设计 */
-@media (max-width: 1200px) {
-  .article-cover {
-    height: 500px;
-  }
-
-  .article-title {
-    font-size: 42px;
-  }
-}
-
-@media (max-width: 768px) {
-  .article-cover {
-    height: 400px;
-  }
-
-  .article-title {
-    font-size: 36px;
-  }
-
-  .article-summary-text {
-    font-size: 16px;
-  }
-
-  .article-meta {
-    flex-direction: column;
-    gap: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .article-cover {
-    height: 350px;
-  }
-
-  .article-title {
-    font-size: 28px;
-  }
-
-  .article-summary-text {
-    font-size: 14px;
-  }
-
-  .article-tags {
-    flex-wrap: wrap;
-  }
-}
-
-/* 加载状态样式 */
-.loading {
-  padding: 40px;
-}
-
-/* 游戏详情样式 */
-.game-detail {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-.game-cover {
-  width: 100%;
-  height: 350px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.game-cover :deep(.el-image) {
-  width: 100%;
-  height: 100%;
-}
-
-.game-content-container {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.game-title {
-  margin: 0 0 24px 0;
-  font-size: 36px;
-  font-weight: 700;
-  color: #333;
-  line-height: 1.3;
-}
-
-.game-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 16px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e8e8e8;
-  margin-bottom: 24px;
-}
-
-.game-category {
-  display: flex;
-  gap: 8px;
-}
-
-.game-description,
-.game-introduction,
-.game-requirements {
-  margin-bottom: 32px;
-}
-
-.game-description h3,
-.game-introduction h3,
-.game-requirements h3 {
-  margin: 0 0 16px 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-}
-
-.game-description p,
-.game-introduction p {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  color: #666;
-  line-height: 1.6;
-}
-
-.game-requirements ul {
-  margin: 0;
-  padding-left: 20px;
-  list-style-type: disc;
-}
-
-.game-requirements li {
-  margin-bottom: 8px;
-  font-size: 16px;
-  color: #666;
-}
-
-/* 评论模块样式 */
-.comments-section {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 150px); /* 适当调整高度，确保有足够空间 */
-}
-
-/* 评论区列表样式 */
-.comment-sections-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  flex-grow: 1;
-  overflow-y: auto;
-  padding-right: 8px;
-  margin-bottom: 16px;
-}
-
-/* 滚动条样式优化 */
-.comment-sections-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.comment-sections-list::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.comment-sections-list::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.comment-sections-list::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-/* 响应式设计 */
-@media (max-width: 1100px) {
-  .detail-container {
-    flex-direction: column;
-    max-width: 800px;
-  }
-
-  .comments-section {
-    position: static;
-    height: auto;
-    max-width: 100%;
-    margin-top: 40px;
-  }
-
-  .comment-sections-list {
-    overflow-y: visible;
-    flex-grow: 0;
-  }
-
-  .article-detail {
-    max-width: 100%;
-    min-width: auto;
-  }
-}
-
-.comments-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.comments-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-}
-
-.comments-count {
-  font-size: 14px;
-  color: #999;
-}
-
-/* 评论表单样式 */
-.comment-form-container {
-  background-color: #fff;
-  transition: all 0.2s ease;
-  border-top: 1px solid #f0f0f0;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-}
-
-/* 评论区列表样式 */
-.comment-sections-list {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* 单个评论区样式 */
-.single-comment-section {
-  border-bottom: 1px solid #e8e8e8;
-  padding: 20px;
-  background-color: #fff;
-}
-
-/* 评论区头部样式 */
-.comment-section-header {
-  margin-bottom: 16px;
+  border-bottom: 2px solid #eee;
   padding-bottom: 8px;
-  border-bottom: 1px solid #f0f0f0;
 }
 
-.comment-section-title {
-  margin: 0;
-  font-size: 18px;
+.article-main-content h2 {
+  font-size: 24px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.article-main-content h3 {
+  font-size: 20px;
+}
+
+.article-main-content p {
+  margin: 16px 0;
+}
+
+.article-main-content ul,
+.article-main-content ol {
+  margin: 16px 0;
+  padding-left: 24px;
+}
+
+.article-main-content li {
+  margin: 8px 0;
+}
+
+.article-main-content a {
+  color: #409eff;
+  text-decoration: none;
+}
+
+.article-main-content a:hover {
+  text-decoration: underline;
+}
+
+.article-main-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 16px 0;
+  border-radius: 8px;
+  display: block;
+}
+
+.article-main-content code {
+  background-color: #f5f7fa;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 14px;
+}
+
+.article-main-content pre {
+  background-color: #f5f7fa;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.article-main-content pre code {
+  padding: 0;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.article-main-content blockquote {
+  border-left: 4px solid #409eff;
+  padding-left: 16px;
+  margin: 16px 0;
+  color: #666;
+}
+
+.article-main-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.article-main-content table th,
+.article-main-content table td {
+  border: 1px solid #eee;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.article-main-content table th {
+  background-color: #f5f7fa;
+  font-weight: 600;
+}
+
+
+
+/* 评论区标题 */
+.comments-section h3 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
   font-weight: 600;
   color: #333;
 }
 
-/* 评论项样式 */
+/* 评论区列表 */
+.comment-sections-list {
+  margin-bottom: 24px;
+}
+
+/* 单个评论区 */
+.single-comment-section {
+  padding: 24px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.single-comment-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* 评论内容列表 */
+.comment-section-content {
+  margin-bottom: 24px;
+}
+
+/* 评论项 */
 .comment-item {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
+.comment-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 评论头像 */
 .comment-avatar {
-  flex-shrink: 0;
+  margin-top: 4px;
 }
 
+.comment-avatar :deep(.el-avatar) {
+  border: 2px solid #f5f7fa;
+}
+
+/* 评论内容 */
 .comment-content {
   flex: 1;
+  min-width: 0;
 }
 
+/* 评论头部 */
 .comment-header {
   display: flex;
   justify-content: space-between;
@@ -1647,386 +1269,289 @@ const submitReply = (commentId) => {
   margin-bottom: 8px;
 }
 
+/* 评论元信息 */
 .comment-meta {
   display: flex;
-  gap: 12px;
   align-items: center;
+  gap: 12px;
 }
 
+/* 评论作者 */
 .comment-author {
-  font-weight: 600;
-  color: #333;
   font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
 }
 
-.comment-author:is(a) {
+.comment-author:hover {
+  color: #409eff;
   text-decoration: underline;
-  color: #646cff;
 }
 
+/* 评论时间 */
 .comment-time {
   font-size: 12px;
   color: #999;
 }
 
+/* 评论操作 */
+.comment-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.comment-actions :deep(.el-button) {
+  padding: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.comment-actions :deep(.el-button:hover) {
+  color: #409eff;
+}
+
+/* 评论文本 */
 .comment-text {
   font-size: 14px;
-  color: #666;
   line-height: 1.6;
+  color: #333;
   word-break: break-word;
 }
 
-/* 评论工具栏样式 */
-.comment-toolbar {
-  display: block;
-  width: 100%;
-  margin-bottom: 8px;
+/* 回复标记 */
+.reply-to {
+  color: #409eff;
+  font-weight: 500;
 }
 
+/* 回复表单容器 */
+.reply-form-container {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed #eee;
+}
+
+/* 评论表单容器 */
+.comment-form-container {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 0 24px;
+  margin: -24px;
+  border: 1px solid #e8e8e8;
+  z-index: 10;
+}
+
+/* 评论表单 */
+.comment-form-container :deep(.el-form) {
+  margin-top: 16px;
+}
+
+/* 覆盖表单元素内容区域样式 */
+.comment-form-container :deep(.el-form-item__content) {
+  align-items: center;
+  display: block;
+  flex: 1;
+  flex-wrap: wrap;
+  font-size: var(--font-size);
+  line-height: 32px;
+  min-width: 0;
+  position: relative;
+}
+
+/* 评论输入区域容器 */
+.comment-input-wrapper {
+  display: flex;
+  flex-direction: row;
+  height: 46px;
+  border: 1px solid #dcdfe6;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* 评论文本框 */
+.comment-textarea {
+  flex: 1;
+}
+
+.comment-textarea textarea{
+  height: 100%;
+}
+
+/* 分隔线 */
+.comment-divider {
+  height: 1px;
+  background-color: #e8e8e8;
+  margin: 0;
+  padding: 0;
+}
+
+/* 评论工具栏 */
+.comment-toolbar {
+  flex: 0 0 20%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #fafafa;
+}
+
+/* 工具栏左侧 */
 .toolbar-left {
   display: flex;
-  flex: 1;
-  margin-right: 12px;
-}
-
-/* 提交评论按钮样式 */
-.submit-comment-btn {
-  font-size: 14px;
-  width: 40px;
-  padding: 0;
-  border-radius: 50%;
-  font-weight: 600;
-  background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
-  display: flex;
+  gap: 16px;
   align-items: center;
-  justify-content: center;
-  border: none;
-  box-shadow: 0 3px 8px rgba(24, 144, 255, 0.2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
-.submit-comment-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
-  box-shadow: 0 5px 15px rgba(24, 144, 255, 0.4);
-  transform: translateY(-2px);
+/* 表情按钮容器 */
+.emoji-button-container {
+  position: relative;
 }
 
-.submit-comment-btn:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(24, 144, 255, 0.3);
+/* 表情按钮 */
+.emoji-button {
+  font-size: 20px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-.submit-comment-btn:disabled {
-  background: linear-gradient(135deg, #d9d9d9 0%, #bfbfbf 100%);
-  color: rgba(0, 0, 0, 0.3);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
+.emoji-button:hover {
+  background-color: #e8e8e8;
 }
 
-/* 表情选择器样式 */
+/* 表情选择器容器 */
+.emoji-picker-container {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  background-color: white;
+  border: 1px solid #dcdfe6;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+/* 表情选择器 */
 .emoji-picker {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  padding: 12px;
   max-height: 200px;
   overflow-y: auto;
-  padding: 12px;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  min-width: 300px;
 }
 
+/* 表情项 */
 .emoji-item {
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
-  transition: transform 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
 .emoji-item:hover {
-  transform: translateY(-3px) scale(1.2);
-}
-
-/* 表情展开按钮样式 */
-.emoji-expand-btn {
-  font-size: 16px;
-  color: #999;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  margin-left: 4px;
-}
-
-.emoji-expand-btn:hover {
-  color: #1890ff;
-  background-color: rgba(24, 144, 255, 0.1);
-}
-
-/* 内联表情选择器样式 */
-.inline-emoji-picker {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  background-color: transparent;
-  border-radius: 0;
-  box-shadow: none;
-  border: none;
-  overflow: hidden;
-}
-
-.inline-emoji-picker .emoji-item {
-  flex: 1;
-  text-align: center;
-  max-width: calc(100% / 21);
-  /* 20个表情 + 1个展开按钮 */
-}
-
-.emoji-expand-btn {
-  flex-shrink: 0;
-  margin-left: 2px;
-  padding: 2px 6px;
-}
-
-:deep(.el-upload--picture-card) {
-  width: 40px;
-  height: 40px;
-  margin: 0;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  border: 2px dashed #d9d9d9;
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-:deep(.el-upload--picture-card:hover) {
-  border-color: #1890ff;
-  background-color: rgba(24, 144, 255, 0.1);
-  transform: scale(1.1);
-}
-
-:deep(.el-upload--picture-card .el-upload-dragger) {
-  width: 40px;
-  height: 40px;
-  padding: 8px;
-  border: none;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-.comment-actions {
-  margin-top: 12px;
-}
-
-/* 子评论列表样式 */
-.sub-comments-list {
-  margin-top: 16px;
-  margin-left: 44px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* 子评论项样式 */
-.sub-comment-item {
-  border: 1px solid #f0f0f0;
-  border-radius: 6px;
-  padding: 12px;
-  background-color: #fafafa;
-}
-
-/* 回复表单样式 */
-.reply-form-container {
-  margin-top: 16px;
-  margin-left: 44px;
-  padding: 16px;
   background-color: #f5f7fa;
-  border-radius: 6px;
-  border: 1px solid #e8e8e8;
 }
 
-.comment-form-title {
-  margin: 0 0 24px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.comment-form-container :deep(.el-form-item__label) {
-  font-weight: 600;
-  color: #333;
-}
-
-/* 评论输入框样式 */
-.comment-textarea {
-  margin-bottom: 16px;
-}
-
-.comment-textarea :deep(.el-textarea__inner) {
-  resize: none;
-  border-radius: 12px;
-  border: 1px solid #e8e8e8;
-  padding: 14px 18px;
-  font-size: 16px;
-  line-height: 1.7;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  background-color: #fafafa;
-}
-
-.comment-textarea :deep(.el-textarea__inner::placeholder) {
-  color: #999;
-  font-size: 15px;
-  font-style: italic;
-}
-
-.comment-textarea :deep(.el-textarea__inner:focus) {
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
-  outline: none;
-  background-color: #fff;
-}
-
-.comment-form-container :deep(.el-button--primary) {
-  border-radius: 8px;
-  padding: 10px 28px;
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.comment-form-container :deep(.el-button--primary):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
-}
-
-.comment-form-container :deep(.el-button--primary:disabled) {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.comment-form-container :deep(.el-form-item) {
-  display: block;
-}
-
-.comment-form-container :deep(.el-form-item__label) {
-  font-weight: 600;
-  color: #333;
-  font-size: 16px;
-  margin-bottom: 12px;
-}
-
-/* 用户信息输入和操作按钮行样式 */
+/* 用户信息输入区域 */
 .user-info-inputs {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-  width: 100%;
-  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
 }
 
-.user-info-inputs :deep(.el-form-item) {
-  margin-bottom: 0;
-  margin-right: 0;
-}
-
-.avatar-upload-btn :deep(.el-upload--picture-card) {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px dashed #d9d9d9;
-  transition: all 0.2s ease;
-}
-
-.avatar-upload-btn :deep(.el-upload--picture-card:hover) {
-  border-color: #1890ff;
-  transform: translateY(-2px);
-}
-
-.user-info-inputs :deep(.el-form-item:nth-child(1)) {
-  flex: 0 0 auto;
-}
-
-.user-info-inputs :deep(.el-form-item:nth-child(2)) {
-  flex: 1;
-  min-width: 100px;
-}
-
-.user-info-inputs :deep(.el-form-item:nth-child(3)) {
-  flex: 1.2;
-  min-width: 120px;
-}
-
-.user-info-inputs :deep(.el-form-item:nth-child(4)) {
-  flex: 1.2;
-  min-width: 120px;
-}
-
-.user-info-inputs :deep(.el-form-item:nth-child(5)) {
-  flex: 0 0 auto;
-}
-
-.short-input {
-  width: 100%;
-}
-
+/* 短输入框 */
 .short-input :deep(.el-input__inner) {
-  border-radius: 4px;
-  padding: 8px 11px;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  width: 58px;
 }
 
-:deep(.el-input__wrapper) {
-  padding: 1px 1px;
+/* 头像上传按钮 */
+.avatar-upload-btn {
+  cursor: pointer;
 }
 
+/* 提交评论按钮 */
 .submit-comment-btn {
-  width: 40px;
-  padding: 0;
-  font-size: 14px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 8px 24px;
+}
+
+/* 加载状态 */
+.loading {
+  padding: 48px 24px;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
   .detail-container {
     padding: 16px;
+    flex-direction: column;
   }
 
-  .article-title,
-  .game-title {
-    font-size: 28px;
+  .article-cover {
+    height: 400px;
   }
 
-  .article-content-container,
-  .game-content-container,
+  .article-title {
+    font-size: 24px;
+  }
+
+  .article-summary-text {
+    font-size: 16px;
+  }
+
+  .article-meta {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .article-tags {
+    position: relative;
+    left: auto;
+    transform: none;
+    margin-bottom: 8px;
+  }
+
+  .article-author {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    margin-bottom: 8px;
+  }
+
+  .article-info {
+    position: relative;
+    right: auto;
+    bottom: auto;
+  }
+
+  .article-content-container {
+    padding: 24px;
+  }
+
   .comments-section {
-    padding: 20px;
+    position: relative;
+    top: auto;
+    align-self: auto;
+    height: auto;
   }
 
-  .article-meta,
-  .game-meta {
+  .user-info-inputs {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
   }
 
-  .comment-item {
-    flex-direction: column;
-    gap: 12px;
+  .short-input :deep(.el-input__inner) {
+    width: 100%;
   }
 }
 </style>
