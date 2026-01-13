@@ -411,7 +411,7 @@ html.dark .layout-header {
 }
 
 .layout-main {
-  padding: 20px;
+  padding: 0;
   overflow-y: auto;
   transition: background-color 0.3s;
   margin-top: 60px;
