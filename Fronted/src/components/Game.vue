@@ -1,27 +1,45 @@
 <template>
   <div class="game-container">
-    <div class="game-header">
-      <div class="header-icon">
-        <el-icon size="24"><Trophy /></el-icon>
-      </div>
-      <div class="header-content">
-        <h3>游戏中心</h3>
-        <span class="game-count">{{ gameList.length }}款游戏</span>
-      </div>
-    </div>
-    <div class="game-card-grid">
-      <Card16x9
-        v-for="game in gameList"
-        :key="game.id"
-        :background-image="game.cover"
-        class="game-card-item"
-        @click="router.push(`/detail/${game.id}`)"
+    <div class="swiper-container">
+      <swiper
+        :slides-per-view="1"
+        :space-between="16"
+        :navigation="true"
+        :pagination="{ clickable: true }"
+        :free-mode="true"
+        @swiper="onSwiper"
+        @slide-change="onSlideChange"
+        class="game-swiper"
       >
-        <div class="card-info">
-          <h4 class="game-name">{{ game.name }}</h4>
-          <span class="game-category">{{ game.category }}</span>
-        </div>
-      </Card16x9>
+        <swiper-slide
+          v-for="game in gameList"
+          :key="game.id"
+          class="game-swiper-slide"
+        >
+          <Card16x9
+            :background-image="game.cover"
+            class="game-card-item"
+            @click="router.push(`/detail/${game.id}`)"
+          >
+            <div class="card-info">
+              <h4 class="game-name">{{ game.name }}</h4>
+              <span class="game-category">{{ game.category }}</span>
+            </div>
+          </Card16x9>
+        </swiper-slide>
+      </swiper>
+    </div>
+    
+    <!-- 游戏详细信息区域 -->
+    <div v-if="currentGame" class="game-details">
+      <div class="game-details-header">
+        <h3>{{ currentGame.name }}</h3>
+        <span class="game-category">{{ currentGame.category }}</span>
+      </div>
+      <div class="game-details-content">
+        <p>{{ currentGame.description }}</p>
+      </div>
+
     </div>
   </div>
 </template>
@@ -31,16 +49,62 @@ import { ref } from 'vue'
 import { Trophy } from '@element-plus/icons-vue'
 import Card16x9 from './Card16x9.vue'
 import { useRouter } from 'vue-router'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
 import defaultCover from '../assets/picture/YoyuEN.png'
 import cover1 from '../assets/picture/image.png'
 
 const router = useRouter()
 
+// 当前选中的游戏
+const currentGame = ref(null)
+let swiperInstance = null
+
+// swiper实例
+const onSwiper = (swiper) => {
+  swiperInstance = swiper
+  // 初始化时设置当前游戏
+  currentGame.value = gameList.value[swiper.activeIndex]
+}
+
+// 幻灯片切换事件
+const onSlideChange = () => {
+  if (swiperInstance) {
+    currentGame.value = gameList.value[swiperInstance.activeIndex]
+  }
+}
+
 const gameList = ref([
-  { id: 1, name: '王者荣耀', category: 'MOBA', cover: cover1 },
-  { id: 2, name: '三角洲行动', category: '射击', cover: defaultCover },
-  { id: 3, name: '鸣潮', category: '开放世界', cover: defaultCover },
-  { id: 4, name: '崩坏星穹铁道', category: '角色扮演', cover: defaultCover }
+  { 
+    id: 1, 
+    name: '王者荣耀', 
+    category: 'MOBA', 
+    cover: cover1,
+    description: '《王者荣耀》是一款5V5团队公平竞技手游，国民MOBA手游大作！5v5王者峡谷、5v5深渊大乱斗、以及3v3、1v1等多样模式一键体验，热血竞技尽享快感！'
+  },
+  { 
+    id: 2, 
+    name: '三角洲行动', 
+    category: '射击', 
+    cover: defaultCover,
+    description: '《三角洲行动》是一款全新战术射击游戏，玩家将扮演三角洲部队的精英成员，参与各种高难度的特种作战任务，体验真实的战场环境和紧张刺激的战斗。'
+  },
+  { 
+    id: 3, 
+    name: '鸣潮', 
+    category: '开放世界', 
+    cover: defaultCover,
+    description: '《鸣潮》是一款开放世界动作角色扮演游戏，玩家将探索一个充满神秘力量的奇幻世界，通过战斗、解谜和探索，揭开这个世界的秘密。'
+  },
+  { 
+    id: 4, 
+    name: '崩坏星穹铁道', 
+    category: '角色扮演', 
+    cover: defaultCover,
+    description: '《崩坏星穹铁道》是米哈游出品的全新银河冒险策略RPG游戏。玩家将乘坐星穹列车，穿梭于无数奇异世界之间，与同伴一同对抗“星核”带来的威胁，踏上开拓宇宙的旅程。'
+  }
 ])
 </script>
 
@@ -48,7 +112,10 @@ const gameList = ref([
 .game-container {
   padding: 24px;
   height: 100%;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  overflow: hidden;
 }
 
 .game-header {
@@ -83,20 +150,42 @@ const gameList = ref([
   color: var(--text-secondary);
 }
 
-.game-card-grid {
+.swiper-container {
+  width: 50%;
+  height: 100%;
+}
+
+/* 游戏详细信息区域 */
+.game-details {
+  width: 50%;
+  padding: 24px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+  overflow-y: auto;
+  height: calc(100% - 40px);
+}
+
+.game-swiper {
+  width: 100%;
+  height: calc(100% - 40px);
+  margin-top: 20px;
+}
+
+.game-swiper-slide {
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: center;
+  align-items: center;
 }
 
 .game-card-item {
-  width: 100%;
+  width: 80%;
+  height: 70%;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.game-card-item:hover {
-  transform: translateX(4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 
 .card-info {
@@ -126,6 +215,39 @@ const gameList = ref([
   border-radius: 4px;
   width: fit-content;
 }
+
+.game-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.game-details-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.game-details-header .game-category {
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--background-light);
+  backdrop-filter: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.game-details-content p {
+  margin: 0 0 24px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+
 
 .game-container::-webkit-scrollbar {
   width: 6px;

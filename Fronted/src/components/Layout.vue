@@ -216,7 +216,7 @@ onUnmounted(() => {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   background-color: rgba(255, 255, 255, 0.75);
-  border-bottom: 1px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   margin: 5px 16px;
   width: calc(100% - 32px);

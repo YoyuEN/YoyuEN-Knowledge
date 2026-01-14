@@ -120,6 +120,20 @@
       <div class="comment-form-container">
         <el-form :model="newComment" label-position="top">
           <el-form-item required>
+            <!-- 表情选择器 -->
+            <div v-if="showEmojiPicker" class="emoji-picker-container">
+              <div class="emoji-picker">
+                <span
+                  v-for="emoji in emojis"
+                  :key="emoji"
+                  class="emoji-item"
+                  @click="addEmoji(emoji)"
+                >
+                  {{ emoji }}
+                </span>
+              </div>
+            </div>
+
             <!-- 评论输入区域容器 -->
             <div class="comment-input-wrapper">
               <!-- 评论输入框 -->
@@ -150,21 +164,12 @@
                       @click="toggleEmojiPicker"
                       class="emoji-button"
                     >
-                      😊
+                      <img
+                        src="../assets/icons/emotion.png"
+                        alt="表情"
+                        style="width: 20px; height: 20px; vertical-align: middle; position: relative;"
+                      />
                     </el-button>
-                    <!-- 表情选择器 -->
-                    <div v-if="showEmojiPicker" class="emoji-picker-container">
-                      <div class="emoji-picker">
-                        <span
-                          v-for="emoji in emojis"
-                          :key="emoji"
-                          class="emoji-item"
-                          @click="addEmoji(emoji)"
-                        >
-                          {{ emoji }}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -247,7 +252,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import { Download, Star, ChatDotRound } from "@element-plus/icons-vue";
 
@@ -651,6 +656,26 @@ const toggleEmojiPicker = () => {
   showEmojiPicker.value = !showEmojiPicker.value;
 };
 
+// 点击其他区域关闭表情选择器
+onMounted(() => {
+  const handleClickOutside = (event) => {
+    const emojiButton = document.querySelector('.emoji-button');
+    const emojiPicker = document.querySelector('.emoji-picker-container');
+    
+    if (emojiPicker && !emojiPicker.contains(event.target) && 
+        emojiButton && !emojiButton.contains(event.target)) {
+      showEmojiPicker.value = false;
+    }
+  };
+  
+  document.addEventListener('click', handleClickOutside);
+  
+  // 组件卸载时移除事件监听
+  onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+  });
+});
+
 // 添加表情到评论内容
 const addEmoji = (emoji) => {
   newComment.value.content += emoji;
@@ -839,7 +864,7 @@ const submitComment = () => {
 };
 </script>
 
-<style>
+<style scoped>
 .detail-container {
   height: 100%;
   padding: 24px;
@@ -1098,57 +1123,57 @@ const submitComment = () => {
 }
 
 /* Markdown样式 */
-.article-main-content h1,
-.article-main-content h2,
-.article-main-content h3,
-.article-main-content h4,
-.article-main-content h5,
-.article-main-content h6 {
+.article-main-content :deep(h1),
+.article-main-content :deep(h2),
+.article-main-content :deep(h3),
+.article-main-content :deep(h4),
+.article-main-content :deep(h5),
+.article-main-content :deep(h6) {
   margin: 24px 0 16px 0;
   font-weight: 600;
   color: #333;
 }
 
-.article-main-content h1 {
+.article-main-content :deep(h1) {
   font-size: 28px;
   border-bottom: 2px solid #eee;
   padding-bottom: 8px;
 }
 
-.article-main-content h2 {
+.article-main-content :deep(h2) {
   font-size: 24px;
   border-bottom: 1px solid #eee;
   padding-bottom: 8px;
 }
 
-.article-main-content h3 {
+.article-main-content :deep(h3) {
   font-size: 20px;
 }
 
-.article-main-content p {
+.article-main-content :deep(p) {
   margin: 16px 0;
 }
 
-.article-main-content ul,
-.article-main-content ol {
+.article-main-content :deep(ul),
+.article-main-content :deep(ol) {
   margin: 16px 0;
   padding-left: 24px;
 }
 
-.article-main-content li {
+.article-main-content :deep(li) {
   margin: 8px 0;
 }
 
-.article-main-content a {
+.article-main-content :deep(a) {
   color: #409eff;
   text-decoration: none;
 }
 
-.article-main-content a:hover {
+.article-main-content :deep(a:hover) {
   text-decoration: underline;
 }
 
-.article-main-content img {
+.article-main-content :deep(img) {
   max-width: 100%;
   height: auto;
   margin: 16px 0;
@@ -1156,7 +1181,7 @@ const submitComment = () => {
   display: block;
 }
 
-.article-main-content code {
+.article-main-content :deep(code) {
   background-color: #f5f7fa;
   padding: 2px 6px;
   border-radius: 4px;
@@ -1164,7 +1189,7 @@ const submitComment = () => {
   font-size: 14px;
 }
 
-.article-main-content pre {
+.article-main-content :deep(pre) {
   background-color: #f5f7fa;
   padding: 16px;
   border-radius: 8px;
@@ -1172,33 +1197,33 @@ const submitComment = () => {
   margin: 16px 0;
 }
 
-.article-main-content pre code {
+.article-main-content :deep(pre code) {
   padding: 0;
   background-color: transparent;
   border-radius: 0;
 }
 
-.article-main-content blockquote {
+.article-main-content :deep(blockquote) {
   border-left: 4px solid #409eff;
   padding-left: 16px;
   margin: 16px 0;
   color: #666;
 }
 
-.article-main-content table {
+.article-main-content :deep(table) {
   width: 100%;
   border-collapse: collapse;
   margin: 16px 0;
 }
 
-.article-main-content table th,
-.article-main-content table td {
+.article-main-content :deep(table th),
+.article-main-content :deep(table td) {
   border: 1px solid #eee;
   padding: 8px 12px;
   text-align: left;
 }
 
-.article-main-content table th {
+.article-main-content :deep(table th) {
   background-color: #f5f7fa;
   font-weight: 600;
 }
@@ -1369,16 +1394,12 @@ const submitComment = () => {
   flex-direction: row;
   height: 46px;
   border: 1px solid #dcdfe6;
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: 4px;
+  position: relative;
 }
 
 /* 评论文本框 */
-.comment-textarea {
-  flex: 1;
-}
-
-.comment-textarea textarea{
+.comment-textarea :deep(.el-textarea__inner) {
   height: 100%;
 }
 
@@ -1414,7 +1435,6 @@ const submitComment = () => {
 
 /* 表情按钮 */
 .emoji-button {
-  font-size: 20px;
   padding: 4px 8px;
   border-radius: 4px;
   transition: background-color 0.2s;
@@ -1471,7 +1491,7 @@ const submitComment = () => {
 
 /* 短输入框 */
 .short-input :deep(.el-input__inner) {
-  width: 58px;
+  width: 30px;
 }
 
 /* 头像上传按钮 */

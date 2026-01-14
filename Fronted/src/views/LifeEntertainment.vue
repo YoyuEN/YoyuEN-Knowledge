@@ -1,33 +1,5 @@
 <template>
   <div class="life-entertainment-container">
-    <div class="sub-nav">
-      <div class="sub-nav-header">
-        <el-icon><Headset /></el-icon>
-        <span>生活娱乐</span>
-      </div>
-      <el-menu
-        :default-active="activeCategory"
-        class="sub-nav-menu"
-        @select="handleCategorySelect"
-      >
-        <el-menu-item index="games">
-          <el-icon><Grid /></el-icon>
-          <span>游戏</span>
-        </el-menu-item>
-        <el-menu-item index="music">
-          <el-icon><Headset /></el-icon>
-          <span>音乐</span>
-        </el-menu-item>
-        <el-menu-item index="video">
-          <el-icon><VideoCamera /></el-icon>
-          <span>视频</span>
-        </el-menu-item>
-        <el-menu-item index="reading">
-          <el-icon><Reading /></el-icon>
-          <span>阅读</span>
-        </el-menu-item>
-      </el-menu>
-    </div>
     <div class="content-area">
       <div v-if="activeCategory === 'games'" class="category-content">
         <Game />

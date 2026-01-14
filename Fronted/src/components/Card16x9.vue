@@ -51,7 +51,6 @@ const cardStyle = computed(() => ({
   width: 100%;
   height: 100%;
   z-index: 0;
-  filter: blur(40px);
   transform: scale(1.2);
 }
 
