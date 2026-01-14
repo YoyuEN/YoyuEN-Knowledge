@@ -41,6 +41,7 @@
       </div>
 
     </div>
+    <CommentSection :data="currentGame" :comments="comments" />
   </div>
 </template>
 
@@ -55,6 +56,7 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import defaultCover from '../assets/picture/YoyuEN.png'
 import cover1 from '../assets/picture/image.png'
+import CommentSection from './CommentSection.vue'
 
 const router = useRouter()
 
@@ -105,6 +107,13 @@ const gameList = ref([
     cover: defaultCover,
     description: '《崩坏星穹铁道》是米哈游出品的全新银河冒险策略RPG游戏。玩家将乘坐星穹列车，穿梭于无数奇异世界之间，与同伴一同对抗“星核”带来的威胁，踏上开拓宇宙的旅程。'
   }
+])
+
+// 评论数据列表
+const comments = ref([
+  { id: 1, avatar: "/src/assets/picture/YoyuEN.png", author: "游戏爱好者", time: "2024-01-10 14:30", content: "这款游戏太好玩了！", replies: [] },
+  { id: 2, avatar: "/src/assets/picture/YoyuEN.png", author: "新手玩家", time: "2024-01-11 09:45", content: "刚入手，还在学习中。", replies: [] },
+  { id: 3, avatar: "/src/assets/picture/YoyuEN.png", author: "老玩家", time: "2024-01-12 16:20", content: "期待新版本的更新！", replies: [] }
 ])
 </script>
 
