@@ -41,7 +41,7 @@
       </div>
 
     </div>
-    <CommentSection :data="currentGame" :comments="comments" />
+    <!-- <CommentSection :data="currentGame" :comments="comments" /> -->
   </div>
 </template>
 
@@ -118,6 +118,14 @@ const comments = ref([
 </script>
 
 <style scoped>
+/* 导入快看世界体字体 */
+@font-face {
+  font-family: '快看世界体';
+  src: url('../assets/fonts/kuaikanshijieti.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .game-container {
   padding: 24px;
   height: 100%;
@@ -160,13 +168,13 @@ const comments = ref([
 }
 
 .swiper-container {
-  width: 50%;
+  width: 40%;
   height: 100%;
 }
 
 /* 游戏详细信息区域 */
 .game-details {
-  width: 50%;
+  width: 60%;
   padding: 24px;
   background-color: white;
   border-radius: 8px;
@@ -191,7 +199,7 @@ const comments = ref([
 }
 
 .game-card-item {
-  width: 80%;
+  width: 100%;
   height: 70%;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
@@ -237,6 +245,7 @@ const comments = ref([
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
+  font-family: '快看世界体', system-ui, sans-serif;
 }
 
 .game-details-header .game-category {
