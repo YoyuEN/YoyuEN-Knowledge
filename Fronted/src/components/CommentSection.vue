@@ -4,11 +4,7 @@
     <!-- 评论区列表 -->
     <div class="comment-sections-list">
       <!-- 每个主评论作为独立评论区 -->
-      <div
-        v-for="mainComment in comments"
-        :key="mainComment.id"
-        class="single-comment-section"
-      >
+      <div v-for="mainComment in comments" :key="mainComment.id" class="single-comment-section">
         <!-- 评论区内容列表 -->
         <div class="comment-section-content">
           <!-- 第一条评论：对文章的评论 -->
@@ -19,71 +15,44 @@
             <div class="comment-content">
               <div class="comment-header">
                 <div class="comment-meta">
-                  <a
-                    :href="mainComment.url"
-                    v-if="mainComment.url"
-                    class="comment-author"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >{{ mainComment.author }}</a
-                  >
+                  <a :href="mainComment.url" v-if="mainComment.url" class="comment-author" target="_blank"
+                    rel="noopener noreferrer">{{ mainComment.author }}</a>
                   <span v-else class="comment-author">{{
                     mainComment.author
-                  }}</span>
+                    }}</span>
                   <span class="comment-time">{{ mainComment.time }}</span>
                 </div>
                 <!-- 回复按钮 -->
                 <div class="comment-actions">
-                  <el-button
-                    type="text"
-                    size="small"
-                    @click="showReplyForm(mainComment.id, mainComment.author)"
-                    :icon="ChatDotRound"
-                  >
+                  <el-button type="text" size="small" @click="showReplyForm(mainComment.id, mainComment.author)"
+                    :icon="ChatDotRound">
                   </el-button>
                 </div>
               </div>
-              <div
-                class="comment-text"
-                v-html="renderMarkdown(mainComment.content)"
-              ></div>
+              <div class="comment-text" v-html="renderMarkdown(mainComment.content)"></div>
             </div>
           </div>
 
           <!-- 其他评论：对评论的评论 -->
           <div v-if="mainComment.replies && mainComment.replies.length > 0">
-            <div
-              v-for="reply in mainComment.replies"
-              :key="reply.id"
-              class="comment-item"
-            >
+            <div v-for="reply in mainComment.replies" :key="reply.id" class="comment-item">
               <div class="comment-avatar">
                 <el-avatar :src="reply.avatar" size="small"></el-avatar>
               </div>
               <div class="comment-content">
                 <div class="comment-header">
                   <div class="comment-meta">
-                    <a
-                      :href="reply.url"
-                      v-if="reply.url"
-                      class="comment-author"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      >{{ reply.author }}</a
-                    >
+                    <a :href="reply.url" v-if="reply.url" class="comment-author" target="_blank"
+                      rel="noopener noreferrer">{{ reply.author }}</a>
                     <span v-else class="comment-author">{{
                       reply.author
-                    }}</span>
+                      }}</span>
                     <span class="comment-time">{{ reply.time }}</span>
                   </div>
                   <!-- 回复按钮 -->
                   <div class="comment-actions">
-                    <el-button
-                      type="text"
-                      size="small"
-                      @click="showReplyForm(mainComment.id, reply.author)"
-                      :icon="ChatDotRound"
-                    >
+                    <el-button type="text" size="small" @click="showReplyForm(mainComment.id, reply.author)"
+                      :icon="ChatDotRound">
                     </el-button>
                   </div>
                 </div>
@@ -104,12 +73,7 @@
           <!-- 表情选择器 -->
           <div v-if="showEmojiPicker" class="emoji-picker-container">
             <div class="emoji-picker">
-              <span
-                v-for="emoji in emojis"
-                :key="emoji"
-                class="emoji-item"
-                @click="addEmoji(emoji)"
-              >
+              <span v-for="emoji in emojis" :key="emoji" class="emoji-item" @click="addEmoji(emoji)">
                 {{ emoji }}
               </span>
             </div>
@@ -118,18 +82,10 @@
           <!-- 评论输入区域容器 -->
           <div class="comment-input-wrapper">
             <!-- 评论输入框 -->
-            <el-input
-              v-model="newComment.content"
-              type="textarea"
-              :rows="5"
-              :placeholder="
-                replyToUsername
-                  ? `回复 @${replyToUsername}：`
-                  : '分享您的想法...'
-              "
-              resize="vertical"
-              class="comment-textarea"
-            ></el-input>
+            <el-input v-model="newComment.content" type="textarea" :rows="5" :placeholder="replyToUsername
+                ? `回复 @${replyToUsername}：`
+                : '分享您的想法...'
+              " resize="vertical" class="comment-textarea"></el-input>
 
             <!-- 分隔线 -->
             <div class="comment-divider"></div>
@@ -139,17 +95,13 @@
               <div class="toolbar-left">
                 <!-- 表情按钮 -->
                 <div class="emoji-button-container">
-                  <el-button
-                    type="text"
-                    size="small"
-                    @click="toggleEmojiPicker"
-                    class="emoji-button"
-                  >
-                    <img
-                      src="../assets/icons/emotion.png"
-                      alt="表情"
-                      style="width: 20px; height: 20px; vertical-align: middle; position: relative;"
-                    />
+                  <el-button type="text" size="small" @click="toggleEmojiPicker" class="emoji-button">
+                    <img src="../assets/icons/emotion.png" alt="表情" style="
+                        width: 20px;
+                        height: 20px;
+                        vertical-align: middle;
+                        position: relative;
+                      " />
                   </el-button>
                 </div>
               </div>
@@ -159,65 +111,32 @@
           <!-- 用户信息输入和操作按钮行 -->
           <div class="user-info-inputs">
             <el-form-item>
-              <el-upload
-                action="#"
-                :auto-upload="false"
-                :on-change="handleAvatarChange"
-                accept="image/*"
-                :show-file-list="false"
-                :key="uploadKey"
-                class="avatar-upload-btn"
-              >
+              <el-upload action="#" :auto-upload="false" :on-change="handleAvatarChange" accept="image/*"
+                :show-file-list="false" :key="uploadKey" class="avatar-upload-btn">
                 <el-avatar :src="newComment.avatar" size="32"></el-avatar>
               </el-upload>
             </el-form-item>
 
             <el-form-item>
-              <el-input
-                v-model="newComment.nickname"
-                placeholder="昵称"
-                class="short-input"
-              ></el-input>
+              <el-input v-model="newComment.nickname" placeholder="昵称" class="short-input"></el-input>
             </el-form-item>
 
             <el-form-item>
-              <el-input
-                v-model="newComment.email"
-                type="email"
-                placeholder="邮箱"
-                class="short-input"
-              ></el-input>
+              <el-input v-model="newComment.email" type="email" placeholder="邮箱" class="short-input"></el-input>
             </el-form-item>
 
             <el-form-item>
-              <el-input
-                v-model="newComment.url"
-                type="url"
-                placeholder="链接"
-                class="short-input"
-              ></el-input>
+              <el-input v-model="newComment.url" type="url" placeholder="链接" class="short-input"></el-input>
             </el-form-item>
 
             <!-- 提交评论和取消回复按钮 -->
             <el-form-item>
-              <el-button
-                type="primary"
-                @click="submitComment"
-                :disabled="!newComment.content.trim()"
-                class="submit-comment-btn"
-              >
-                <img
-                  src="../assets/icons/comment.png"
-                  alt="发布评论"
-                  style="width: 18px; height: 18px; vertical-align: middle"
-                />
+              <el-button type="primary" @click="submitComment" :disabled="!newComment.content.trim()"
+                class="submit-comment-btn">
+                <img src="../assets/icons/comment.png" alt="发布评论"
+                  style="width: 18px; height: 18px; vertical-align: middle" />
               </el-button>
-              <el-button
-                v-if="replyToUsername"
-                type="text"
-                @click="cancelReply"
-                class="cancel-reply-btn"
-              >
+              <el-button v-if="replyToUsername" type="text" @click="cancelReply" class="cancel-reply-btn">
                 取消回复
               </el-button>
             </el-form-item>
@@ -237,12 +156,12 @@ import { ChatDotRound } from "@element-plus/icons-vue";
 const props = defineProps({
   data: {
     type: Object,
-    required: true
+    required: true,
   },
   comments: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 });
 
 const router = useRouter();
@@ -359,20 +278,24 @@ const toggleEmojiPicker = () => {
 // 点击其他区域关闭表情选择器
 onMounted(() => {
   const handleClickOutside = (event) => {
-    const emojiButton = document.querySelector('.emoji-button');
-    const emojiPicker = document.querySelector('.emoji-picker-container');
-    
-    if (emojiPicker && !emojiPicker.contains(event.target) && 
-        emojiButton && !emojiButton.contains(event.target)) {
+    const emojiButton = document.querySelector(".emoji-button");
+    const emojiPicker = document.querySelector(".emoji-picker-container");
+
+    if (
+      emojiPicker &&
+      !emojiPicker.contains(event.target) &&
+      emojiButton &&
+      !emojiButton.contains(event.target)
+    ) {
       showEmojiPicker.value = false;
     }
   };
-  
-  document.addEventListener('click', handleClickOutside);
-  
+
+  document.addEventListener("click", handleClickOutside);
+
   // 组件卸载时移除事件监听
   onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener("click", handleClickOutside);
   });
 });
 
@@ -508,7 +431,8 @@ const submitComment = () => {
       allComments.push(...comment.replies);
     }
   });
-  const newId = allComments.length > 0 ? Math.max(...allComments.map((c) => c.id)) + 1 : 1;
+  const newId =
+    allComments.length > 0 ? Math.max(...allComments.map((c) => c.id)) + 1 : 1;
 
   // 获取当前时间
   const now = new Date();
@@ -563,6 +487,4 @@ const submitComment = () => {
 };
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>
