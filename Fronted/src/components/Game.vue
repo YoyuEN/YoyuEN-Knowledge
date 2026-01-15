@@ -29,105 +29,142 @@
         </swiper-slide>
       </swiper>
     </div>
-    
+
     <!-- 游戏详细信息区域 -->
     <div v-if="currentGame" class="game-details">
-      <div class="game-details-header">
-        <h3>{{ currentGame.name }}</h3>
-        <span class="game-category">{{ currentGame.category }}</span>
-      </div>
-      <div class="game-details-content">
-        <p>{{ currentGame.description }}</p>
+      <div class="game-details-container">
+        <div class="game-details-header">
+          <h3>{{ currentGame.name }}</h3>
+          <span class="game-category">{{ currentGame.category }}</span>
+        </div>
+        <div class="game-details-content">
+          <p>{{ currentGame.description }}</p>
+        </div>
       </div>
 
+      <div class="comment-container">
+        <CommentSection :data="currentGame" :comments="comments" />
+      </div>
     </div>
-    <!-- <CommentSection :data="currentGame" :comments="comments" /> -->
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Trophy } from '@element-plus/icons-vue'
-import Card16x9 from './Card16x9.vue'
-import { useRouter } from 'vue-router'
-import { Swiper, SwiperSlide } from 'swiper/vue'
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
-import defaultCover from '../assets/picture/YoyuEN.png'
-import cover1 from '../assets/picture/image.png'
-import CommentSection from './CommentSection.vue'
+import { ref } from "vue";
+import { Trophy } from "@element-plus/icons-vue";
+import Card16x9 from "./Card16x9.vue";
+import { useRouter } from "vue-router";
+import { Swiper, SwiperSlide } from "swiper/vue";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+import defaultCover from "../assets/picture/YoyuEN.png";
+import cover1 from "../assets/picture/image.png";
+import CommentSection from "./CommentSection.vue";
 
-const router = useRouter()
+const router = useRouter();
 
 // 当前选中的游戏
-const currentGame = ref(null)
-let swiperInstance = null
+const currentGame = ref(null);
+let swiperInstance = null;
 
 // swiper实例
 const onSwiper = (swiper) => {
-  swiperInstance = swiper
+  swiperInstance = swiper;
   // 初始化时设置当前游戏
-  currentGame.value = gameList.value[swiper.activeIndex]
-}
+  currentGame.value = gameList.value[swiper.activeIndex];
+};
 
 // 幻灯片切换事件
 const onSlideChange = () => {
   if (swiperInstance) {
-    currentGame.value = gameList.value[swiperInstance.activeIndex]
+    currentGame.value = gameList.value[swiperInstance.activeIndex];
   }
-}
+};
 
 const gameList = ref([
-  { 
-    id: 1, 
-    name: '王者荣耀', 
-    category: 'MOBA', 
+  {
+    id: 1,
+    name: "王者荣耀",
+    category: "MOBA",
     cover: cover1,
-    description: '《王者荣耀》是一款5V5团队公平竞技手游，国民MOBA手游大作！5v5王者峡谷、5v5深渊大乱斗、以及3v3、1v1等多样模式一键体验，热血竞技尽享快感！'
+    description:
+      "《王者荣耀》是一款5V5团队公平竞技手游，国民MOBA手游大作！5v5王者峡谷、5v5深渊大乱斗、以及3v3、1v1等多样模式一键体验，热血竞技尽享快感！",
   },
-  { 
-    id: 2, 
-    name: '三角洲行动', 
-    category: '射击', 
+  {
+    id: 2,
+    name: "三角洲行动",
+    category: "射击",
     cover: defaultCover,
-    description: '《三角洲行动》是一款全新战术射击游戏，玩家将扮演三角洲部队的精英成员，参与各种高难度的特种作战任务，体验真实的战场环境和紧张刺激的战斗。'
+    description:
+      "《三角洲行动》是一款全新战术射击游戏，玩家将扮演三角洲部队的精英成员，参与各种高难度的特种作战任务，体验真实的战场环境和紧张刺激的战斗。",
   },
-  { 
-    id: 3, 
-    name: '鸣潮', 
-    category: '开放世界', 
+  {
+    id: 3,
+    name: "鸣潮",
+    category: "开放世界",
     cover: defaultCover,
-    description: '《鸣潮》是一款开放世界动作角色扮演游戏，玩家将探索一个充满神秘力量的奇幻世界，通过战斗、解谜和探索，揭开这个世界的秘密。'
+    description:
+      "《鸣潮》是一款开放世界动作角色扮演游戏，玩家将探索一个充满神秘力量的奇幻世界，通过战斗、解谜和探索，揭开这个世界的秘密。",
   },
-  { 
-    id: 4, 
-    name: '崩坏星穹铁道', 
-    category: '角色扮演', 
+  {
+    id: 4,
+    name: "崩坏星穹铁道",
+    category: "角色扮演",
     cover: defaultCover,
-    description: '《崩坏星穹铁道》是米哈游出品的全新银河冒险策略RPG游戏。玩家将乘坐星穹列车，穿梭于无数奇异世界之间，与同伴一同对抗“星核”带来的威胁，踏上开拓宇宙的旅程。'
-  }
-])
+    description:
+      "《崩坏星穹铁道》是米哈游出品的全新银河冒险策略RPG游戏。玩家将乘坐星穹列车，穿梭于无数奇异世界之间，与同伴一同对抗“星核”带来的威胁，踏上开拓宇宙的旅程。",
+  },
+]);
 
 // 评论数据列表
 const comments = ref([
-  { id: 1, avatar: "/src/assets/picture/YoyuEN.png", author: "游戏爱好者", time: "2024-01-10 14:30", content: "这款游戏太好玩了！", replies: [] },
-  { id: 2, avatar: "/src/assets/picture/YoyuEN.png", author: "新手玩家", time: "2024-01-11 09:45", content: "刚入手，还在学习中。", replies: [] },
-  { id: 3, avatar: "/src/assets/picture/YoyuEN.png", author: "老玩家", time: "2024-01-12 16:20", content: "期待新版本的更新！", replies: [] }
-])
+  {
+    id: 1,
+    avatar: "/src/assets/picture/YoyuEN.png",
+    author: "游戏爱好者",
+    time: "2024-01-10 14:30",
+    content: "这款游戏太好玩了！",
+    replies: [],
+  },
+  {
+    id: 2,
+    avatar: "/src/assets/picture/YoyuEN.png",
+    author: "新手玩家",
+    time: "2024-01-11 09:45",
+    content: "刚入手，还在学习中。",
+    replies: [
+      {
+        id: 4,
+        avatar: "/src/assets/picture/YoyuEN.png",
+        author: "技术专家",
+        time: "2024-01-08 15:45",
+        content: "我也这么认为，特别是在NPC智能方面的应用很有前景。",
+      }
+    ],
+  },
+  {
+    id: 3,
+    avatar: "/src/assets/picture/YoyuEN.png",
+    author: "老玩家",
+    time: "2024-01-12 16:20",
+    content: "期待新版本的更新！",
+    replies: [],
+  },
+]);
 </script>
 
 <style scoped>
 /* 导入快看世界体字体 */
 @font-face {
-  font-family: '快看世界体';
-  src: url('../assets/fonts/kuaikanshijieti.ttf') format('truetype');
+  font-family: "快看世界体";
+  src: url("../assets/fonts/kuaikanshijieti.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 .game-container {
-  padding: 24px;
+  padding: 0 24px;
   height: 100%;
   display: flex;
   flex-direction: row;
@@ -148,7 +185,11 @@ const comments = ref([
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-color-light));
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-color-light)
+  );
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,20 +209,17 @@ const comments = ref([
 }
 
 .swiper-container {
-  width: 40%;
+  width: 55%;
   height: 100%;
 }
 
 /* 游戏详细信息区域 */
 .game-details {
-  width: 60%;
-  padding: 24px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  margin-top: 20px;
+  width: 45%;
+  padding-top: 20px;
   overflow-y: auto;
-  height: calc(100% - 40px);
+  height: calc(100vh - 60px);
+  scrollbar-width: none;
 }
 
 .game-swiper {
@@ -212,7 +250,7 @@ const comments = ref([
   flex-direction: column;
   justify-content: flex-end;
   padding: 16px;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, transparent 60%);
 }
 
 .game-name {
@@ -220,17 +258,26 @@ const comments = ref([
   font-size: 16px;
   font-weight: 600;
   color: white;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .game-category {
   font-size: 12px;
-  color: rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.2);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(4px);
   padding: 4px 10px;
   border-radius: 4px;
   width: fit-content;
+}
+
+.game-details-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--border-color);
+  padding: 20px;
+  margin: 0 20px 20px 20px;
 }
 
 .game-details-header {
@@ -245,7 +292,7 @@ const comments = ref([
   font-size: 20px;
   font-weight: 600;
   color: var(--text-primary);
-  font-family: '快看世界体', system-ui, sans-serif;
+  font-family: "快看世界体", system-ui, sans-serif;
 }
 
 .game-details-header .game-category {
@@ -264,8 +311,6 @@ const comments = ref([
   line-height: 1.6;
   color: var(--text-secondary);
 }
-
-
 
 .game-container::-webkit-scrollbar {
   width: 6px;

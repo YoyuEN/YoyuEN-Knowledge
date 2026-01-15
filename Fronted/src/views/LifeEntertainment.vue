@@ -1,56 +1,50 @@
 <template>
-  <div class="life-entertainment-container">
-    <div class="content-area">
-      <div v-if="activeCategory === 'games'" class="category-content">
-        <Game />
-      </div>
-      <div v-else-if="activeCategory === 'music'" class="category-content">
-        <Music />
-      </div>
-      <div v-else-if="activeCategory === 'video'" class="category-content">
-        <Video />
-      </div>
-      <div v-else-if="activeCategory === 'reading'" class="category-content">
-        <h3>阅读</h3>
-        <p>阅读内容将在此处显示</p>
-      </div>
+  <div class="content-area">
+    <div v-if="activeCategory === 'games'" class="category-content">
+      <Game />
+    </div>
+    <div v-else-if="activeCategory === 'music'" class="category-content">
+      <Music />
+    </div>
+    <div v-else-if="activeCategory === 'video'" class="category-content">
+      <Video />
+    </div>
+    <div v-else-if="activeCategory === 'reading'" class="category-content">
+      <h3>阅读</h3>
+      <p>阅读内容将在此处显示</p>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { Headset, Grid, VideoCamera, Reading } from '@element-plus/icons-vue'
-import Music from '../components/Music.vue'
-import Game from '../components/Game.vue'
-import Video from '../components/Video.vue'
+import { ref, computed, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { Headset, Grid, VideoCamera, Reading } from "@element-plus/icons-vue";
+import Music from "../components/Music.vue";
+import Game from "../components/Game.vue";
+import Video from "../components/Video.vue";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
 // 从路由参数获取当前活跃分类
-const activeCategory = computed(() => route.params.category || 'music')
+const activeCategory = computed(() => route.params.category || "music");
 
 // 处理分类选择
 const handleCategorySelect = (index) => {
-  router.push(`/life-entertainment/${index}`)
-}
+  router.push(`/life-entertainment/${index}`);
+};
 
 // 监听路由变化，更新内部状态
-watch(() => route.params.category, (newCategory) => {
-  // 路由变化时自动更新，无需手动设置
-})
+watch(
+  () => route.params.category,
+  (newCategory) => {
+    // 路由变化时自动更新，无需手动设置
+  }
+);
 </script>
 
 <style scoped>
-.life-entertainment-container {
-  display: flex;
-  height: calc(100vh - 100px);
-  gap: 20px;
-  padding: 20px;
-}
-
 .sub-nav {
   width: 200px;
   padding: 16px;
@@ -93,7 +87,6 @@ watch(() => route.params.category, (newCategory) => {
 
 .content-area {
   flex: 1;
-  padding: 24px;
   overflow-y: auto;
 }
 
