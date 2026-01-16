@@ -50,7 +50,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Trophy } from "@element-plus/icons-vue";
 import Card16x9 from "./Card16x9.vue";
 import { useRouter } from "vue-router";
@@ -117,41 +117,111 @@ const gameList = ref([
   },
 ]);
 
-// 评论数据列表
-const comments = ref([
-  {
-    id: 1,
-    avatar: "/src/assets/picture/YoyuEN.png",
-    author: "游戏爱好者",
-    time: "2024-01-10 14:30",
-    content: "这款游戏太好玩了！",
-    replies: [],
-  },
-  {
-    id: 2,
-    avatar: "/src/assets/picture/YoyuEN.png",
-    author: "新手玩家",
-    time: "2024-01-11 09:45",
-    content: "刚入手，还在学习中。",
-    replies: [
-      {
-        id: 4,
-        avatar: "/src/assets/picture/YoyuEN.png",
-        author: "技术专家",
-        time: "2024-01-08 15:45",
-        content: "我也这么认为，特别是在NPC智能方面的应用很有前景。",
-      }
-    ],
-  },
-  {
-    id: 3,
-    avatar: "/src/assets/picture/YoyuEN.png",
-    author: "老玩家",
-    time: "2024-01-12 16:20",
-    content: "期待新版本的更新！",
-    replies: [],
-  },
-]);
+// 按游戏ID分类的评论数据
+const gameComments = ref({
+  1: [ // 王者荣耀的评论
+    {
+      id: 1,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "游戏爱好者",
+      time: "2024-01-10 14:30",
+      content: "王者荣耀太好玩了！5V5对战模式很刺激。",
+      replies: [],
+    },
+    {
+      id: 2,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "新手玩家",
+      time: "2024-01-11 09:45",
+      content: "刚入手王者荣耀，还在学习各个英雄的技能。",
+      replies: [],
+    },
+    {
+      id: 3,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "老玩家",
+      time: "2024-01-12 16:20",
+      content: "期待王者荣耀新版本的更新，希望能有更多新英雄！",
+      replies: [],
+    }
+  ],
+  2: [ // 三角洲行动的评论
+    {
+      id: 4,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "射击游戏迷",
+      time: "2024-01-13 10:20",
+      content: "三角洲行动的画面效果太棒了，真实感很强！",
+      replies: [],
+    },
+    {
+      id: 5,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "军事爱好者",
+      time: "2024-01-14 15:45",
+      content: "游戏中的武器系统很专业，很喜欢这种战术射击游戏。",
+      replies: [],
+    }
+  ],
+  3: [ // 鸣潮的评论
+    {
+      id: 6,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "开放世界玩家",
+      time: "2024-01-15 09:30",
+      content: "鸣潮的开放世界设计得很精美，探索起来很有意思。",
+      replies: [],
+    },
+    {
+      id: 7,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "动作游戏迷",
+      time: "2024-01-16 14:20",
+      content: "战斗系统很流畅，技能连招很有快感！",
+      replies: [],
+    }
+  ],
+  4: [ // 崩坏星穹铁道的评论
+    {
+      id: 8,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "RPG爱好者",
+      time: "2024-01-17 11:10",
+      content: "崩坏星穹铁道的剧情很吸引人，角色塑造得很成功。",
+      replies: [],
+    },
+    {
+      id: 9,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "米哈游粉丝",
+      time: "2024-01-18 16:50",
+      content: "一如既往的高质量，期待后续的更新内容！",
+      replies: [],
+    },
+    {
+      id: 10,
+      avatar: "/src/assets/picture/YoyuEN.png",
+      author: "新玩家",
+      time: "2024-01-19 10:30",
+      content: "刚玩了几天，感觉很有意思，就是有些系统还不太明白。",
+      replies: [
+        {
+          id: 11,
+          avatar: "/src/assets/picture/YoyuEN.png",
+          author: "老玩家",
+          time: "2024-01-19 11:00",
+          content: "多玩几天就会了，有问题可以问我哦！",
+        }
+      ],
+    }
+  ]
+})
+
+// 根据当前游戏ID获取对应的评论
+const comments = computed(() => {
+  if (!currentGame.value) return []
+  return gameComments.value[currentGame.value.id] || []
+})
 </script>
 
 <style scoped>

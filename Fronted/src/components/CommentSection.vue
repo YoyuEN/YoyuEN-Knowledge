@@ -1,6 +1,129 @@
 <template>
   <!-- 评论模块 -->
   <div v-if="data" class="comments-section">
+    <!-- 评论表单 -->
+    <div class="comment-form-container">
+      <el-form :model="newComment" label-position="top">
+        <el-form-item required>
+          <!-- 表情选择器 -->
+          <div v-if="showEmojiPicker" class="emoji-picker-container">
+            <div class="emoji-picker">
+              <span
+                v-for="emoji in emojis"
+                :key="emoji"
+                class="emoji-item"
+                @click="addEmoji(emoji)"
+              >
+                {{ emoji }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 评论输入区域容器 -->
+          <div class="comment-input-wrapper">
+            <!-- 评论输入框 -->
+            <el-input
+              v-model="newComment.content"
+              type="textarea"
+              :rows="5"
+              :placeholder="
+                replyToUsername
+                  ? `回复 @${replyToUsername}：`
+                  : '分享您的想法...'
+              "
+              resize="vertical"
+              class="comment-textarea"
+            ></el-input>
+            <div class="emoji-picker">
+              <div class="emoji-scroll-container no-scrollbar">
+                <span
+                  v-for="emoji in emojis"
+                  :key="emoji"
+                  class="emoji-item"
+                  @click="addEmoji(emoji)"
+                >
+                  {{ emoji }}
+                </span>
+              </div>
+              <el-button
+                type="text"
+                size="small"
+                @click="toggleEmojiPicker"
+                class="emoji-expand-btn"
+              >
+                <img
+                  src="../assets/icons/emotion.png"
+                  alt="表情图标"
+                  style="width: 18px; height: 18px; vertical-align: middle"
+                />
+              </el-button>
+            </div>
+          </div>
+
+          <!-- 用户信息输入和操作按钮行 -->
+          <div class="user-info-inputs">
+            <el-upload
+              action="#"
+              :auto-upload="false"
+              :on-change="handleAvatarChange"
+              accept="image/*"
+              :show-file-list="false"
+              :key="uploadKey"
+              class="avatar-upload-btn"
+            >
+              <el-avatar :src="newComment.avatar" size="32"></el-avatar>
+            </el-upload>
+
+            <el-input
+              v-model="newComment.nickname"
+              placeholder="昵称"
+              class="short-input"
+            ></el-input>
+
+            <el-input
+              v-model="newComment.email"
+              type="email"
+              placeholder="邮箱"
+              class="short-input"
+            ></el-input>
+
+            <el-input
+              v-model="newComment.url"
+              type="url"
+              placeholder="链接"
+              class="short-input"
+            ></el-input>
+
+            <!-- 提交评论和取消回复按钮 -->
+            <el-button
+              type="primary"
+              @click="submitComment"
+              :disabled="!newComment.content.trim()"
+              class="submit-comment-btn"
+            >
+              <img
+                src="../assets/icons/comment.png"
+                alt="发布评论"
+                class="comment-icon"
+                style="width: 18px; height: 18px; vertical-align: middle"
+              />
+              <el-button
+                v-if="replyToUsername"
+                type="text"
+                @click="cancelReply"
+                class="cancel-reply-btn"
+              >
+                <img
+                  src="../assets/icons/fork.png"
+                  alt="取消回复"
+                  style="width: 18px; height: 18px; vertical-align: middle"
+                />
+              </el-button>
+            </el-button>
+          </div>
+        </el-form-item>
+      </el-form>
+    </div>
     <!-- 评论区列表 -->
     <div class="comment-sections-list">
       <!-- 每个主评论作为独立评论区 -->
@@ -88,130 +211,7 @@
         </div>
       </div>
     </div>
-    <!-- 评论表单 -->
-    <div class="comment-form-container">
-      <el-form :model="newComment" label-position="top">
-        <el-form-item required>
-          <!-- 表情选择器 -->
-          <div v-if="showEmojiPicker" class="emoji-picker-container">
-            <div class="emoji-picker">
-              <span
-                v-for="emoji in emojis"
-                :key="emoji"
-                class="emoji-item"
-                @click="addEmoji(emoji)"
-              >
-                {{ emoji }}
-              </span>
-            </div>
-          </div>
-
-          <!-- 评论输入区域容器 -->
-          <div class="comment-input-wrapper">
-            <!-- 评论输入框 -->
-            <el-input
-              v-model="newComment.content"
-              type="textarea"
-              :rows="5"
-              :placeholder="
-                replyToUsername
-                  ? `回复 @${replyToUsername}：`
-                  : '分享您的想法...'
-              "
-              resize="vertical"
-              class="comment-textarea"
-            ></el-input>
-            <div class="emoji-picker">
-              <div class="emoji-scroll-container no-scrollbar">
-                <span
-                  v-for="emoji in emojis"
-                  :key="emoji"
-                  class="emoji-item"
-                  @click="addEmoji(emoji)"
-                >
-                  {{ emoji }}
-                </span>
-              </div>
-              <el-button
-                type="text"
-                size="small"
-                @click="toggleEmojiPicker"
-                class="emoji-expand-btn"
-              >
-                ...
-              </el-button>
-            </div>
-          </div>
-
-          <!-- 用户信息输入和操作按钮行 -->
-          <div class="user-info-inputs">
-            <el-form-item>
-              <el-upload
-                action="#"
-                :auto-upload="false"
-                :on-change="handleAvatarChange"
-                accept="image/*"
-                :show-file-list="false"
-                :key="uploadKey"
-                class="avatar-upload-btn"
-              >
-                <el-avatar :src="newComment.avatar" size="32"></el-avatar>
-              </el-upload>
-            </el-form-item>
-
-            <el-form-item>
-              <el-input
-                v-model="newComment.nickname"
-                placeholder="昵称"
-                class="short-input"
-              ></el-input>
-            </el-form-item>
-
-            <el-form-item>
-              <el-input
-                v-model="newComment.email"
-                type="email"
-                placeholder="邮箱"
-                class="short-input"
-              ></el-input>
-            </el-form-item>
-
-            <el-form-item>
-              <el-input
-                v-model="newComment.url"
-                type="url"
-                placeholder="链接"
-                class="short-input"
-              ></el-input>
-            </el-form-item>
-
-            <!-- 提交评论和取消回复按钮 -->
-            <el-form-item>
-              <el-button
-                type="primary"
-                @click="submitComment"
-                :disabled="!newComment.content.trim()"
-                class="submit-comment-btn"
-              >
-                <img
-                  src="../assets/icons/comment.png"
-                  alt="发布评论"
-                  style="width: 18px; height: 18px; vertical-align: middle"
-                />
-              </el-button>
-              <el-button
-                v-if="replyToUsername"
-                type="text"
-                @click="cancelReply"
-                class="cancel-reply-btn"
-              >
-                取消回复
-              </el-button>
-            </el-form-item>
-          </div>
-        </el-form-item>
-      </el-form>
-    </div>
+    
   </div>
 </template>
 
@@ -243,8 +243,6 @@ const newComment = ref({
   avatar: "/src/assets/picture/YoyuEN.png", // 默认头像
 });
 
-// 表情相关数据
-const showEmojiPicker = ref(false);
 const emojis = ref([
   "😊",
   "😄",
@@ -340,32 +338,9 @@ const emojis = ref([
 
 // 切换表情选择器显示/隐藏
 const toggleEmojiPicker = () => {
-  showEmojiPicker.value = !showEmojiPicker.value;
+  const emojiPicker = document.querySelector(".emoji-picker");
+  emojiPicker.classList.toggle("show");
 };
-
-// 点击其他区域关闭表情选择器
-onMounted(() => {
-  const handleClickOutside = (event) => {
-    const emojiButton = document.querySelector(".emoji-button");
-    const emojiPicker = document.querySelector(".emoji-picker-container");
-
-    if (
-      emojiPicker &&
-      !emojiPicker.contains(event.target) &&
-      emojiButton &&
-      !emojiButton.contains(event.target)
-    ) {
-      showEmojiPicker.value = false;
-    }
-  };
-
-  document.addEventListener("click", handleClickOutside);
-
-  // 组件卸载时移除事件监听
-  onUnmounted(() => {
-    document.removeEventListener("click", handleClickOutside);
-  });
-});
 
 // 添加表情到评论内容
 const addEmoji = (emoji) => {
@@ -561,7 +536,6 @@ const submitComment = () => {
   padding: 10px 20px;
   box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.18);
   border-radius: 18px;
-
 }
 
 .single-comment-section {
@@ -669,6 +643,11 @@ const submitComment = () => {
   align-items: center;
   border-top: 1px solid var(--border-color);
   padding: 10px;
+  transition: height 0.3s ease;
+}
+
+.emoji-picker.show {
+  height: 108px;
 }
 
 .emoji-scroll-container {
@@ -696,4 +675,34 @@ const submitComment = () => {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
+.user-info-inputs {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.submit-comment-btn {
+  border-radius: 24px;
+  transition: width 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.submit-comment-btn:hover {
+  border: 1px solid var(--border-color);
+}
+
+.submit-comment-btn img:hover {
+  scale: 1.3;
+  transition: scale 0.3s ease;
+}
+
+
+.cancel-reply-btn {
+  padding: 3px;
+  height: auto;
+  border-radius: 24px;
+  transition: background-color 0.3s ease;
+}
+
 </style>
