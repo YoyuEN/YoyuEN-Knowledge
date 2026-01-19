@@ -19,7 +19,6 @@
           <Card16x9
             :background-image="game.cover"
             class="game-card-item"
-            @click="router.push(`/detail/${game.id}`)"
           >
             <div class="card-info">
               <h4 class="game-name">{{ game.name }}</h4>

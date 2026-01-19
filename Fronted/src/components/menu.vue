@@ -55,6 +55,10 @@
         <el-icon><Briefcase /></el-icon>
         <template #title>工作生活</template>
       </el-menu-item>
+      <el-menu-item index="/profile">
+        <el-icon><Profile /></el-icon>
+        <template #title>个人中心</template>
+      </el-menu-item>
     </el-menu>
   </div>
 </template>

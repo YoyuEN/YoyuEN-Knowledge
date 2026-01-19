@@ -88,6 +88,7 @@ watch(
 .content-area {
   flex: 1;
   overflow-y: auto;
+  margin-top: 60px;
 }
 
 .content-area::-webkit-scrollbar {

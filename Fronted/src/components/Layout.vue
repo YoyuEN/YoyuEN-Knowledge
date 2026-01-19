@@ -414,7 +414,7 @@ html.dark .layout-header {
   padding: 0;
   overflow-y: auto;
   transition: background-color 0.3s;
-  margin-top: 60px;
+  /* margin-top: 60px; */
 }
 
 .layout-main::-webkit-scrollbar {

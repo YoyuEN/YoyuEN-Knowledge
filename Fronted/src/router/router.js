@@ -5,6 +5,7 @@ import LifeEntertainment from '../views/LifeEntertainment.vue'
 import LifeExperience from '../views/LifeExperience.vue'
 import WorkLife from '../views/WorkLife.vue'
 import Detail from '../views/detail.vue'
+import Profile from '../views/Profile.vue'
 
 const routes = [
   {
@@ -54,6 +55,12 @@ const routes = [
     name: 'WorkLife',
     component: WorkLife,
     meta: { title: '工作生活' }
+  },
+  {
+    path: '/profile',
+    name: 'Profile',
+    component: Profile,
+    meta: { title: '个人中心' }
   }
 ]
 
