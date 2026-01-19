@@ -36,7 +36,7 @@
   height: 400px;
   background: url("/src/assets/picture/image.png") no-repeat center center;
   background-size: cover;
-  padding: 40px;
+  padding: 80px;
 }
 
 .avatar {
@@ -76,7 +76,7 @@
   margin-top: -50px;
   height: calc(100vh - 350px);
   background-color: white;
-  border-radius: 8px;
+  border-radius: 25px;
   padding: 20px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
