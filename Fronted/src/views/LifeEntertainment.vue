@@ -1,31 +1,108 @@
 <template>
-  <div class="life-entertainment-container">
-    <el-card>
-      <div class="content">
-        <el-empty description="生活娱乐模块开发中..." />
-      </div>
-    </el-card>
+  <div class="content-area">
+    <div v-if="activeCategory === 'games'" class="category-content">
+      <Game />
+    </div>
+    <div v-else-if="activeCategory === 'music'" class="category-content">
+      <Music />
+    </div>
+    <div v-else-if="activeCategory === 'video'" class="category-content">
+      <Video />
+    </div>
+    <div v-else-if="activeCategory === 'reading'" class="category-content">
+      <h3>阅读</h3>
+      <p>阅读内容将在此处显示</p>
+    </div>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { Headset, Grid, VideoCamera, Reading } from "@element-plus/icons-vue";
+import Music from "../components/Music.vue";
+import Game from "../components/Game.vue";
+import Video from "../components/Video.vue";
+
+const route = useRoute();
+const router = useRouter();
+
+// 从路由参数获取当前活跃分类
+const activeCategory = computed(() => route.params.category || "music");
+
+// 处理分类选择
+const handleCategorySelect = (index) => {
+  router.push(`/life-entertainment/${index}`);
+};
+
+// 监听路由变化，更新内部状态
+watch(
+  () => route.params.category,
+  (newCategory) => {
+    // 路由变化时自动更新，无需手动设置
+  }
+);
 </script>
 
 <style scoped>
-.life-entertainment-container {
-  padding: 0;
+.sub-nav {
+  width: 200px;
+  padding: 16px;
+  flex-shrink: 0;
 }
 
-.card-header {
-  font-weight: 600;
+.sub-nav-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
   font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 12px;
+}
+
+.sub-nav-menu {
+  border: none;
+  background: transparent;
+}
+
+.sub-nav-menu .el-menu-item {
+  height: 48px;
+  line-height: 48px;
+  border-radius: 8px;
+  margin-bottom: 4px;
   color: var(--text-primary);
 }
 
-.content {
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.sub-nav-menu .el-menu-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.sub-nav-menu .el-menu-item.is-active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 60px;
+}
+
+.content-area::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.category-content h3 {
+  font-size: 24px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.category-content p {
+  color: var(--text-secondary);
 }
 </style>

@@ -1,13 +1,13 @@
 <template>
   <div class="menu-container">
-    <div class="collapse-button">
+    <!-- <div class="collapse-button">
       <el-button
         :icon="isCollapse ? Expand : Fold"
         @click="toggleCollapse"
         text
         circle
       />
-    </div>
+    </div> -->
     <el-menu
       :default-active="activeIndex"
       class="el-menu-vertical-demo"
@@ -15,6 +15,7 @@
       router
       @open="handleOpen"
       @close="handleClose"
+      @select="handleSelect"
     >
       <el-menu-item index="/">
         <el-icon><ChatDotRound /></el-icon>
@@ -24,10 +25,28 @@
         <el-icon><Document /></el-icon>
         <template #title>知识博客</template>
       </el-menu-item>
-      <el-menu-item index="/life-entertainment">
-        <el-icon><VideoPlay /></el-icon>
-        <template #title>生活娱乐</template>
-      </el-menu-item>
+      <el-sub-menu index="/life-entertainment">
+        <template #title>
+          <el-icon><VideoPlay /></el-icon>
+          <span>生活娱乐</span>
+        </template>
+        <el-menu-item index="/life-entertainment/games">
+          <el-icon><Grid /></el-icon>
+          <template #title>游戏</template>
+        </el-menu-item>
+        <el-menu-item index="/life-entertainment/music">
+          <el-icon><Headset /></el-icon>
+          <template #title>音乐</template>
+        </el-menu-item>
+        <el-menu-item index="/life-entertainment/video">
+          <el-icon><VideoCamera /></el-icon>
+          <template #title>视频</template>
+        </el-menu-item>
+        <el-menu-item index="/life-entertainment/reading">
+          <el-icon><Reading /></el-icon>
+          <template #title>阅读</template>
+        </el-menu-item>
+      </el-sub-menu>
       <el-menu-item index="/life-experience">
         <el-icon><Reading /></el-icon>
         <template #title>人生经历</template>
@@ -35,6 +54,10 @@
       <el-menu-item index="/work-life">
         <el-icon><Briefcase /></el-icon>
         <template #title>工作生活</template>
+      </el-menu-item>
+      <el-menu-item index="/profile">
+        <el-icon><Profile /></el-icon>
+        <template #title>个人中心</template>
       </el-menu-item>
     </el-menu>
   </div>
@@ -51,6 +74,9 @@ import {
   Briefcase,
   Expand,
   Fold,
+  Grid,
+  Headset,
+  VideoCamera,
 } from '@element-plus/icons-vue'
 
 const props = defineProps({
@@ -60,7 +86,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['toggle-collapse'])
+const emit = defineEmits(['toggle-collapse', 'menu-item-click'])
 
 const route = useRoute()
 const activeIndex = computed(() => route.path)
@@ -75,6 +101,11 @@ const handleOpen = (key, keyPath) => {
 
 const handleClose = (key, keyPath) => {
   console.log(key, keyPath)
+}
+
+const handleSelect = (key, keyPath) => {
+  console.log(key, keyPath)
+  emit('menu-item-click')
 }
 </script>
 
@@ -108,6 +139,7 @@ const handleClose = (key, keyPath) => {
   flex: 1;
   background-color: var(--bg-aside);
   transition: background-color 0.3s;
+  border-radius: 16px;
 }
 
 /* 确保菜单图标颜色适配主题 */
