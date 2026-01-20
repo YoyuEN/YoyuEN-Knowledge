@@ -1,3 +1,8 @@
+<script setup lang="ts">
+import Heatmap from '../components/Heatmap.vue';
+
+</script>
+
 <template>
   <div class="profile-container">
     <div class="profile-header">
@@ -14,13 +19,16 @@
       </div>
       <!-- 自我介绍 -->
       <div class="user-info-content">
-        <p>
-          就读于北方民族大学，软件工程专业。
-          宁鸣而死，不默而生！
-        </p>
+        <p>就读于北方民族大学，软件工程专业。 宁鸣而死，不默而生！</p>
       </div>
     </div>
-    <div class="profile-content"></div>
+    <div class="profile-content">
+      <!-- 活跃度 -->
+      <div class="profile-item">
+        <h3>活跃度</h3>
+        <Heatmap />
+      </div>
+    </div>
   </div>
 </template>
 <style scoped>
@@ -55,9 +63,9 @@
 }
 
 .user-info {
-    display: grid;
-    align-items: center;
-    width: 20%;
+  display: grid;
+  align-items: center;
+  width: 20%;
 }
 
 .user-info-content {
@@ -77,7 +85,18 @@
   height: calc(100vh - 350px);
   background-color: white;
   border-radius: 25px;
-  padding: 20px;
+  padding: 0 80px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
+
+.profile-item {
+  margin: 0 50px;
+}
+
+.profile-item h3 {
+  color: #333;
+  padding: 20px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
 </style>

@@ -138,6 +138,7 @@ const listData = ref([
   height: calc(100vh - 80px);
   display: flex;
   gap: 0;
+  margin-top: 60px;
 }
 
 /* 左侧AI对话区域 */
