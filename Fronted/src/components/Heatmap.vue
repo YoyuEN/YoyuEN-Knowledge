@@ -19,8 +19,8 @@ const heatmapData = computed(() => {
   return rawActivity.value.map(item => {
     const date = new Date(item.date)
     return {
-      timestamp: date.getTime(),          // 核心：转成毫秒时间戳
-      value: item.count                   // 或 item.count ?? null，如果你想显式用 null
+      timestamp: date.getTime(),    
+      value: item.count                 
     }
   })
 })
