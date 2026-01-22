@@ -23,7 +23,7 @@ public class ChatController {
     }
 
     @GetMapping("/chat")
-    public String model(@RequestParam(value = "message", defaultValue = "Hello") String message) {
+    public String model(@RequestParam(value = "message", defaultValue = "你是？") String message) {
         return chatLanguageModel.chat(message);
     }
 }
