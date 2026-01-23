@@ -26,7 +26,7 @@
         </div>
       </div>
       <div class="user-info-content">
-        <p>就读于北方民族大学，软件工程专业。 宁鸣而死，不默而生！</p>
+        <p>就读于北方民族大学,软件工程专业。 宁鸣而死,不默而生!</p>
       </div>
     </div>
     <div class="profile-content">
@@ -36,15 +36,15 @@
         <div class="website-data">
           <!-- 文章数 -->
           <div class="article-count">
-            文章：100
+            文章:100
           </div>
           <!-- 动态数 -->
           <div class="dynamic-count">
-            动态：1000
+            动态:1000
           </div>
           <!-- 点赞数 -->
           <div class="like-count">
-            评论：10000
+            评论:10000
           </div>
         </div>
       </div>
@@ -82,7 +82,7 @@ const photos = ref([
 
 // 标签
 const tags = ref([
-  "玄不救非，氪不改命",
+  "玄不救非,氪不改命",
   "男神",
   "手工",
   "天然呆",
@@ -92,6 +92,26 @@ const tags = ref([
 ]);
 </script>
 <style scoped>
+/* 头像浮动动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* 光环流动动画 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 .profile-container {
   width: 100%;
 }
@@ -113,12 +133,45 @@ const tags = ref([
   margin-top: 50px;
   margin-left: 50px;
   border: 4px solid white;
+  position: relative;
+  animation: float 3s ease-in-out infinite;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+
+/* 头像光环效果 */
+.avatar::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #4facfe, #667eea);
+  background-size: 300% 300%;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.4s ease;
+  animation: shimmer 3s linear infinite;
+  filter: blur(10px);
+}
+
+.avatar:hover::before {
+  opacity: 0.8;
+}
+
+.avatar:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .avatar img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+  transition: all 0.4s ease;
+}
+
+.avatar:hover img {
+  filter: brightness(1.1);
 }
 
 .user-info {
@@ -157,7 +210,7 @@ const tags = ref([
   background-color: rgba(255, 255, 255, 0.2); /* 半透明白色背景 */
   padding: 6px 12px;
   border-radius: 20px; /* 圆角 */
-  backdrop-filter: blur(5px); /* 毛玻璃效果，适配背景 */
+  backdrop-filter: blur(5px); /* 毛玻璃效果,适配背景 */
 }
 
 .tag-item span {

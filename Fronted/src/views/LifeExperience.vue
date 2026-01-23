@@ -45,6 +45,7 @@ const diaryEntries = ref([
   align-items: center;
   width: 100%;
   overflow: hidden;
+  margin-top: 60px;
 }
 
 
