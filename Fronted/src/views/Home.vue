@@ -1,66 +1,55 @@
 <template>
   <div class="home-container">
-    <!-- 左侧AI对话区域 -->
-    <div class="left-section">
-      <!-- 对话消息区域 -->
-      <div class="chat-messages">
-        <div v-if="messages.length === 0" class="empty-state">
-          <el-icon class="empty-icon"><ChatDotRound /></el-icon>
-          <p>开始与AI对话吧！</p>
-        </div>
-        <div
-          v-for="(message, index) in messages"
-          :key="index"
-          :class="['message-item', message.role]"
-        >
-          <div class="message-avatar">
-            <el-icon v-if="message.role === 'user'" color="#4f46e5"><User /></el-icon>
-            <el-icon v-else color="#6b7280"><Service /></el-icon>
+    <div class="chat-area">
+      <!-- 回复区域 -->
+      <div class="reply-content">
+        <!-- 用户提问内容 - 固定在顶部 -->
+        <transition name="question-change" mode="out-in">
+          <div class="user-question" v-if="currentQuestion" :key="currentQuestion">
+            <div class="question-text">{{ currentQuestion }}</div>
           </div>
-          <div class="message-content">
-            <div class="message-text">{{ message.content }}</div>
-            <div class="message-time">{{ message.time }}</div>
-          </div>
-        </div>
-      </div>
-      <!-- 输入区域 -->
-      <div class="chat-input-area">
-        <el-input
-          v-model="inputMessage"
-          type="textarea"
-          :rows="3"
-          placeholder="输入您的问题..."
-          @keydown.ctrl.enter="sendMessage"
-        />
-        <div class="input-actions">
-          <span class="input-tip">按 Ctrl + Enter 发送</span>
-          <el-button
-            type="primary"
-            @click="sendMessage"
-            :disabled="!inputMessage.trim()"
+        </transition>
+
+        <!-- AI回复列表 -->
+        <div class="ai-replies" ref="repliesContainer">
+          <div 
+            v-for="(reply, index) in aiReplies" 
+            :key="index"
+            class="reply-item"
           >
-            发送
-          </el-button>
+            <div class="reply-text">{{ reply.content }}</div>
+            <div class="reply-time">{{ reply.time }}</div>
+          </div>
+
+          <!-- AI思考中的加载动画 -->
+          <div v-if="isThinking" class="reply-item thinking">
+            <div class="typing-indicator">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="thinking-text">AI正在思考中...</div>
+          </div>
         </div>
       </div>
-    </div>
-    
-    <!-- 分割线 -->
-    <div class="divider"></div>
-    
-    <!-- 右侧列表区域 -->
-    <div class="right-section">
-      <div class="article-list">
-        <div v-for="(article, index) in listData" :key="index" class="article-item">
-          <div class="article-cover">
-            <img :src="article.cover" :alt="article.title" />
-          </div>
-          <div class="article-info">
-            <div class="article-title">{{ article.title }}</div>
-            <div class="article-date">{{ article.date }}</div>
-            <div class="article-excerpt">{{ article.content }}</div>
-          </div>
-        </div>
+
+      <!-- 输入区域 -->
+      <div class="send-content">
+        <textarea
+          v-model="inputMessage"
+          placeholder="请输入你的问题..."
+          @keydown.enter.exact.prevent="sendMessage"
+          class="message-input"
+          rows="1"
+        ></textarea>
+        <button 
+          @click="sendMessage" 
+          :disabled="!inputMessage.trim() || isThinking"
+          class="send-button"
+        >
+          <span v-if="!isThinking">发送</span>
+          <span v-else>思考中...</span>
+        </button>
       </div>
     </div>
   </div>
@@ -68,68 +57,68 @@
 
 <script setup>
 import { ref, nextTick } from 'vue'
-import { ChatDotRound, User, Service } from '@element-plus/icons-vue'
 
-// AI对话相关
-const messages = ref([])
+const currentQuestion = ref('')
+const aiReplies = ref([])
 const inputMessage = ref('')
+const isThinking = ref(false)
+const repliesContainer = ref(null)
 
-const formatTime = () => {
+// 获取当前时间
+const getCurrentTime = () => {
   const now = new Date()
-  return now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
 }
 
+// 滚动到底部
+const scrollToBottom = () => {
+  nextTick(() => {
+    if (repliesContainer.value) {
+      repliesContainer.value.scrollTop = repliesContainer.value.scrollHeight
+    }
+  })
+}
+
+// 发送消息
 const sendMessage = async () => {
-  if (!inputMessage.value.trim()) return
+  if (!inputMessage.value.trim() || isThinking.value) return
 
-  const userMessage = {
-    role: 'user',
-    content: inputMessage.value.trim(),
-    time: formatTime()
-  }
-
-  messages.value.push(userMessage)
-  const question = inputMessage.value.trim()
+  // 设置当前问题（显示在顶部）
+  currentQuestion.value = inputMessage.value
+  
+  // 清空之前的回复
+  aiReplies.value = []
+  
+  const userInput = inputMessage.value
   inputMessage.value = ''
 
-  // 模拟AI回复
+  // 显示AI思考状态
+  isThinking.value = true
+  scrollToBottom()
+  
+  // 模拟AI回复延迟（1.5-3秒）
   setTimeout(() => {
-    const aiMessage = {
-      role: 'assistant',
-      content: `这是对"${question}"的回复。`,
-      time: formatTime()
-    }
-    messages.value.push(aiMessage)
-  }, 1000)
+    // 添加AI回复
+    aiReplies.value.push({
+      content: getAIResponse(userInput),
+      time: getCurrentTime()
+    })
+    
+    isThinking.value = false
+    scrollToBottom()
+  }, 1500 + Math.random() * 1500)
 }
 
-// 列表数据
-const listData = ref([
-  {
-    date: '2023-05-10',
-    title: 'Vue 3 Composition API 入门指南',
-    content: '本文详细介绍了Vue 3 Composition API的核心概念和使用方法，包括setup函数、响应式API、生命周期钩子等内容，帮助开发者快速上手Vue 3开发。',
-    cover: 'https://picsum.photos/id/1/300/200'
-  },
-  {
-    date: '2023-05-11',
-    title: 'Element Plus 组件库使用技巧',
-    content: 'Element Plus是Vue 3生态中最流行的UI组件库之一，本文分享了一些实用的使用技巧，包括自定义主题、组件扩展、性能优化等内容。',
-    cover: 'https://picsum.photos/id/2/300/200'
-  },
-  {
-    date: '2023-05-12',
-    title: '前端性能优化实战',
-    content: '性能优化是前端开发中的重要课题，本文从网络请求、渲染性能、资源加载等方面，介绍了一些实用的性能优化技巧和工具。',
-    cover: 'https://picsum.photos/id/3/300/200'
-  },
-  {
-    date: '2023-05-13',
-    title: 'TypeScript 入门教程',
-    content: 'TypeScript是JavaScript的超集，提供了静态类型检查等特性，本文介绍了TypeScript的基础语法、类型系统、接口等核心内容。',
-    cover: 'https://picsum.photos/id/4/300/200'
-  }
-])
+// 模拟AI回复（实际项目中这里应该调用API）
+const getAIResponse = (input) => {
+  const responses = [
+    `关于"${input}"这个问题，我的理解是：这是一个很有深度的话题。根据相关信息分析，我建议从以下几个方面来考虑...`,
+    `针对您提出的"${input}"，我认为可以这样理解：首先需要明确核心概念，然后逐步展开分析...`,
+    `感谢您的提问"${input}"。让我为您详细解答：这个问题涉及多个层面，我们可以从实际应用的角度来探讨...`,
+    `您问到的"${input}"是个好问题。基于目前的理解，我的看法是：我们需要综合考虑各种因素...`
+  ]
+  return responses[Math.floor(Math.random() * responses.length)]
+}
 </script>
 
 <style scoped>
@@ -141,192 +130,257 @@ const listData = ref([
   margin-top: 60px;
 }
 
-/* 左侧AI对话区域 */
-.left-section {
-  width: 30%;
-  height: 100%;
+.chat-area {
+  width: 1200px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  padding-right: 20px;
 }
 
-/* 右侧列表区域 */
-.right-section {
-  width: 70%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  padding-left: 20px;
-}
-
-/* 分割线 */
-.divider {
-  width: 1px;
-  background-color: #e0e0e0;
-  height: 100%;
-  margin: 0 20px;
-}
-
-/* 区域标题 */
-.section-title {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-/* AI对话样式 */
-.chat-messages {
+.reply-content {
   flex: 1;
-  overflow-y: auto;
   padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #9ca3af;
-}
-
-.empty-icon {
-  font-size: 60px;
-  margin-bottom: 16px;
-  color: #d1d5db;
-}
-
-.message-item {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.message-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.message-content {
-  flex: 1;
-}
-
-.message-text {
-  padding: 12px 16px;
-  border-radius: 16px;
-  background-color: #ffffff;
-  color: #1f2937;
-  word-wrap: break-word;
-  line-height: 1.5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.message-item.user .message-text {
-  background-color: #4f46e5;
-  color: #ffffff;
-}
-
-.message-time {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 4px;
-  padding-left: 4px;
-}
-
-.chat-input-area {
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.input-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-}
-
-.input-tip {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-/* 文章列表样式 */
-.article-list {
-  overflow-y: auto;
-  height: calc(100% - 60px);
-  padding-right: 10px;
-}
-
-.article-item {
-  display: flex;
-  gap: 20px;
-  padding: 20px;
-  border-bottom: 1px solid #f0f0f0;
-  transition: all 0.3s ease;
-}
-
-.article-item:last-child {
-  border-bottom: none;
-}
-
-.article-item:hover {
-  background-color: #fafafa;
-}
-
-.article-cover {
-  width: 120px;
-  height: 80px;
-  flex-shrink: 0;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
 }
 
-.article-cover img {
+/* 用户提问区域 - 固定在顶部 */
+.user-question {
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  color: white;
+  border-bottom: 1px solid #333;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 问题切换动画 */
+.question-change-enter-active {
+  animation: questionSlideIn 0.5s ease-out;
+}
+
+.question-change-leave-active {
+  animation: questionSlideOut 0.4s ease-in;
+}
+
+@keyframes questionSlideOut {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-30px) scale(0.95);
+  }
+}
+
+@keyframes questionSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  60% {
+    transform: translateX(-5px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* 添加背景闪烁效果 */
+.user-question::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(102, 126, 234, 0.3), 
+    transparent
+  );
+  animation: shimmer 0.8s ease-in-out;
 }
 
-.article-info {
-  flex: 1;
-  min-width: 0;
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 
-.article-title {
+.question-label {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.question-text {
   font-size: 16px;
-  font-weight: bold;
   color: #333;
-  margin-bottom: 8px;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.article-date {
-  font-size: 13px;
-  color: #999;
-  margin-bottom: 8px;
-}
-
-.article-excerpt {
-  font-size: 13px;
-  color: #666;
   line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 500;
+  position: relative;
+  z-index: 1;
+}
+
+/* AI回复列表区域 */
+.ai-replies {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ai-replies::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ai-replies::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.reply-item {
+  padding: 16px 20px;
+  border-radius: 12px;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reply-text {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #333;
+  word-wrap: break-word;
+}
+
+.reply-time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 10px;
+  text-align: right;
+}
+
+/* AI思考中样式 */
+.reply-item.thinking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+}
+
+.typing-indicator span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #667eea;
+  animation: typing 1.4s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+.thinking-text {
+  color: #666;
+  font-size: 14px;
+}
+
+/* 输入区域 */
+.send-content {
+  margin-top: 20px;
+  padding: 15px 20px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  background: white;
+}
+
+.message-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 15px;
+  line-height: 1.5;
+  font-family: inherit;
+  max-height: 120px;
+  min-height: 24px;
+}
+
+.message-input::placeholder {
+  color: #999;
+}
+
+.send-button {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.send-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.send-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
