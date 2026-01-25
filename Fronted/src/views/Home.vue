@@ -12,11 +12,7 @@
 
         <!-- AI回复列表 -->
         <div class="ai-replies" ref="repliesContainer">
-          <div 
-            v-for="(reply, index) in aiReplies" 
-            :key="index"
-            class="reply-item"
-          >
+          <div v-for="(reply, index) in aiReplies" :key="index" class="reply-item">
             <div class="reply-text">{{ reply.content }}</div>
             <div class="reply-time">{{ reply.time }}</div>
           </div>
@@ -35,18 +31,9 @@
 
       <!-- 输入区域 -->
       <div class="send-content">
-        <textarea
-          v-model="inputMessage"
-          placeholder="请输入你的问题..."
-          @keydown.enter.exact.prevent="sendMessage"
-          class="message-input"
-          rows="1"
-        ></textarea>
-        <button 
-          @click="sendMessage" 
-          :disabled="!inputMessage.trim() || isThinking"
-          class="send-button"
-        >
+        <textarea v-model="inputMessage" placeholder="请输入你的问题..." @keydown.enter.exact.prevent="sendMessage"
+          class="message-input" rows="1"></textarea>
+        <button @click="sendMessage" :disabled="!inputMessage.trim() || isThinking" class="send-button">
           <span v-if="!isThinking">发送</span>
           <span v-else>思考中...</span>
         </button>
@@ -85,17 +72,17 @@ const sendMessage = async () => {
 
   // 设置当前问题（显示在顶部）
   currentQuestion.value = inputMessage.value
-  
+
   // 清空之前的回复
   aiReplies.value = []
-  
+
   const userInput = inputMessage.value
   inputMessage.value = ''
 
   // 显示AI思考状态
   isThinking.value = true
   scrollToBottom()
-  
+
   // 模拟AI回复延迟（1.5-3秒）
   setTimeout(() => {
     // 添加AI回复
@@ -103,7 +90,7 @@ const sendMessage = async () => {
       content: getAIResponse(userInput),
       time: getCurrentTime()
     })
-    
+
     isThinking.value = false
     scrollToBottom()
   }, 1500 + Math.random() * 1500)
@@ -173,6 +160,7 @@ const getAIResponse = (input) => {
     opacity: 1;
     transform: translateX(0) scale(1);
   }
+
   100% {
     opacity: 0;
     transform: translateX(-30px) scale(0.95);
@@ -184,9 +172,11 @@ const getAIResponse = (input) => {
     opacity: 0;
     transform: translateX(30px) scale(0.95);
   }
+
   60% {
     transform: translateX(-5px) scale(1.02);
   }
+
   100% {
     opacity: 1;
     transform: translateX(0) scale(1);
@@ -201,11 +191,6 @@ const getAIResponse = (input) => {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(102, 126, 234, 0.3), 
-    transparent
-  );
   animation: shimmer 0.8s ease-in-out;
 }
 
@@ -213,16 +198,10 @@ const getAIResponse = (input) => {
   0% {
     left: -100%;
   }
+
   100% {
     left: 100%;
   }
-}
-
-.question-label {
-  font-size: 12px;
-  opacity: 0.9;
-  margin-bottom: 8px;
-  font-weight: 500;
 }
 
 .question-text {
@@ -230,7 +209,6 @@ const getAIResponse = (input) => {
   color: #333;
   line-height: 1.6;
   font-weight: 500;
-  position: relative;
   z-index: 1;
 }
 
@@ -264,6 +242,7 @@ const getAIResponse = (input) => {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -313,10 +292,14 @@ const getAIResponse = (input) => {
 }
 
 @keyframes typing {
-  0%, 60%, 100% {
+
+  0%,
+  60%,
+  100% {
     transform: translateY(0);
     opacity: 0.4;
   }
+
   30% {
     transform: translateY(-8px);
     opacity: 1;
@@ -349,8 +332,9 @@ const getAIResponse = (input) => {
   font-size: 15px;
   line-height: 1.5;
   font-family: inherit;
-  max-height: 120px;
-  min-height: 24px;
+  height: 100%;
+  align-items: center;
+  padding: 10px 12px;
 }
 
 .message-input::placeholder {
