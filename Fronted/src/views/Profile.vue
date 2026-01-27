@@ -31,20 +31,29 @@
     </div>
     <div class="profile-content">
       <div class="profile-item">
-        <h3>活跃度</h3>
+        <h3>网站数据</h3>
         <!-- 网站数据 -->
         <div class="website-data">
           <!-- 文章数 -->
-          <div class="article-count">
-            文章:100
+          <div class="data-item">
+            <div class="data-number">
+              <n-number-animation :from="0" :to="100" />
+            </div>
+            <div class="data-label">文章</div>
           </div>
           <!-- 动态数 -->
-          <div class="dynamic-count">
-            动态:1000
+          <div class="data-item">
+            <div class="data-number">
+              <n-number-animation :from="0" :to="1000" />
+            </div>
+            <div class="data-label">动态</div>
           </div>
-          <!-- 点赞数 -->
-          <div class="like-count">
-            评论:10000
+          <!-- 评论数 -->
+          <div class="data-item">
+            <div class="data-number">
+              <n-number-animation :from="0" :to="10000" />
+            </div>
+            <div class="data-label">评论</div>
           </div>
         </div>
       </div>
@@ -55,15 +64,18 @@
           <Heatmap />
         </div>
       </div>
+      
+      <!-- 照片墙 -->
       <div class="profile-item">
         <h3>照片墙</h3>
         <div class="photo-wall-container">
           <div
-            v-for="photo in photos"
+            v-for="(photo, index) in photos"
             :key="photo"
-            class="photo-wall-container"
+            class="photo-item"
+            :style="{ animationDelay: `${index * 0.1}s` }"
           >
-            <n-image :src="photo" width="400" alt="照片" />
+            <n-image :src="photo" alt="照片" />
           </div>
         </div>
       </div>
@@ -109,6 +121,18 @@ const tags = ref([
   }
   100% {
     background-position: 200% center;
+  }
+}
+
+/* 照片墙淡入动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -242,11 +266,86 @@ const tags = ref([
   width: 100%;
 }
 
-.photo-wall-container {
+.website-data {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
+  justify-content: space-around;
+  gap: 40px;
+  padding: 20px 0;
+}
+
+.data-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.data-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+}
+
+.data-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.photo-wall-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 20px;
+  padding: 10px 0;
+}
+
+.photo-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease-out backwards;
+  cursor: pointer;
+}
+
+.photo-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
+.photo-item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.photo-item:hover::before {
+  opacity: 1;
+}
+
+.photo-item :deep(.n-image) {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.photo-item :deep(.n-image img) {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.photo-item:hover :deep(.n-image img) {
+  transform: scale(1.05);
 }
 
 .photo-items {
