@@ -182,22 +182,10 @@ const tags = ref([
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 1000px;
+  height: 700px;
   background: url("/src/assets/picture/image.png") no-repeat center center;
   background-size: cover;
-  padding: 100px 80px;
-  position: relative;
-}
-
-.profile-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
-  pointer-events: none;
+  padding: 80px;
 }
 
 .user-info-container {
@@ -269,7 +257,6 @@ const tags = ref([
   backdrop-filter: blur(15px);
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.25);
-  border-left: 4px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
   position: relative;
@@ -288,7 +275,6 @@ const tags = ref([
 
 .user-welcome:hover {
   background: rgba(255, 255, 255, 0.15);
-  border-left-color: rgba(255, 255, 255, 0.7);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
