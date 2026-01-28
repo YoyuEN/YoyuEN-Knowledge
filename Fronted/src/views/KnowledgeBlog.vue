@@ -29,8 +29,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ChatLineRound } from '@element-plus/icons-vue'
+import gsap from 'gsap'
 
 const blogList = ref([
   {
@@ -133,11 +134,29 @@ const blogList = ref([
     tags: ['学习', '知识', '系统']
   },
 ])
+
+// 在组件挂载后执行动画
+onMounted(() => {
+  // 先设置初始状态
+  gsap.set('.blog-card', { opacity: 0, y: 50 })
+
+  // 然后执行动画
+  gsap.to('.blog-card', {
+    duration: 0.8,
+    opacity: 1,
+    y: 0,
+    stagger: {
+      amount: 0.6,
+      from: "start"
+    }
+  })
+})
 </script>
 
 <style scoped>
 .knowledge-blog-container {
-  padding: 0;
+  padding: 20px;
+  margin-top: 40px;
 }
 
 .blog-grid {
