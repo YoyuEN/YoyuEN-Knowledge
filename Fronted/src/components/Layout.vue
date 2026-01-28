@@ -51,53 +51,62 @@
         <transition name="menu-panel">
           <div v-show="showDrawer" class="menu-panel">
             <div class="menu-content">
-              <!-- 左侧日历区域 -->
-              <div class="calendar-section">
-                <div class="section-header">
-                  <el-icon><Calendar /></el-icon>
-                  <h4>日历</h4>
-                </div>
-                <div class="calendar-widget">
-                  <div class="current-date">{{ formatDate(currentTime) }}</div>
-                  <div class="current-time">{{ formatTime(currentTime) }}</div>
-                  <div class="calendar-decoration">
-                    <div class="decoration-line"></div>
-                    <div class="decoration-dot"></div>
-                  </div>
-                  <div class="daily-quote" v-if="dailyQuote">
-                    <div class="quote-text">{{ dailyQuote }}</div>
-                    <div class="quote-source" v-if="dailyQuoteSource">{{ dailyQuoteSource }}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- 中间最新文章区域 -->
-              <div class="latest-articles">
-                <div class="section-header">
-                  <el-icon><Document /></el-icon>
-                  <h4>最新更新</h4>
-                </div>
-                <div class="articles-list">
-                  <div class="article-item" v-for="i in 5" :key="i">
-                    <div class="article-info">
-                      <div class="article-title">文章标题 {{ i }}</div>
-                      <div class="article-meta">
-                        <span class="article-category">分类 {{ i }}</span>
-                        <span class="article-date">2026-01-0{{ i }}</span>
+              <!-- 上方三个区域 -->
+              <div class="top-sections">
+                <!-- 左侧日历区域 -->
+                <div class="calendar-section">
+                  <div class="section-card">
+                    <div class="calendar-widget">
+                      <div class="current-date">{{ formatDate(currentTime) }}</div>
+                      <div class="current-time">{{ formatTime(currentTime) }}</div>
+                      <div class="calendar-decoration">
+                        <div class="decoration-line"></div>
+                        <div class="decoration-dot"></div>
+                      </div>
+                      <div class="daily-quote" v-if="dailyQuote">
+                        <div class="quote-text">{{ dailyQuote }}</div>
+                        <div class="quote-source" v-if="dailyQuoteSource">{{ dailyQuoteSource }}</div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <!-- 右侧界面导航 -->
-              <div class="interface-nav">
-                <div class="section-header">
-                  <el-icon><House /></el-icon>
-                  <h4>界面导航</h4>
+
+                <!-- 中间最新文章区域 -->
+                <div class="latest-articles">
+                  <div class="section-card">
+                    <div class="timeline-item" v-for="i in 5" :key="i">
+                      <div class="timeline-dot"></div>
+                      <div class="timeline-content">
+                        <div class="timeline-date">2026-01-0{{ i }}</div>
+                        <div class="timeline-title">文章标题 {{ i }}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="nav-menu">
-                  <Menu @menu-item-click="handleMenuItemClick" />
+
+                <!-- 右侧界面导航 -->
+                <div class="interface-nav">
+                  <div class="section-card">
+                      <Menu @menu-item-click="handleMenuItemClick" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- 用户评论区域 -->
+              <div class="user-comments">
+                <div class="comments-grid">
+                  <div class="comment-card" v-for="comment in userComments" :key="comment.id">
+                    <div class="card-top">
+                      <div class="comment-avatar">
+                        <img :src="comment.avatar" :alt="comment.nickname" />
+                      </div>
+                      <div class="comment-info">
+                        <div class="comment-nickname">{{ comment.nickname }}</div>
+                        <div class="comment-time">{{ comment.time }}</div>
+                      </div>
+                    </div>
+                    <div class="comment-text">{{ comment.content }}</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,6 +135,30 @@ const currentTime = ref(new Date())
 const dailyQuote = ref('')
 const dailyQuoteSource = ref('')
 let timeInterval = null
+
+const userComments = ref([
+  {
+    id: 1,
+    avatar: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
+    nickname: '张三',
+    time: '2小时前',
+    content: '这个网站设计得真不错，界面很清爽，内容也很有深度！'
+  },
+  {
+    id: 2,
+    avatar: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
+    nickname: '李四',
+    time: '5小时前',
+    content: '学到了很多东西，感谢分享！期待更多优质内容。'
+  },
+  {
+    id: 3,
+    avatar: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
+    nickname: '王五',
+    time: '1天前',
+    content: '文章写得很详细，对我帮助很大，已经收藏了！'
+  }
+])
 
 const handleSearchInput = () => {
 }
@@ -500,6 +533,7 @@ html.dark .layout-header {
 
 .menu-content {
   display: flex;
+  flex-direction: column;
   height: calc(100% - 30px);
   overflow: hidden;
   border-radius: 8px;
@@ -508,27 +542,51 @@ html.dark .layout-header {
   background-color: var(--menu-panel-bg);
 }
 
+/* 上方三个区域的容器 */
+.top-sections {
+  display: flex;
+  max-height: 400px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border-color);
+}
+
 .calendar-section {
   flex: 1;
   border-right: 1px solid var(--border-color);
   padding: 20px;
+  overflow: hidden;
+}
+
+/* 统一的卡片样式 */
+.section-card {
+  background-color: var(--panel-section-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 100%;
   overflow-y: auto;
-}
-
-.section-header {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
+  flex-direction: column;
 }
 
-.section-header h4 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text-primary);
+/* 卡片滚动条样式 */
+.section-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.section-card::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.section-card::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.section-card::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 
 .calendar-widget {
@@ -537,9 +595,6 @@ html.dark .layout-header {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: linear-gradient(135deg, var(--calendar-bg) 0%, var(--panel-section-bg) 100%);
-  border-radius: 12px;
-  box-shadow: 0 4px 12px var(--shadow);
 }
 
 .current-date {
@@ -604,73 +659,98 @@ html.dark .layout-header {
   flex: 1.2;
   border-right: 1px solid var(--border-color);
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-.articles-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.timeline-item {
+  position: relative;
+  padding-left: 30px;
+  padding-bottom: 20px;
+  border-left: 2px solid var(--border-color);
 }
 
-.article-item {
-  padding: 14px;
-  border-radius: 10px;
-  background-color: var(--panel-section-bg);
+.timeline-item:last-child {
+  padding-bottom: 0;
+  border-left: 2px solid transparent;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -6px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  border: 2px solid var(--bg-primary);
   transition: all 0.3s ease;
-  cursor: pointer;
-  border: 1px solid transparent;
 }
 
-.article-item:hover {
-  background-color: var(--hover-bg);
-  border-color: var(--border-color);
-  transform: translateX(4px);
+.timeline-item:hover .timeline-dot {
+  transform: scale(1.3);
+  box-shadow: 0 0 0 4px rgba(5, 145, 255, 0.1);
 }
 
-.article-info {
+.timeline-content {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-.article-title {
+.timeline-content:hover {
+  transform: translateX(4px);
+}
+
+.timeline-date {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.timeline-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--article-title);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.article-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-
-.article-category {
-  padding: 3px 8px;
-  background-color: var(--primary-color);
   color: var(--text-primary);
-  border-radius: 4px;
-  font-size: 11px;
+  line-height: 1.4;
+  transition: color 0.3s ease;
 }
 
-.article-date {
-  color: var(--article-date);
+.timeline-content:hover .timeline-title {
+  color: var(--primary-color);
 }
 
 /* 右侧界面导航样式 */
 .interface-nav {
   flex: 1;
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-.nav-menu {
-  margin-top: 20px;
+.interface-nav .section-card {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.interface-nav .section-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.interface-nav .section-card::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.interface-nav .section-card::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+  transition: background 0.3s ease;
+}
+
+.interface-nav .section-card::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
 }
 
 .menu-list {
@@ -693,5 +773,92 @@ html.dark .layout-header {
 .menu-list .el-menu-item.is-active {
   background-color: var(--primary-color);
   color: white;
+}
+
+/* 用户留言区域样式 */
+.user-comments {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.comments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.comment-card {
+  padding: 16px;
+  border-radius: 12px;
+  background-color: var(--panel-section-bg);
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comment-card:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--border-color);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.comment-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--border-color);
+}
+
+.comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.comment-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.comment-nickname {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.comment-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.comment-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 </style>
