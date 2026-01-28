@@ -193,7 +193,7 @@ const tags = ref([
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 30px;
   position: relative;
   z-index: 1;
 }
