@@ -83,7 +83,7 @@ public class LangChainRagApp {
 
         // 不创建向量搜索索引，使用基本的 MongoDB 存储
         return MongoDbEmbeddingStore.builder()
-                .mongoClient(mongoClient)
+//                .mongoClient(mongoClient)
                 .databaseName(databaseName)
                 .collectionName(collectionName)
                 .indexName(indexName)
