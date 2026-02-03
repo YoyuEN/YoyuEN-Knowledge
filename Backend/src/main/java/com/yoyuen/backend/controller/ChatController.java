@@ -24,7 +24,7 @@ public class ChatController {
 
     @GetMapping("/chat")
     public String model(@RequestParam(value = "message", defaultValue = "你是？") String message) {
-        return chatLanguageModel.chat(message);
+        return chatLanguageModel.generate(message);
     }
 }
 
