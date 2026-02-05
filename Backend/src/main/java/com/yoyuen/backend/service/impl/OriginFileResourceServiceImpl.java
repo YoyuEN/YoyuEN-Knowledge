@@ -1,13 +1,17 @@
 package com.yoyuen.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yoyuen.backend.exception.BusinessException;
 import com.yoyuen.backend.exception.GlobalExceptionHandler;
 import com.yoyuen.backend.mapper.OriginFileResourceMapper;
 import com.yoyuen.backend.model.ai.OriginFileResource;
+import com.yoyuen.backend.model.user.SystemUser;
 import com.yoyuen.backend.service.ObjectStoreService;
 import com.yoyuen.backend.service.OriginFileResourceService;
 import com.yoyuen.backend.service.StorageFile;
+import com.yoyuen.backend.utils.CoreCode;
 import com.yoyuen.backend.utils.FileUtil;
+import com.yoyuen.backend.utils.SecurityFrameworkUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.print.attribute.standard.Media;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @Author: YoyuEN
@@ -50,7 +55,7 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
             md5 = FileUtil.md5(file.getResource().getFile());
             path = objectStoreService.uploadFile(file, BUCKET_NAME, newObjectName);
         }catch (IOException e) {
-            throw new GlobalExceptionHandler(CoreCode.SYSTEM_ERROR, e.getMessage());
+            throw new BusinessException(CoreCode.SYSTEM_ERROR, e.getMessage());
         }
         StorageFile fileInfo = objectStoreService.getFileInfo(BUCKET_NAME, newObjectName);
         OriginFileResource originFileResource = new OriginFileResource();
