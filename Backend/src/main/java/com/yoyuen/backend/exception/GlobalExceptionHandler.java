@@ -1,5 +1,8 @@
 package com.yoyuen.backend.exception;
 
+import com.yoyuen.backend.utils.BaseResponse;
+import com.yoyuen.backend.utils.CoreCode;
+import com.yoyuen.backend.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

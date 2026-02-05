@@ -1,6 +1,6 @@
 package com.yoyuen.backend.exception;
 
-import okhttp3.internal.http2.ErrorCode;
+import com.yoyuen.backend.utils.ErrorCode;
 
 /**
  * @Author: YoyuEN
