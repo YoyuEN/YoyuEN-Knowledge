@@ -2,7 +2,6 @@ package com.yoyuen.backend.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yoyuen.backend.exception.BusinessException;
-import com.yoyuen.backend.exception.GlobalExceptionHandler;
 import com.yoyuen.backend.mapper.OriginFileResourceMapper;
 import com.yoyuen.backend.model.ai.OriginFileResource;
 import com.yoyuen.backend.model.user.SystemUser;
@@ -81,6 +80,4 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
         SystemUser loginUser = SecurityFrameworkUtil.getLoginUser();
         return loginUser.getId() + "/" + UUID.randomUUID().toString().replace("-", "") + "-" + filename;
     }
-
-
 }
