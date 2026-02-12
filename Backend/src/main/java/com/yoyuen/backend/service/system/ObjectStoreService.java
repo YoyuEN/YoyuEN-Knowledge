@@ -1,4 +1,4 @@
-package com.yoyuen.backend.service;
+package com.yoyuen.backend.service.system;
 
 import com.yoyuen.backend.utils.FileUtil;
 import org.springframework.web.multipart.MultipartFile;

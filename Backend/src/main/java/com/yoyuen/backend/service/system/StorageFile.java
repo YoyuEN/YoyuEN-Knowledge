@@ -1,4 +1,4 @@
-package com.yoyuen.backend.service;
+package com.yoyuen.backend.service.system;
 
 /**
  * @Author: YoyuEN

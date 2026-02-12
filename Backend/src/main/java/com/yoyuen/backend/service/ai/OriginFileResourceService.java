@@ -1,4 +1,4 @@
-package com.yoyuen.backend.service;
+package com.yoyuen.backend.service.ai;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yoyuen.backend.model.ai.OriginFileResource;

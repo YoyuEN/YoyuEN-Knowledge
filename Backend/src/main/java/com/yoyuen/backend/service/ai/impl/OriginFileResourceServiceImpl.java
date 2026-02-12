@@ -1,13 +1,13 @@
-package com.yoyuen.backend.service.impl;
+package com.yoyuen.backend.service.ai.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yoyuen.backend.exception.BusinessException;
 import com.yoyuen.backend.mapper.OriginFileResourceMapper;
 import com.yoyuen.backend.model.ai.OriginFileResource;
 import com.yoyuen.backend.model.user.SystemUser;
-import com.yoyuen.backend.service.ObjectStoreService;
-import com.yoyuen.backend.service.OriginFileResourceService;
-import com.yoyuen.backend.service.StorageFile;
+import com.yoyuen.backend.service.system.ObjectStoreService;
+import com.yoyuen.backend.service.ai.OriginFileResourceService;
+import com.yoyuen.backend.service.system.StorageFile;
 import com.yoyuen.backend.utils.CoreCode;
 import com.yoyuen.backend.utils.FileUtil;
 import com.yoyuen.backend.utils.SecurityFrameworkUtil;

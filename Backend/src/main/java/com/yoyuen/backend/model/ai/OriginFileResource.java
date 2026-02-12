@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.yoyuen.backend.pojo.BaseEntity;
-import com.yoyuen.backend.service.StorageFile;
+import com.yoyuen.backend.service.system.StorageFile;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

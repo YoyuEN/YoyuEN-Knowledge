@@ -1,9 +1,9 @@
-package com.yoyuen.backend.service.impl;
+package com.yoyuen.backend.service.system.impl;
 
 import com.yoyuen.backend.mapper.OriginFileResourceMapper;
 import com.yoyuen.backend.model.ai.OriginFileResource;
-import com.yoyuen.backend.service.ObjectStoreService;
-import com.yoyuen.backend.service.StorageFile;
+import com.yoyuen.backend.service.system.ObjectStoreService;
+import com.yoyuen.backend.service.system.StorageFile;
 import com.yoyuen.backend.utils.FileUtil;
 import io.minio.*;
 import io.minio.http.Method;

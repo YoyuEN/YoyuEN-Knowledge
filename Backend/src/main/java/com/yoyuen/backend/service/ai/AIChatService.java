@@ -20,7 +20,7 @@ public interface AIChatService {
     * @Param: chatMessageVO
     * @reture
     * */
-    Flux<ChatResponse> simpleChat(String message);
+    Flux<ChatResponse> simpleChat(ChatMessageVO chatMessageVO);
 
     /*
     * RAG 对话
