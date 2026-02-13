@@ -39,7 +39,7 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public Integer deleteKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO) {
+    public Integer removeKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO) {
         String id = knowledgeBaseVO.getId();
         return this.removeById(id) ? 1 : 0;
     }

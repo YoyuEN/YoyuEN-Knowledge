@@ -1,4 +1,4 @@
-package com.yoyuen.backend.service.system.impl;
+package com.yoyuen.backend.store;
 
 import com.yoyuen.backend.mapper.OriginFileResourceMapper;
 import com.yoyuen.backend.model.ai.OriginFileResource;

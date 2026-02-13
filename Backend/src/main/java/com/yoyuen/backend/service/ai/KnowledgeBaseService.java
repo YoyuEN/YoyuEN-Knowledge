@@ -16,7 +16,7 @@ public interface KnowledgeBaseService {
     String addKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO);
 
 //    删除知识库
-    Integer deleteKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO);
+    Integer removeKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO);
 
 //    所有知识库
     List<KnowledgeBaseVO> KnowledgeList();
