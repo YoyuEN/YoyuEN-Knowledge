@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell.exe -Command \"cd ''E:\\\\YoyuEN\\\\YoyuEN-Knowledge\\\\Backend''; mvn spring-boot:run 2>&1\")",
+      "WebSearch",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(cmd /c \"for /r %USERPROFILE%\\\\.m2\\\\repository\\\\org\\\\springframework\\\\ai %i in \\(spring-ai-core-1.0.0-M4.jar\\) do @echo %i\")",
+      "Bash(powershell -Command:*)"
+    ]
+  }
+}

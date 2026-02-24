@@ -21,6 +21,8 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.model.Media;
 import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.filter.Filter;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -137,25 +139,17 @@ public class AIChatServiceImpl implements AIChatService {
     }
 
     // meta ==> { "user_id"、"knowledge_base_id"、"document_id"}
-    private String buildBaseAccessFilter(List<String> knowledgeBaseIds) {
-//        SystemUser user = SecurityFrameworkUtil.getLoginUser();
+    private Filter.Expression buildBaseAccessFilter(List<String> knowledgeBaseIds) {
+        FilterExpressionBuilder b = new FilterExpressionBuilder();
 
-        // 如果没有 ID，返回一个 false 的表达式
+        // 如果没有 ID，返回一个不匹配任何内容的表达式
         if (knowledgeBaseIds == null || knowledgeBaseIds.isEmpty()) {
-            return "knowledge_base_id in [\"___empty___\"]"; // 不让查询任何知识库
+            log.info("Vector Search Filter: knowledge_base_id in [\"___empty___\"]");
+            return b.in("knowledge_base_id", "___empty___").build();
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append("knowledge_base_id in [");
-        for (int i = 0; i < knowledgeBaseIds.size(); i++) {
-            if (i != 0) {
-                sb.append(",");
-            }
-            sb.append("\"").append(knowledgeBaseIds.get(i)).append("\"");
-        }
-        sb.append("]");
-        log.info("Vector Search Filter SQL: {}", sb);
-        log.info("Vector Search Filter Parameter: {}", knowledgeBaseIds);
-        return sb.toString();
+
+        log.info("Vector Search Filter: knowledge_base_id in {}", knowledgeBaseIds);
+        return b.in("knowledge_base_id", knowledgeBaseIds.toArray(new String[0])).build();
     }
 
 }
