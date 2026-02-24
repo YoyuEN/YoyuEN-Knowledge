@@ -2,7 +2,7 @@ package com.yoyuen.backend.controller.vo;
 
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -15,6 +15,6 @@ import java.util.List;
 public class ChatConversationVO {
     private String id;
     private String title;
-    private Date createTime;
+    private LocalDateTime createTime;
     private List<ChatMessageVO> messages;
 }

@@ -1,7 +1,7 @@
 package com.yoyuen.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.yoyuen.backend.model.ai.KnowledgeBase;
+import com.yoyuen.backend.model.entity.ai.KnowledgeBase;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

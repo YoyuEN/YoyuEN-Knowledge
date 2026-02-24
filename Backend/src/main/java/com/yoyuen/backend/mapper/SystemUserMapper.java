@@ -1,7 +1,7 @@
 package com.yoyuen.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.yoyuen.backend.model.user.SystemUser;
+import com.yoyuen.backend.model.entity.user.SystemUser;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

@@ -1,14 +1,16 @@
-package com.yoyuen.backend.store;
+package com.yoyuen.backend.objectstore.service;
 
 import com.yoyuen.backend.mapper.OriginFileResourceMapper;
-import com.yoyuen.backend.model.ai.OriginFileResource;
+import com.yoyuen.backend.model.entity.ai.OriginFileResource;
 import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.service.system.StorageFile;
 import com.yoyuen.backend.utils.FileUtil;
+
+
 import io.minio.*;
+import com.yoyuen.backend.config.MinioProperties;
 import io.minio.http.Method;
 import io.minio.messages.Item;
-import com.yoyuen.backend.config.MinioProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,13 +21,13 @@ import java.util.List;
 
 /**
  * @Author: YoyuEN
- * @Date: 2026/2/5
- * @Time: 18:43
+ * @Date: 2026/2/24
+ * @Time: 15:53
  * @Description:
  */
 @Slf4j
 @Service
-public class MinIOServiceImpl implements ObjectStoreService {
+public class MinIOService implements ObjectStoreService {
 
     private final MinioProperties minioProperties;
 
@@ -36,7 +38,7 @@ public class MinIOServiceImpl implements ObjectStoreService {
     /**
      * 初始化MinioClient
      */
-    public MinIOServiceImpl(MinioProperties minioProperties, OriginFileResourceMapper originFileResourceMapper) {
+    public MinIOService(MinioProperties minioProperties, OriginFileResourceMapper originFileResourceMapper) {
         this.minioProperties = minioProperties;
         this.minioClient = MinioClient.builder()
                 .endpoint(minioProperties.getEndpoint())
@@ -203,4 +205,5 @@ public class MinIOServiceImpl implements ObjectStoreService {
             throw new RuntimeException("Bucket creation failed");
         }
     }
+
 }

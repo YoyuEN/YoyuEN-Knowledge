@@ -101,8 +101,9 @@
 </template>
 
 <script setup>
-import { ref, nextTick, computed } from 'vue'
+import { ref, nextTick, computed, onUnmounted } from 'vue'
 import { marked } from 'marked'
+import { chatStream } from '@/api/chat/chat.js'
 
 const currentQuestion = ref('')
 const aiReplies = ref([])
@@ -111,6 +112,9 @@ const isThinking = ref(false)
 const repliesContainer = ref(null)
 const fileInput = ref(null)
 const uploadedFiles = ref([])
+
+// 当前流式请求控制器，可用于中断
+let currentAbortController = null
 
 // 配置 marked
 marked.setOptions({
@@ -149,7 +153,6 @@ const scrollToBottom = () => {
 const handleFileUpload = (event) => {
   const files = Array.from(event.target.files)
   uploadedFiles.value.push(...files)
-  // 清空 input，允许重复上传同一文件
   event.target.value = ''
 }
 
@@ -162,7 +165,10 @@ const removeFile = (index) => {
 const sendMessage = async () => {
   if (!canSend.value) return
 
-  // 设置当前问题（显示在顶部）
+  // 中断上一次未完成的请求
+  currentAbortController?.abort()
+
+  // 设置当前问题
   let questionText = inputMessage.value
   if (uploadedFiles.value.length > 0) {
     questionText += ` [附件: ${uploadedFiles.value.map(f => f.name).join(', ')}]`
@@ -173,42 +179,47 @@ const sendMessage = async () => {
   aiReplies.value = []
 
   const userInput = inputMessage.value
-  const files = [...uploadedFiles.value]
-
   inputMessage.value = ''
   uploadedFiles.value = []
 
-  // 显示AI思考状态
+  // 显示 AI 思考状态，并创建空回复占位
   isThinking.value = true
   scrollToBottom()
 
-  // 模拟AI回复延迟（1.5-3秒）
-  setTimeout(() => {
-    // 添加AI回复
-    aiReplies.value.push({
-      content: getAIResponse(userInput, files),
-      time: getCurrentTime()
-    })
+  // 添加空的回复条目，流式内容追加到这里
+  const replyIndex = aiReplies.value.length
+  aiReplies.value.push({ content: '', time: getCurrentTime() })
 
-    isThinking.value = false
-    scrollToBottom()
-  }, 1500 + Math.random() * 1500)
+  currentAbortController = chatStream(
+    userInput,
+    // onChunk：每次收到新内容片段时追加
+    (chunk) => {
+      if (isThinking.value) isThinking.value = false
+      aiReplies.value[replyIndex].content += chunk
+      scrollToBottom()
+    },
+    // onDone：流结束
+    () => {
+      isThinking.value = false
+      currentAbortController = null
+      scrollToBottom()
+    },
+    // onError：请求出错
+    (err) => {
+      isThinking.value = false
+      currentAbortController = null
+      if (aiReplies.value[replyIndex].content === '') {
+        aiReplies.value[replyIndex].content = `请求出错：${err.message}`
+      }
+      scrollToBottom()
+    }
+  )
 }
 
-// 模拟AI回复（实际项目中这里应该调用API）
-const getAIResponse = (input, files) => {
-  const fileInfo = files.length > 0 ? `\n\n**已接收文件：** ${files.map(f => f.name).join(', ')}` : ''
-
-  const responses = [
-    `## 关于"${input}"的回答\n\n这是一个很有深度的话题。根据相关信息分析，我建议从以下几个方面来考虑：\n\n### 主要观点\n\n1. **第一点**：需要明确核心概念\n2. **第二点**：逐步展开分析\n3. **第三点**：综合考虑各种因素\n\n\`\`\`javascript\n// 示例代码\nconst example = "这是一个示例";\nconsole.log(example);\n\`\`\`\n\n希望这个回答对您有帮助！${fileInfo}`,
-
-    `## 针对您的问题\n\n感谢您提出"${input}"这个问题。让我为您详细解答：\n\n### 分析要点\n\n- 首先，我们需要理解问题的本质\n- 其次，要考虑实际应用场景\n- 最后，提供可行的解决方案\n\n> 💡 **提示**：这个问题涉及多个层面，建议从实际应用的角度来探讨。\n\n${fileInfo}`,
-
-    `## 详细解答\n\n您问到的"${input}"是个好问题。基于目前的理解，我的看法是：\n\n### 核心内容\n\n1. **背景分析**\n   - 相关概念说明\n   - 历史发展脉络\n\n2. **具体建议**\n   - 实践方法\n   - 注意事项\n\n3. **总结**\n   - 关键要点回顾\n   - 后续行动建议\n\n---\n\n如有其他问题，欢迎继续提问！${fileInfo}`
-  ]
-
-  return responses[Math.floor(Math.random() * responses.length)]
-}
+// 组件卸载时中断未完成的请求
+onUnmounted(() => {
+  currentAbortController?.abort()
+})
 </script>
 
 <style scoped>

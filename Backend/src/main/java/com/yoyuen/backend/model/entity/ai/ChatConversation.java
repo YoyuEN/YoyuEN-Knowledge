@@ -1,4 +1,4 @@
-package com.yoyuen.backend.model.ai;
+package com.yoyuen.backend.model.entity.ai;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.yoyuen.backend.pojo.BaseEntity;

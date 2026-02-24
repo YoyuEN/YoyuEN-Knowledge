@@ -1,7 +1,7 @@
 package com.yoyuen.backend.utils;
 
 import com.yoyuen.backend.exception.BusinessException;
-import com.yoyuen.backend.model.user.SystemUser;
+import com.yoyuen.backend.model.entity.user.SystemUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;

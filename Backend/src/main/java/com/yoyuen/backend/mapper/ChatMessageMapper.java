@@ -1,7 +1,7 @@
 package com.yoyuen.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.yoyuen.backend.model.ai.ChatMessage;
+import com.yoyuen.backend.model.entity.ai.ChatMessage;
 import org.apache.ibatis.annotations.Mapper;
 
 /**

@@ -1,4 +1,4 @@
-package com.yoyuen.backend.model.ai;
+package com.yoyuen.backend.model.entity.ai;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -25,7 +25,7 @@ public class ChatMessage extends BaseEntity {
     /*
     * 聊天信息
     * */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private String id;
 
     /*
@@ -36,6 +36,10 @@ public class ChatMessage extends BaseEntity {
     * 消息序号
     * */
     private Integer messageNo;
+    /*
+    * 对话内容
+    * */
+    private String content;
     /*
     * 角色
     * */
@@ -49,6 +53,11 @@ public class ChatMessage extends BaseEntity {
     * */
     @TableField(typeHandler = JacksonTypeHandler.class)
     private List<String> resourceIds = new ArrayList<>();
+
+    /*
+    * 是否删除
+    * */
+    private Boolean isClean;
 
 }
 

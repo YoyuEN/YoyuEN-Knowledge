@@ -1,6 +1,8 @@
 package com.yoyuen.backend.service.ai;
 
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.vectorstore.VectorStore;
 
 /**
  * @Author: YoyuEN
@@ -24,4 +26,14 @@ public interface LLMService {
     * 获取多模态对话模型
     * */
     ChatModel getMultimodalModel();
+
+    /*
+    * 向量化模型
+    * */
+    EmbeddingModel getEmbeddingModel();
+
+    /*
+    * 获取向量存储模型
+    * */
+    VectorStore getVectorStore();
 }

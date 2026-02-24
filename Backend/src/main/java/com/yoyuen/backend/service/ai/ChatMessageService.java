@@ -1,7 +1,7 @@
 package com.yoyuen.backend.service.ai;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yoyuen.backend.model.ai.ChatMessage;
+import com.yoyuen.backend.model.entity.ai.ChatMessage;
 import org.springframework.ai.chat.messages.Message;
 
 import java.util.List;

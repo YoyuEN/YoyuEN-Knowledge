@@ -1,4 +1,4 @@
-package com.yoyuen.backend.model.ai;
+package com.yoyuen.backend.model.entity.ai;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;

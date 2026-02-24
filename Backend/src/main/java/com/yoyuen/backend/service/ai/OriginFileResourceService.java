@@ -1,10 +1,11 @@
 package com.yoyuen.backend.service.ai;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.yoyuen.backend.model.ai.OriginFileResource;
+import com.yoyuen.backend.controller.vo.ResourceVO;
+import com.yoyuen.backend.model.entity.ai.OriginFileResource;
+import org.springframework.ai.model.Media;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.attribute.standard.Media;
 import java.util.List;
 
 /**
@@ -14,9 +15,20 @@ import java.util.List;
  * @Description:
  */
 public interface OriginFileResourceService extends IService<OriginFileResource> {
+    /*
+    * 根据id转换Media
+    * */
     List<Media> fromResourceId(List<String> resourceIds);
 
+    /*
+    * 对话附件
+    * */
     String uploadFile(MultipartFile file);
 
-    String uploadFile(MultipartFile file, String knowledgeId);
+    /*
+    * 知识库附件
+    * */
+    Long uploadFile(MultipartFile file, String knowledgeId);
+
+    List<ResourceVO> resourcesFromIds(List<String> resourceIds);
 }

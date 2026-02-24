@@ -1,4 +1,4 @@
-package com.yoyuen.backend.model.user;
+package com.yoyuen.backend.model.entity.user;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -8,36 +8,31 @@ import com.yoyuen.backend.pojo.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serial;
-
 /**
  * @Author: YoyuEN
  * @Date: 2026/2/5
- * @Time: 19:26
+ * @Time: 19:27
  * @Description:
  */
 @Data
-@TableName(value = "system_role")
 @EqualsAndHashCode(callSuper = true)
-public class SystemRole extends BaseEntity {
-
-    @Serial
-    private static final long serialVersionUID = 1L;
+@TableName(value = "system_permission")
+public class SystemPermission extends BaseEntity {
 
     /**
-     * id
+     * 权限ID
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
-     * 角色名
+     * 权限名称
      */
     @TableField(value = "name")
     private String name;
 
     /**
-     * 角色描述
+     * 权限描述
      */
     @TableField(value = "description")
     private String description;

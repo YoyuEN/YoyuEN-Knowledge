@@ -1,4 +1,4 @@
-package com.yoyuen.backend.model.user;
+package com.yoyuen.backend.model.entity.user;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
