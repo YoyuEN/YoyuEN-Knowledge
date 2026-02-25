@@ -1,5 +1,6 @@
 package com.yoyuen.backend.service.ai.impl;
 
+import com.yoyuen.backend.chat.MessageChatMemoryAdvisor;
 import com.yoyuen.backend.controller.vo.ChatMessageVO;
 import com.yoyuen.backend.controller.vo.ChatRequestVO;
 import com.yoyuen.backend.exception.BusinessException;
@@ -13,7 +14,6 @@ import com.yoyuen.backend.utils.SecurityFrameworkUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.model.ChatModel;
@@ -151,5 +151,4 @@ public class AIChatServiceImpl implements AIChatService {
         log.info("Vector Search Filter: knowledge_base_id in {}", knowledgeBaseIds);
         return b.in("knowledge_base_id", knowledgeBaseIds.toArray(new String[0])).build();
     }
-
 }

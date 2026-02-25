@@ -103,10 +103,11 @@
 <script setup>
 import { ref, nextTick, computed, onUnmounted } from 'vue'
 import { marked } from 'marked'
-import { chatStream } from '@/api/chat/chat.js'
+import { chatStreamRAG, createConversation } from '@/api/chat/chat.js'
 
 const currentQuestion = ref('')
 const aiReplies = ref([])
+const conversationId = ref(null)
 const inputMessage = ref('')
 const isThinking = ref(false)
 const repliesContainer = ref(null)
@@ -182,6 +183,16 @@ const sendMessage = async () => {
   inputMessage.value = ''
   uploadedFiles.value = []
 
+  // 首次发送时创建对话
+  if (!conversationId.value) {
+    try {
+      const conversation = await createConversation({ title: userInput.slice(0, 50) })
+      conversationId.value = conversation?.id ?? null
+    } catch (err) {
+      console.error('创建对话失败:', err)
+    }
+  }
+
   // 显示 AI 思考状态，并创建空回复占位
   isThinking.value = true
   scrollToBottom()
@@ -190,8 +201,9 @@ const sendMessage = async () => {
   const replyIndex = aiReplies.value.length
   aiReplies.value.push({ content: '', time: getCurrentTime() })
 
-  currentAbortController = chatStream(
+  currentAbortController = chatStreamRAG(
     userInput,
+    conversationId.value,
     // onChunk：每次收到新内容片段时追加
     (chunk) => {
       if (isThinking.value) isThinking.value = false

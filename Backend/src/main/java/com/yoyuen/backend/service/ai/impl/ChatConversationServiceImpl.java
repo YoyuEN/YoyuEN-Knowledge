@@ -52,7 +52,8 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
         }
         ChatConversation chatConversation = new ChatConversation();
         chatConversation.setTitle(title);
-        chatConversation.setUserId(SecurityFrameworkUtil.getCurrUserId());
+//        chatConversation.setUserId(SecurityFrameworkUtil.getCurrUserId());
+        chatConversation.setUserId(1L);
         this.saveOrUpdate(chatConversation);
         ChatConversationVO chatConversationVO = new ChatConversationVO();
         chatConversationVO.setId(chatConversation.getId());

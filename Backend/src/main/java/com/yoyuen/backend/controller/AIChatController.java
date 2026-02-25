@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
  * @Author: YoyuEN
  * @Date: 2026/2/12
@@ -33,6 +36,14 @@ public class AIChatController {
 
     @PostMapping(value = "/chat/unify", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<Generation> unifyChat(@RequestBody ChatRequestVO chatRequestVO) {
+        return chatService.unifyChat(chatRequestVO).map(ChatResponse::getResult).flatMapSequential(Flux::just);
+    }
+
+    @PostMapping(value = "/chat/simpleRAG", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<Generation> simpleRagChat(@RequestBody ChatRequestVO chatRequestVO) {
+        chatRequestVO.setChatType("simpleRAG");
+        List<String> knowledgeBaseIds = List.of(new String[]{"79a0baee5adbf82a7b29fb79f32ac551"});
+        chatRequestVO.setKnowledgeIds(knowledgeBaseIds);
         return chatService.unifyChat(chatRequestVO).map(ChatResponse::getResult).flatMapSequential(Flux::just);
     }
 }

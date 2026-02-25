@@ -29,6 +29,7 @@ public class ChatMessageVO {
     * 角色
     * */
     private String role;
+
     private List<String> resourceIds;
 
     /*
