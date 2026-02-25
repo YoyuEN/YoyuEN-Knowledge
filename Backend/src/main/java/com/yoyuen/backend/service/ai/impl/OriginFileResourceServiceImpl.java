@@ -123,7 +123,7 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
         List<Document> splitDocumentList = tokenTextSplitter.split(rawDocumentList);
         List<Document> hasMetaDocumentList = splitDocumentList.stream().map(item -> {
             Map<String, Object> metadata = item.getMetadata();
-            metadata.put("user_id", SecurityFrameworkUtil.getCurrUserId());
+//            metadata.put("user_id", SecurityFrameworkUtil.getCurrUserId());
             metadata.put("knowledge_base_id", knowledgeId);
             metadata.put("document_id", documentEntity.getId());
             return new Document(item.getContent(), metadata);
@@ -155,7 +155,9 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
 
     private OriginFileResource upload(MultipartFile file, String bucketName) {
         String originalFilename = file.getOriginalFilename();
-        String objectName = objectNameWithUserId(originalFilename);
+//        String objectName = objectNameWithUserId(originalFilename);
+        //不使用用户验证
+        String objectName = originalFilename;
         String id = FileUtil.generatorFileId(bucketName, objectName);
         String newObjectName = String.format("%s/%s", objectName, id);
         String path;
