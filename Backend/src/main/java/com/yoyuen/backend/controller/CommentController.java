@@ -4,14 +4,18 @@ import com.yoyuen.backend.controller.vo.CommentVO;
 import com.yoyuen.backend.entity.Comment;
 import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
+import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @Author: YoyuEN
@@ -25,6 +29,9 @@ public class CommentController {
 
     private final CommentService commentService;
     private final ContentService contentService;
+    private final ObjectStoreService objectStoreService;
+
+    private static final String AVATAR_BUCKET = "avatars";
 
     /**
      * 获取内容的评论列表（树形结构）
@@ -38,10 +45,38 @@ public class CommentController {
     }
 
     /**
-     * 添加评论
+     * 添加评论（支持上传头像）
      */
-    @PostMapping("/create")
-    public BaseResponse<String> create(@Valid @RequestBody CommentVO commentVO) {
+    @PostMapping(value = "/create", consumes = "multipart/form-data")
+    public BaseResponse<String> create(
+            @ModelAttribute @Valid CommentVO commentVO,
+            @RequestPart(value = "avatarFile", required = false) MultipartFile avatarFile) throws IOException {
+
+        // 如果上传了头像文件，先上传到 MinIO
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            String originalFilename = avatarFile.getOriginalFilename();
+            String ext = originalFilename != null && originalFilename.contains(".")
+                    ? originalFilename.substring(originalFilename.lastIndexOf("."))
+                    : ".png";
+            String objectName = "comment/" + UUID.randomUUID() + ext;
+            objectStoreService.uploadFile(avatarFile, AVATAR_BUCKET, objectName);
+            // 获取访问链接并设置到 VO
+            String avatarUrl = objectStoreService.getTmpFileUrl(AVATAR_BUCKET, objectName, 7 * 24 * 3600);
+            commentVO.setAvatar(avatarUrl);
+        }
+
+        Comment comment = toEntity(commentVO);
+        String commentId = commentService.addComment(comment);
+        // 更新内容的评论数
+        contentService.incrementCommentCount(commentVO.getContentId());
+        return ResultUtils.success(commentId);
+    }
+
+    /**
+     * 添加评论（JSON格式，不带头像上传）
+     */
+    @PostMapping(value = "/create", consumes = "application/json")
+    public BaseResponse<String> createJson(@RequestBody @Valid CommentVO commentVO) {
         Comment comment = toEntity(commentVO);
         String commentId = commentService.addComment(comment);
         // 更新内容的评论数

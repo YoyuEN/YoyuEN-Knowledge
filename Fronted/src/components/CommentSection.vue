@@ -68,7 +68,6 @@
               :on-change="handleAvatarChange"
               accept="image/*"
               :show-file-list="false"
-              :key="uploadKey"
               class="avatar-upload-btn"
             >
               <el-avatar :src="newComment.avatar" size="32"></el-avatar>
@@ -352,21 +351,14 @@ const addEmoji = (emoji) => {
   showEmojiPicker.value = false;
 };
 
-// 处理头像上传
+// 暂存选中的头像文件，提交时随表单一起发送
+const avatarFile = ref(null);
+
 const handleAvatarChange = (file) => {
-  // 实际项目中应该上传图片到服务器，这里简化处理
-  // 创建图片URL
-  const imageUrl = URL.createObjectURL(file.raw);
-  // 保存头像URL到评论数据
-  newComment.value.avatar = imageUrl;
-
-  // 重置上传组件，允许再次选择相同文件
-  // 通过强制更新组件的key来重置上传组件状态
-  uploadKey.value = Date.now();
+  avatarFile.value = file.raw;
+  // 生成本地预览 URL，用于 el-avatar 展示
+  newComment.value.avatar = URL.createObjectURL(file.raw);
 };
-
-// 用于重置上传组件的key
-const uploadKey = ref(0);
 
 // 回复评论相关数据
 const replyToCommentId = ref(null);
@@ -471,18 +463,30 @@ const submitComment = async () => {
     return;
   }
 
-  const commentData = {
-    contentId: props.data.id,
-    contentType: props.contentType,
-    avatar: newComment.value.avatar || "/src/assets/picture/YoyuEN.png",
-    author: newComment.value.nickname || "匿名用户",
-    userId: localStorage.getItem("userId") || "",
-    content: newComment.value.content.trim(),
-    parentId: replyToCommentId.value || "",
-  };
+  let payload;
+  if (avatarFile.value) {
+    payload = new FormData();
+    payload.append("contentId", props.data.id);
+    payload.append("contentType", props.contentType);
+    payload.append("author", newComment.value.nickname || "匿名用户");
+    payload.append("userId", localStorage.getItem("userId") || "");
+    payload.append("content", newComment.value.content.trim());
+    payload.append("parentId", replyToCommentId.value || "");
+    payload.append("avatarFile", avatarFile.value);
+  } else {
+    payload = {
+      contentId: props.data.id,
+      contentType: props.contentType,
+      avatar: newComment.value.avatar || "/src/assets/picture/YoyuEN.png",
+      author: newComment.value.nickname || "匿名用户",
+      userId: localStorage.getItem("userId") || "",
+      content: newComment.value.content.trim(),
+      parentId: replyToCommentId.value || "",
+    };
+  }
 
   try {
-    await createComment(commentData);
+    await createComment(payload);
     // 清空评论表单
     newComment.value.content = "";
     newComment.value.nickname = "";
@@ -490,6 +494,7 @@ const submitComment = async () => {
     newComment.value.url = "";
     replyToCommentId.value = null;
     replyToUsername.value = null;
+    avatarFile.value = null;
     // 通知父组件刷新评论列表
     emit("comment-added");
   } catch (e) {

@@ -11,10 +11,17 @@ export function fetchCommentList(contentId, contentType) {
 
 /**
  * 添加评论
- * @param {{ contentId: string, contentType: string, content: string, parentId?: string }} data
+ * @param {FormData | Object} data - FormData (带头像上传) 或普通对象 (不带头像)
  */
 export function createComment(data) {
-  return request.post('/comment/create', data)
+  if (data instanceof FormData) {
+    return request.post('/comment/create', data, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  }
+  return request.post('/comment/create', data, {
+    headers: { 'Content-Type': 'application/json' }
+  })
 }
 
 /**
