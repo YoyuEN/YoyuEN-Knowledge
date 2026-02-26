@@ -177,13 +177,10 @@ export function chatStreamRAG(message, conversationId, onChunk, onDone, onError)
               onDone?.()
               return
             }
-
             buffer += decoder.decode(value, { stream: true })
-
             // SSE 格式：data: {...}\n\n，按双换行符分割事件
             const events = buffer.split('\n\n')
             buffer = events.pop() || '' // 最后一段可能不完整
-
             for (const event of events) {
               const lines = event.split('\n')
               for (const line of lines) {
