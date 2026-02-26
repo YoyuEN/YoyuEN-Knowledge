@@ -11,10 +11,6 @@
         <el-icon><ChatDotRound /></el-icon>
         <template #title>AI对话</template>
       </el-menu-item>
-      <el-menu-item index="/knowledge-blog">
-        <el-icon><Document /></el-icon>
-        <template #title>知识博客</template>
-      </el-menu-item>
       <el-menu-item index="/content">
         <el-icon><Briefcase /></el-icon>
         <template #title>内容创作</template>

@@ -11,7 +11,7 @@ public interface CoreCode {
     /**
      * 成功
      */
-    ErrorCode SUCCESS = new ErrorCode(0, "success");
+    ErrorCode SUCCESS = new ErrorCode(200, "success");
 
     ErrorCode PARAMS_ERROR = new ErrorCode(400, "请求参数错误");
 

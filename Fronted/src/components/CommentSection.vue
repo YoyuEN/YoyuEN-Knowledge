@@ -216,9 +216,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, defineProps } from "vue";
-import { useRouter } from "vue-router";
+import { ref } from "vue";
 import { ChatDotRound } from "@element-plus/icons-vue";
+import { createComment } from "@/api/comment/comment.js";
 
 // 定义组件属性
 const props = defineProps({
@@ -230,9 +230,13 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  contentType: {
+    type: String,
+    default: '',
+  },
 });
 
-const router = useRouter();
+const emit = defineEmits(['comment-added']);
 
 // 新评论表单数据
 const newComment = ref({
@@ -461,72 +465,36 @@ const cancelReply = () => {
 };
 
 // 提交评论
-const submitComment = () => {
+const submitComment = async () => {
   // 验证评论内容
   if (!newComment.value.content.trim()) {
     return;
   }
 
-  // 生成新评论ID
-  const allComments = [...props.comments];
-  props.comments.forEach((comment) => {
-    if (comment.replies) {
-      allComments.push(...comment.replies);
-    }
-  });
-  const newId =
-    allComments.length > 0 ? Math.max(...allComments.map((c) => c.id)) + 1 : 1;
-
-  // 获取当前时间
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const currentTime = `${year}-${month}-${day} ${hours}:${minutes}`;
-
-  // 创建新评论或回复对象
   const commentData = {
-    id: newId,
-    avatar: newComment.value.avatar || "/src/assets/picture/YoyuEN.png", // 使用用户上传的头像或默认头像
-    author: newComment.value.nickname || "匿名用户", // 使用用户输入的昵称或默认用户名
-    url: newComment.value.url || "", // 保存用户输入的链接
-    time: currentTime,
+    contentId: props.data.id,
+    contentType: props.contentType,
+    avatar: newComment.value.avatar || "/src/assets/picture/YoyuEN.png",
+    author: newComment.value.nickname || "匿名用户",
+    userId: localStorage.getItem("userId") || "",
     content: newComment.value.content.trim(),
+    parentId: replyToCommentId.value || "",
   };
 
-  if (replyToCommentId.value) {
-    // 如果是回复，添加到对应的主评论的replies数组中
-    const mainComment = props.comments.find(
-      (comment) => comment.id === replyToCommentId.value
-    );
-    if (mainComment) {
-      if (!mainComment.replies) {
-        mainComment.replies = [];
-      }
-      // 添加replyTo字段指向被回复的用户
-      mainComment.replies.push({
-        ...commentData,
-        replyTo: replyToUsername.value,
-      });
-    }
-    // 重置回复状态，无论mainComment是否存在
+  try {
+    await createComment(commentData);
+    // 清空评论表单
+    newComment.value.content = "";
+    newComment.value.nickname = "";
+    newComment.value.email = "";
+    newComment.value.url = "";
     replyToCommentId.value = null;
     replyToUsername.value = null;
-  } else {
-    // 如果是主评论，添加到评论列表开头
-    props.comments.unshift({
-      ...commentData,
-      replies: [], // 初始化回复数组
-    });
+    // 通知父组件刷新评论列表
+    emit("comment-added");
+  } catch (e) {
+    console.error("评论提交失败", e);
   }
-
-  // 清空评论表单
-  newComment.value.content = "";
-  newComment.value.nickname = "";
-  newComment.value.email = "";
-  newComment.value.url = "";
 };
 </script>
 

@@ -251,8 +251,8 @@ onUnmounted(() => {
   background-color: rgba(255, 255, 255, 0.75);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  margin: 5px 16px;
-  width: calc(100% - 32px);
+  margin: 5px 25px;
+  width: calc(100% - 50px);
 }
 
 html.dark .layout-header {

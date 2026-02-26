@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import KnowledgeBlog from '../views/KnowledgeBlog.vue'
 import Content from '../views/Content.vue'
 import ContentDetal from '../views/ContentDetal.vue'
 import Profile from '../views/Profile.vue'
@@ -11,12 +10,6 @@ const routes = [
     name: 'Home',
     component: Home,
     meta: { title: 'AI对话' }
-  },
-  {
-    path: '/knowledge-blog',
-    name: 'KnowledgeBlog',
-    component: KnowledgeBlog,
-    meta: { title: '知识博客' }
   },
   {
     path: '/content',

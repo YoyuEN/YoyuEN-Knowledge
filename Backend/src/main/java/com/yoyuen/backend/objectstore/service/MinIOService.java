@@ -205,5 +205,4 @@ public class MinIOService implements ObjectStoreService {
             throw new RuntimeException("Bucket creation failed");
         }
     }
-
 }

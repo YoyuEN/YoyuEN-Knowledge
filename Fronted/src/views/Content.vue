@@ -12,17 +12,25 @@
         </div>
         <div class="recommend-grid">
           <div v-for="item in recommendList" :key="item.id" class="recommend-card" @click="goToDetail(item, categoryTypeMap[item.category] || 'article')">
-            <div class="card-thumb">
+            <div class="rc-image">
               <img :src="item.cover" :alt="item.title" />
-              <span class="card-badge">{{ item.category }}</span>
-            </div>
-            <div class="card-info">
-              <div class="card-title">{{ item.title }}</div>
-              <div class="card-desc">{{ item.desc }}</div>
-              <div class="card-meta">
-                <span class="meta-date">{{ item.date }}</span>
-                <span class="meta-divider">·</span>
-                <span class="meta-comment">{{ item.comments }} 评论</span>
+              <div class="rc-overlay"></div>
+              <div class="rc-time">{{ item.date }}</div>
+              <div class="rc-avatar">
+                <img src="/src/assets/picture/YoyuEN.png" alt="Author" />
+              </div>
+              <div class="rc-comment-count">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>{{ item.comments }}</span>
+              </div>
+              <div class="rc-content">
+                <h3 class="rc-title">{{ item.title }}</h3>
+                <p class="rc-summary">{{ item.desc.length > 40 ? item.desc.slice(0, 40) + '...' : item.desc }}</p>
+                <div class="rc-tags">
+                  <span class="rc-tag">{{ item.category }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -201,11 +209,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { fetchRecommendContent, fetchContentByCategory } from '@/api/content/content.js'
+import { fetchLatestMurmur } from '@/api/murmur/murmur.js'
 
 const router = useRouter()
-const placeholder = 'https://picsum.photos/seed/'
 
 const categoryTypeMap = { '文章': 'article', '游戏': 'game', '学习': 'study', '视频': 'video' }
 
@@ -213,44 +222,57 @@ const goToDetail = (item, type) => {
   router.push({ name: 'ContentDetail', params: { type, id: item.id } })
 }
 
-const recommendList = ref([
-  { id: 1, title: 'Vue 3 全面升级指南', desc: '从 Vue 2 迁移到 Vue 3 的完整方案与最佳实践', date: '2026-02-20', comments: 38, category: '文章', cover: placeholder + 'vue/400/220' },
-  { id: 2, title: '原神新版本攻略', desc: '4.5 版本全新角色技能机制与队伍搭配思路', date: '2026-02-18', comments: 62, category: '游戏', cover: placeholder + 'game/400/220' },
-  { id: 3, title: 'Spring Boot 微服务实战', desc: '从零搭建企业级微服务架构，覆盖网关、注册中心等', date: '2026-02-15', comments: 24, category: '学习', cover: placeholder + 'java/400/220' },
-  { id: 4, title: '摄影后期调色技巧', desc: '5 分钟学会 Lightroom 高级调色，让照片更有质感', date: '2026-02-12', comments: 17, category: '视频', cover: placeholder + 'photo/400/220' },
-])
+// 将后端 ContentVO 字段归一化为模板期望的字段
+function normalizeContent(item) {
+  return {
+    ...item,
+    desc: item.description ?? item.desc ?? '',
+    comments: item.commentCount ?? item.comments ?? 0,
+    date: item.createTime ?? item.date ?? '',
+  }
+}
 
-const articleList = ref([
-  { id: 1, title: 'TypeScript 高级类型体操入门', desc: '通过实际案例理解条件类型、映射类型与模板字面量类型，提升代码可维护性。', date: '2026-02-22', comments: 45, cover: placeholder + 'ts/120/80' },
-  { id: 2, title: 'Docker + Nginx 前端部署最佳实践', desc: '一文搞定容器化部署流程，涵盖多阶段构建、反向代理与 HTTPS 配置。', date: '2026-02-19', comments: 31, cover: placeholder + 'docker/120/80' },
-  { id: 3, title: '算法每日一题：动态规划系列', desc: '整理了 LeetCode 上经典 DP 题型，附详细解题思路与复杂度分析。', date: '2026-02-16', comments: 19, cover: placeholder + 'algo/120/80' },
-])
+const recommendList = ref([])
+const articleList = ref([])
+const gameList = ref([])
+const studyList = ref([])
+const videoList = ref([])
+const murmurList = ref([])
 
-const gameList = ref([
-  { id: 1, title: '艾尔登法环 DLC 全 Boss 攻略', desc: '影之地全 BOSS 详细打法、武器推荐与伤害机制解析，新手必看。', date: '2026-02-21', comments: 87, cover: placeholder + 'elden/120/80' },
-  { id: 2, title: '黑神话：悟空 性能优化设置', desc: '高帧率与高画质如何兼得？提供各显卡档次的推荐配置方案。', date: '2026-02-17', comments: 53, cover: placeholder + 'wukong/120/80' },
-  { id: 3, title: '星穹铁道 2.3 版本角色强度榜', desc: '最新版本各角色 T 档评级，附组队思路与遗器推荐。', date: '2026-02-13', comments: 42, cover: placeholder + 'hsr/120/80' },
-])
+onMounted(async () => {
+  const [recommend, articles, games, studies, videos, murmurs] = await Promise.allSettled([
+    fetchRecommendContent(),
+    fetchContentByCategory('article'),
+    fetchContentByCategory('game'),
+    fetchContentByCategory('study'),
+    fetchContentByCategory('video'),
+    fetchLatestMurmur(5),
+  ])
 
-const studyList = ref([
-  { id: 1, title: 'Redis 缓存穿透、击穿与雪崩详解', desc: '深入理解三大缓存问题的触发场景与对应解决方案，面试高频题。', date: '2026-02-23', comments: 28, cover: placeholder + 'redis/120/80' },
-  { id: 2, title: 'MySQL 索引失效的 10 个场景', desc: '结合 EXPLAIN 执行计划，逐一分析索引失效原因及优化建议。', date: '2026-02-20', comments: 36, cover: placeholder + 'mysql/120/80' },
-  { id: 3, title: 'React Hooks 深度解析', desc: 'useState、useEffect、useCallback、useMemo 原理与最佳实践。', date: '2026-02-14', comments: 22, cover: placeholder + 'react/120/80' },
-])
-
-const videoList = ref([
-  { id: 1, title: '手撕 LRU 缓存算法', desc: '用 Map + 双向链表实现 O(1) 操作的 LRU，配合动画演示讲解。', date: '2026-02-24', comments: 15, cover: placeholder + 'lru/120/80' },
-  { id: 2, title: '我的 2025 年度总结', desc: '记录这一年的技术成长、生活感悟与新年计划，欢迎一起交流。', date: '2026-02-11', comments: 33, cover: placeholder + 'vlog/120/80' },
-  { id: 3, title: 'Gym 健身入门：如何制定训练计划', desc: '从零开始的健身指南，动作讲解 + 饮食建议，适合健身新手。', date: '2026-02-08', comments: 20, cover: placeholder + 'gym/120/80' },
-])
-
-const murmurList = ref([
-  { id: 1, text: '今天终于把 Redis 哨兵模式搞明白了，感觉打通了任督二脉 🎉', date: '02-26' },
-  { id: 2, text: '健身第 30 天，发现坚持比方法更重要，先动起来再说。', date: '02-25' },
-  { id: 3, text: '翻了翻以前写的代码，真的有种想删库跑路的冲动……', date: '02-24' },
-  { id: 4, text: '春天来了，适合出去拍照，准备周末去公园走走。', date: '02-23' },
-  { id: 5, text: '推荐一首歌：Nuvole Bianche，写代码听这个太合适了。', date: '02-22' },
-])
+  if (recommend.status === 'fulfilled') {
+    recommendList.value = (recommend.value.data || []).map(normalizeContent)
+  }
+  if (articles.status === 'fulfilled') {
+    articleList.value = (articles.value.data || []).map(normalizeContent)
+  }
+  if (games.status === 'fulfilled') {
+    gameList.value = (games.value.data || []).map(normalizeContent)
+  }
+  if (studies.status === 'fulfilled') {
+    studyList.value = (studies.value.data || []).map(normalizeContent)
+  }
+  if (videos.status === 'fulfilled') {
+    videoList.value = (videos.value.data || []).map(normalizeContent)
+  }
+  console.log(videoList.value)
+  if (murmurs.status === 'fulfilled') {
+    murmurList.value = (murmurs.value.data || []).map(m => ({
+      ...m,
+      text: m.content ?? m.text ?? '',
+      date: m.createTime ?? m.date ?? '',
+    }))
+  }
+})
 </script>
 
 <style scoped>
@@ -258,23 +280,27 @@ const murmurList = ref([
 .page-wrapper {
   display: flex;
   gap: 24px;
-  margin: 0 auto;
-  padding: 80px 24px 48px;
+  margin: 36px auto;
+  padding: 40px 24px 0px;
   align-items: flex-start;
   background: #fff;
-  min-height: 100vh;
+  min-height: calc(100vh - 90px);
 }
+
+.module {
+  margin-bottom: 40px;
+  }
 
 /* ---- 左侧内容 ---- */
 .content-main {
   flex: 1;
   min-width: 0;
+  padding: 20px;
+  border: 1px solid #ebebeb;
+  border-radius: 10px;
 }
 
 /* ---- 模块公共 ---- */
-.module {
-  margin-bottom: 48px;
-}
 
 .module-header {
   display: flex;
@@ -311,74 +337,174 @@ const murmurList = ref([
 }
 
 .recommend-card {
-  border: 1px solid #ebebeb;
   border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .recommend-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
-.card-thumb {
+.rc-image {
   position: relative;
   width: 100%;
-  height: 140px;
+  height: 200px;
   overflow: hidden;
-  background: #f5f5f5;
+  background: #f0f0f0;
 }
 
-.card-thumb img {
+.rc-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.recommend-card:hover .rc-image img {
+  transform: scale(1.05);
+}
+
+.rc-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.7) 100%);
+  transition: background 0.3s ease;
+}
+
+.recommend-card:hover .rc-overlay {
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.8) 100%);
+}
+
+.rc-time {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 2;
+}
+
+.rc-avatar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 2;
+  border: 2px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.rc-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.card-badge {
+.rc-comment-count {
   position: absolute;
   top: 10px;
-  left: 10px;
-  background: rgba(0, 0, 0, 0.55);
+  right: 120px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   color: #fff;
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 20px;
+  font-size: 12px;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(10px);
+  padding: 4px 8px;
+  border-radius: 4px;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
 }
 
-.card-info {
-  padding: 12px 14px;
+.recommend-card:hover .rc-comment-count {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.card-title {
+.rc-content {
+  padding: 16px;
+}
+
+.rc-title {
+  margin: 0 0 10px;
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-desc {
-  font-size: 12px;
-  color: #888;
-  line-height: 1.6;
+  color: #fff;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-bottom: 8px;
+  position: absolute;
+  bottom: 36px;
+  left: 16px;
+  right: 16px;
+  z-index: 2;
+  transition: all 0.3s ease;
 }
 
-.card-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.rc-summary {
+  margin: 0 0 10px;
   font-size: 12px;
-  color: #bbb;
+  color: #e0e0e0;
+  line-height: 1.5;
+  position: absolute;
+  bottom: 36px;
+  left: 16px;
+  right: 16px;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.recommend-card:hover .rc-title {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.recommend-card:hover .rc-summary {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  position: absolute;
+  bottom: 10px;
+  left: 16px;
+  right: 16px;
+  z-index: 2;
+}
+
+.rc-tag {
+  background: transparent;
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
 }
 
 /* ---- 列表通用 ---- */
