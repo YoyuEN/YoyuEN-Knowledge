@@ -463,27 +463,23 @@ const submitComment = async () => {
     return;
   }
 
-  let payload;
-  if (avatarFile.value) {
-    payload = new FormData();
-    payload.append("contentId", props.data.id);
-    payload.append("contentType", props.contentType);
-    payload.append("author", newComment.value.nickname || "匿名用户");
-    payload.append("userId", localStorage.getItem("userId") || "");
-    payload.append("content", newComment.value.content.trim());
-    payload.append("parentId", replyToCommentId.value || "");
-    payload.append("avatarFile", avatarFile.value);
-  } else {
-    payload = {
-      contentId: props.data.id,
-      contentType: props.contentType,
-      avatar: newComment.value.avatar || "/src/assets/picture/YoyuEN.png",
-      author: newComment.value.nickname || "匿名用户",
-      userId: localStorage.getItem("userId") || "",
-      content: newComment.value.content.trim(),
-      parentId: replyToCommentId.value || "",
-    };
+  // 获取最终的头像文件（自定义或默认）
+  let finalAvatarFile = avatarFile.value;
+  if (!finalAvatarFile) {
+    const defaultAvatarUrl = new URL("/src/assets/picture/YoyuEN.png", import.meta.url).href;
+    const response = await fetch(defaultAvatarUrl);
+    const blob = await response.blob();
+    finalAvatarFile = new File([blob], "YoyuEN.png", { type: blob.type });
   }
+
+  const payload = new FormData();
+  payload.append("contentId", props.data.id);
+  payload.append("contentType", props.contentType);
+  payload.append("author", newComment.value.nickname || "匿名用户");
+  payload.append("userId", localStorage.getItem("userId") || "");
+  payload.append("content", newComment.value.content.trim());
+  payload.append("parentId", replyToCommentId.value || "");
+  payload.append("avatarFile", finalAvatarFile);
 
   try {
     await createComment(payload);

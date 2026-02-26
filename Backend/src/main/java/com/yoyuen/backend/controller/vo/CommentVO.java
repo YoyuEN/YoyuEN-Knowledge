@@ -1,7 +1,9 @@
 package com.yoyuen.backend.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,6 +25,10 @@ public class CommentVO {
     private String contentType;
 
     private String avatar;
+
+    /** 头像文件（仅用于上传，不序列化） */
+    @JsonIgnore
+    private MultipartFile avatarFile;
 
     private String author;
 

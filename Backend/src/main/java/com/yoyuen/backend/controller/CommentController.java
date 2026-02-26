@@ -48,11 +48,10 @@ public class CommentController {
      * 添加评论（支持上传头像）
      */
     @PostMapping(value = "/create", consumes = "multipart/form-data")
-    public BaseResponse<String> create(
-            @ModelAttribute @Valid CommentVO commentVO,
-            @RequestPart(value = "avatarFile", required = false) MultipartFile avatarFile) throws IOException {
+    public BaseResponse<String> create(@ModelAttribute @Valid CommentVO commentVO) throws IOException {
 
         // 如果上传了头像文件，先上传到 MinIO
+        MultipartFile avatarFile = commentVO.getAvatarFile();
         if (avatarFile != null && !avatarFile.isEmpty()) {
             String originalFilename = avatarFile.getOriginalFilename();
             String ext = originalFilename != null && originalFilename.contains(".")
