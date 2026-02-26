@@ -353,9 +353,10 @@ const itemComments = computed(() => {
 }
 
 .content-container {
-    margin-top: 70px;
+  margin-top: 70px;
+  margin-bottom: 20px;
   padding: 0 24px;
-  height: calc(100vh - 70px);
+  height: calc(100vh - 90px);
   display: flex;
   gap: 24px;
   overflow: hidden;

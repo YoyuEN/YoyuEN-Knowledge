@@ -55,38 +55,40 @@
       </div>
     </div>
     <div class="profile-content">
-      <div class="profile-item">
-        <h3>网站数据</h3>
-        <!-- 网站数据 -->
-        <div class="website-data">
-          <!-- 文章数 -->
-          <div class="data-item">
-            <div class="data-number">
-              <n-number-animation :from="0" :to="100"/>
+      <div class="profile-row">
+        <div class="profile-item profile-item--data">
+          <h3>网站数据</h3>
+          <!-- 网站数据 -->
+          <div class="website-data">
+            <!-- 文章数 -->
+            <div class="data-item">
+              <div class="data-number">
+                <n-number-animation :from="0" :to="100"/>
+              </div>
+              <div class="data-label">文章</div>
             </div>
-            <div class="data-label">文章</div>
-          </div>
-          <!-- 动态数 -->
-          <div class="data-item">
-            <div class="data-number">
-              <n-number-animation :from="0" :to="1000" />
+            <!-- 动态数 -->
+            <div class="data-item">
+              <div class="data-number">
+                <n-number-animation :from="0" :to="1000" />
+              </div>
+              <div class="data-label">动态</div>
             </div>
-            <div class="data-label">动态</div>
-          </div>
-          <!-- 评论数 -->
-          <div class="data-item">
-            <div class="data-number">
-              <n-number-animation :from="0" :to="10000" />
+            <!-- 评论数 -->
+            <div class="data-item">
+              <div class="data-number">
+                <n-number-animation :from="0" :to="10000" />
+              </div>
+              <div class="data-label">评论</div>
             </div>
-            <div class="data-label">评论</div>
           </div>
         </div>
-      </div>
-      <!-- 活跃度 -->
-      <div class="profile-item">
-        <h3>活跃度</h3>
-        <div class="heatmap-container">
-          <Heatmap />
+        <!-- 活跃度 -->
+        <div class="profile-item profile-item--heatmap">
+          <h3>活跃度</h3>
+          <div class="heatmap-container">
+            <Heatmap />
+          </div>
         </div>
       </div>
       
@@ -402,8 +404,27 @@ const tags = ref([
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
+.profile-row {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  margin: 0 50px;
+}
+
 .profile-item {
   margin: 0 50px;
+}
+
+.profile-item--data {
+  flex-shrink: 0;
+  margin: 0;
+  width: 800px;
+}
+
+.profile-item--heatmap {
+  flex: 1;
+  margin: 0;
+  min-width: 0;
 }
 
 .profile-item h3 {

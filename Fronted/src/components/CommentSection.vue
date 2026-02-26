@@ -532,10 +532,7 @@ const submitComment = () => {
 
 <style scoped>
 .comments-section {
-  margin: 20px;
   padding: 10px 20px;
-  box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.18);
-  border-radius: 18px;
 }
 
 .single-comment-section {
