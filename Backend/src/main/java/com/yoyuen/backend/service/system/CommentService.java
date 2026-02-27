@@ -12,6 +12,11 @@ import java.util.List;
 public interface CommentService {
 
     /**
+     * 根据ID获取单条评论
+     */
+    Comment getById(String id);
+
+    /**
      * 根据内容ID和类型获取评论列表（树形结构）
      */
     List<Comment> listByContent(String contentId, String contentType);

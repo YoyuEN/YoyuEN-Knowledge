@@ -1,7 +1,11 @@
 package com.yoyuen.backend.controller;
 
 import com.yoyuen.backend.controller.vo.CommentVO;
+import com.yoyuen.backend.controller.vo.KnowledgeBaseVO;
 import com.yoyuen.backend.entity.Comment;
+import com.yoyuen.backend.entity.Content;
+import com.yoyuen.backend.service.ai.KnowledgeBaseService;
+import com.yoyuen.backend.service.ai.OriginFileResourceService;
 import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
@@ -9,11 +13,15 @@ import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,6 +30,7 @@ import java.util.UUID;
  * @Date: 2026/2/26
  * @Description: 评论控制器
  */
+@Slf4j
 @RestController
 @RequestMapping("/comment")
 @RequiredArgsConstructor
@@ -30,6 +39,8 @@ public class CommentController {
     private final CommentService commentService;
     private final ContentService contentService;
     private final ObjectStoreService objectStoreService;
+    private final KnowledgeBaseService knowledgeBaseService;
+    private final OriginFileResourceService originFileResourceService;
 
     private static final String AVATAR_BUCKET = "avatars";
 
@@ -59,15 +70,15 @@ public class CommentController {
                     : ".png";
             String objectName = "comment/" + UUID.randomUUID() + ext;
             objectStoreService.uploadFile(avatarFile, AVATAR_BUCKET, objectName);
-            // 获取访问链接并设置到 VO
             String avatarUrl = objectStoreService.getTmpFileUrl(AVATAR_BUCKET, objectName, 7 * 24 * 3600);
             commentVO.setAvatar(avatarUrl);
         }
 
         Comment comment = toEntity(commentVO);
         String commentId = commentService.addComment(comment);
-        // 更新内容的评论数
         contentService.incrementCommentCount(commentVO.getContentId());
+        commentVO.setId(commentId);
+        syncToKnowledgeBase(commentVO, "新增");
         return ResultUtils.success(commentId);
     }
 
@@ -78,8 +89,9 @@ public class CommentController {
     public BaseResponse<String> createJson(@RequestBody @Valid CommentVO commentVO) {
         Comment comment = toEntity(commentVO);
         String commentId = commentService.addComment(comment);
-        // 更新内容的评论数
         contentService.incrementCommentCount(commentVO.getContentId());
+        commentVO.setId(commentId);
+        syncToKnowledgeBase(commentVO, "新增");
         return ResultUtils.success(commentId);
     }
 
@@ -88,7 +100,12 @@ public class CommentController {
      */
     @PostMapping("/remove")
     public BaseResponse<Boolean> remove(@RequestBody CommentVO commentVO) {
-        return ResultUtils.success(commentService.removeComment(commentVO.getId()));
+        Comment existing = commentService.getById(commentVO.getId());
+        boolean result = commentService.removeComment(commentVO.getId());
+        if (existing != null) {
+            syncToKnowledgeBase(toVO(existing), "删除");
+        }
+        return ResultUtils.success(result);
     }
 
     /**
@@ -112,11 +129,9 @@ public class CommentController {
         if (comment == null) return null;
         CommentVO vo = new CommentVO();
         BeanUtils.copyProperties(comment, vo);
-        // 通过父评论的 author 推导 replyTo，无需数据库字段
         if (parent != null) {
             vo.setReplyTo(parent.getAuthor());
         }
-        // 递归转换子评论，将当前评论作为其子评论的父级
         if (comment.getReplies() != null && !comment.getReplies().isEmpty()) {
             vo.setReplies(comment.getReplies().stream().map(reply -> toVO(reply, comment)).toList());
         }
@@ -130,5 +145,51 @@ public class CommentController {
         Comment comment = new Comment();
         BeanUtils.copyProperties(vo, comment);
         return comment;
+    }
+
+    /**
+     * 将评论同步写入 MD 文件并上传至知识库
+     */
+    private void syncToKnowledgeBase(CommentVO commentVO, String operation) {
+        try {
+            List<KnowledgeBaseVO> bases = knowledgeBaseService.KnowledgeList();
+            if (bases.isEmpty()) {
+                log.warn("[知识库同步-评论] 未找到任何知识库，跳过同步，author={}", commentVO.getAuthor());
+                return;
+            }
+            String knowledgeId = bases.get(0).getId();
+            // 查询所属内容标题
+            String contentTitle = commentVO.getContentId();
+            Content content = contentService.getById(commentVO.getContentId());
+            if (content != null) {
+                contentTitle = content.getTitle();
+            }
+            LocalDateTime now = LocalDateTime.now();
+            String timeStr = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String safeAuthor = commentVO.getAuthor().replaceAll("[\\\\/:*?\"<>|\\s]", "_");
+            String fileName = "comment_" + safeAuthor + "_" + timeStr + ".md";
+            byte[] mdBytes = buildMarkdown(commentVO, operation, contentTitle, now).getBytes(StandardCharsets.UTF_8);
+            originFileResourceService.uploadMarkdown(mdBytes, fileName, knowledgeId);
+            log.info("[知识库同步-评论] 成功，operation={}, author={}, file={}", operation, commentVO.getAuthor(), fileName);
+        } catch (Exception e) {
+            log.error("[知识库同步-评论] 失败，operation={}, author={}, error={}", operation, commentVO.getAuthor(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 根据评论 VO 构建 Markdown 字符串
+     */
+    private String buildMarkdown(CommentVO commentVO, String operation, String contentTitle, LocalDateTime now) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("# 评论 - ").append(commentVO.getAuthor()).append("\n\n");
+        sb.append("**操作**: ").append(operation).append("  \n");
+        sb.append("**时间**: ").append(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("  \n");
+        sb.append("**所属文章**: 《").append(contentTitle).append("》  \n");
+        sb.append("**内容类型**: ").append(commentVO.getContentType()).append("  \n");
+        if (commentVO.getReplyTo() != null && !commentVO.getReplyTo().isBlank()) {
+            sb.append("**回复对象**: @").append(commentVO.getReplyTo()).append("  \n");
+        }
+        sb.append("\n## 评论内容\n\n").append(commentVO.getContent()).append("\n");
+        return sb.toString();
     }
 }

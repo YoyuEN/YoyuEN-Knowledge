@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> implements CommentService {
-
     @Override
     public List<Comment> listByContent(String contentId, String contentType) {
         // 查询所有评论
@@ -71,6 +70,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         for (Comment child : children) {
             setReplies(child, childrenMap);
         }
+    }
+
+    @Override
+    public Comment getById(String id) {
+        return this.baseMapper.selectById(id);
     }
 
     @Transactional(rollbackFor = Exception.class)
