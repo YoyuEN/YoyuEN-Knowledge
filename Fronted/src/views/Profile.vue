@@ -7,11 +7,9 @@
           <div class="avatar">
             <img src="/src/assets/picture/YoyuEN.png" alt="用户头像" />
           </div>
-
           <div class="user-basic">
             <h3>YoyuEN</h3>
-            <p class="user-signature">宁鸣而死，不默而生！</p>
-           
+            <p class="user-signature">宁鸣而死，不默而生！</p>           
           </div>
         </div>
         <div class="welcome-container">
@@ -98,11 +96,11 @@
         <div class="photo-wall-container">
           <div
             v-for="(photo, index) in photos"
-            :key="photo"
+            :key="photo.id"
             class="photo-item"
             :style="{ animationDelay: `${index * 0.1}s` }"
           >
-            <n-image :src="photo" alt="照片" />
+            <n-image :src="photo.url" :alt="photo.description || '照片'" />
           </div>
         </div>
       </div>
@@ -110,14 +108,20 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import Heatmap from "../components/Heatmap.vue";
+import { fetchPhotoList } from "../api/photo/photo.js";
 
-const photos = ref([
-  "/src/assets/picture/life1.jpg",
-  "/src/assets/picture/life2.jpg",
-  "/src/assets/picture/life3.jpg",
-]);
+const photos = ref([]);
+
+onMounted(async () => {
+  try {
+    const res = await fetchPhotoList();
+    photos.value = res.data || [];
+  } catch (e) {
+    console.error("获取照片列表失败", e);
+  }
+});
 
 // 技术栈
 const techStack = ref([

@@ -73,7 +73,7 @@ public class ContentController {
     @PostMapping("/create")
     public BaseResponse<String> create(@Valid @RequestBody ContentVO contentVO) {
         if (contentVO.getCover() == null || contentVO.getCover().isBlank()) {
-            contentVO.setCover(objectStoreService.getTmpFileUrl(DEFAULT_BUCKET, DEFAULT_COVER));
+            contentVO.setCover(DEFAULT_BUCKET + "/" + DEFAULT_COVER);
         }
         Content content = toEntity(contentVO);
         String id = contentService.addContent(content);
@@ -114,6 +114,14 @@ public class ContentController {
         ContentVO vo = new ContentVO();
         BeanUtils.copyProperties(content, vo);
         vo.setCreatorId(content.getCreator());
+        // 若封面存的是 "bucket/objectName" 路径，则实时生成预签名 URL
+        String cover = content.getCover();
+        if (cover != null && cover.contains("/") && !cover.startsWith("http")) {
+            int slash = cover.indexOf("/");
+            String bucket = cover.substring(0, slash);
+            String objectName = cover.substring(slash + 1);
+            vo.setCover(objectStoreService.getTmpFileUrl(bucket, objectName));
+        }
         return vo;
     }
 

@@ -399,3 +399,62 @@ CREATE TRIGGER "update_murmur_updated_at"
 CREATE TRIGGER "update_comment_updated_at"
     BEFORE UPDATE ON "comment"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- ================================
+-- 照片表
+-- ================================
+CREATE TABLE "photo" (
+                         id          VARCHAR(32) PRIMARY KEY NOT NULL,
+                         bucket_name VARCHAR(100) NOT NULL,
+                         object_name TEXT NOT NULL,
+                         description TEXT,
+                         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         deleted     BOOLEAN DEFAULT FALSE,
+                         creator     VARCHAR(255),
+                         updater     VARCHAR(255)
+);
+
+COMMENT ON TABLE "photo" IS '照片表';
+COMMENT ON COLUMN "photo".id IS '照片ID';
+COMMENT ON COLUMN "photo".bucket_name IS 'MinIO存储桶名称';
+COMMENT ON COLUMN "photo".object_name IS 'MinIO对象名称';
+COMMENT ON COLUMN "photo".description IS '照片描述';
+COMMENT ON COLUMN "photo".create_time IS '创建时间';
+COMMENT ON COLUMN "photo".update_time IS '更新时间';
+COMMENT ON COLUMN "photo".deleted IS '是否删除';
+
+CREATE TRIGGER "update_photo_updated_at"
+    BEFORE UPDATE ON "photo"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+
+-- ================================
+-- 照片表
+-- ================================
+CREATE TABLE "photo" (
+                         id          VARCHAR(32) PRIMARY KEY NOT NULL,
+                         bucket_name VARCHAR(100) NOT NULL,
+                         object_name TEXT NOT NULL,
+                         description TEXT,
+                         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                         deleted     BOOLEAN DEFAULT FALSE,
+                         creator     VARCHAR(255),
+                         updater     VARCHAR(255)
+);
+
+COMMENT ON TABLE "photo" IS '照片表';
+COMMENT ON COLUMN "photo".id IS '照片ID';
+COMMENT ON COLUMN "photo".bucket_name IS 'MinIO存储桶名称';
+COMMENT ON COLUMN "photo".object_name IS 'MinIO对象名称';
+COMMENT ON COLUMN "photo".description IS '照片描述';
+COMMENT ON COLUMN "photo".create_time IS '创建时间';
+COMMENT ON COLUMN "photo".update_time IS '更新时间';
+COMMENT ON COLUMN "photo".deleted IS '是否删除';
+
+CREATE TRIGGER "update_photo_updated_at"
+    BEFORE UPDATE ON "photo"
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE INDEX "idx_photo_create_time" ON "photo"(create_time DESC);
