@@ -74,11 +74,16 @@
                 <!-- 中间最新文章区域 -->
                 <div class="latest-articles">
                   <div class="section-card">
-                    <div class="timeline-item" v-for="i in 5" :key="i">
+                    <div
+                      class="timeline-item"
+                      v-for="article in latestArticles"
+                      :key="article.id"
+                      @click="goToArticle(article.id)"
+                    >
                       <div class="timeline-dot"></div>
                       <div class="timeline-content">
-                        <div class="timeline-date">2026-01-0{{ i }}</div>
-                        <div class="timeline-title">文章标题 {{ i }}</div>
+                        <div class="timeline-date">{{ article.createTime }}</div>
+                        <div class="timeline-title">{{ article.title }}</div>
                       </div>
                     </div>
                   </div>
@@ -123,6 +128,7 @@ import { useRouter, useRoute } from 'vue-router'
 import Menu from './menu.vue'
 import { Menu as MenuIcon, Sunny, Moon, House, Document, Setting, User, Close, Message, Bell, Search, Calendar, Clock } from '@element-plus/icons-vue'
 import { useTheme } from '../composables/useTheme'
+import { fetchContentByCategory } from '../api/content/content.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -134,6 +140,7 @@ const searchFocused = ref(false)
 const currentTime = ref(new Date())
 const dailyQuote = ref('')
 const dailyQuoteSource = ref('')
+const latestArticles = ref([])
 let timeInterval = null
 
 const userComments = ref([
@@ -179,6 +186,20 @@ const handleMenuItemClick = () => {
   showDrawer.value = false
 }
 
+const goToArticle = (id) => {
+  showDrawer.value = false
+  router.push(`/content-detail/article/${id}`)
+}
+
+const fetchLatestArticles = async () => {
+  try {
+    const res = await fetchContentByCategory('article')
+    latestArticles.value = (res.data || []).slice(0, 5)
+  } catch (e) {
+    console.error('获取最新文章失败', e)
+  }
+}
+
 const formatTime = (date) => {
   const hours = String(date.getHours()).padStart(2, '0')
   const minutes = String(date.getMinutes()).padStart(2, '0')
@@ -215,6 +236,7 @@ onMounted(() => {
     currentTime.value = new Date()
   }, 1000)
   fetchDailyQuote()
+  fetchLatestArticles()
 })
 
 onUnmounted(() => {

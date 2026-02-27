@@ -70,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
@@ -82,8 +82,8 @@ import { fetchContentByCategory, fetchContentById } from '@/api/content/content.
 import { fetchCommentList } from '@/api/comment/comment.js'
 
 const route = useRoute()
-const type = route.params.type
-const itemId = route.params.id
+const type = computed(() => route.params.type)
+const itemId = computed(() => route.params.id)
 
 // 将后端 ContentVO 字段归一化为模板期望的字段
 function normalizeContent(item) {
@@ -118,7 +118,7 @@ const onSlideChange = async () => {
 
 async function loadComments(contentId) {
   try {
-    const res = await fetchCommentList(contentId, type)
+    const res = await fetchCommentList(contentId, type.value)
     itemComments.value = (res.data || []).map(c => ({
       ...c,
       time: c.createTime ?? c.time ?? '',
@@ -129,18 +129,19 @@ async function loadComments(contentId) {
   }
 }
 
-onMounted(async () => {
+async function loadData() {
+  loaded.value = false
   try {
     // 1. 获取同类型所有内容（用于 swiper 列表）
-    const listRes = await fetchContentByCategory(type)
+    const listRes = await fetchContentByCategory(type.value)
     swiperItems.value = (listRes.data || []).map(normalizeContent)
 
     // 2. 确定 initialSlide（数据就绪后才渲染 swiper）
-    const idx = swiperItems.value.findIndex(i => String(i.id) === String(itemId))
+    const idx = swiperItems.value.findIndex(i => String(i.id) === String(itemId.value))
     initialSlide.value = idx >= 0 ? idx : 0
 
     // 3. 获取当前条目完整详情（同时触发浏览量 +1）
-    const detailRes = await fetchContentById(itemId)
+    const detailRes = await fetchContentById(itemId.value)
     currentItem.value = normalizeContent(detailRes.data || swiperItems.value[initialSlide.value] || {})
 
     // 4. 加载评论
@@ -153,7 +154,11 @@ onMounted(async () => {
     console.error('加载内容失败', e)
     loaded.value = true
   }
-})
+}
+
+onMounted(loadData)
+
+watch(() => route.params, loadData)
 </script>
 
 <style scoped>
