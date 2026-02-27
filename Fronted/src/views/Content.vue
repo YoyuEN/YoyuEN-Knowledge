@@ -640,19 +640,65 @@ onMounted(async () => {
   gap: 8px;
 }
 
+/* 头像浮动动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* 光环流动动画 */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
 .profile-avatar {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  overflow: hidden;
-  border: 2px solid #ebebeb;
+  border: 2px solid rgba(255, 255, 255, 0.9);
   margin-bottom: 4px;
+  position: relative;
+  animation: float 3s ease-in-out infinite;
+  transition: all 0.4s ease;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* 光环层 */
+.profile-avatar::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #4facfe, #667eea);
+  background-size: 300% 300%;
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.4s ease;
+  animation: shimmer 3s linear infinite;
+  filter: blur(8px);
+}
+
+.profile-avatar:hover::before {
+  opacity: 0.8;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .profile-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+  transition: all 0.4s ease;
+}
+
+.profile-avatar:hover img {
+  filter: brightness(1.1);
 }
 
 .profile-name {

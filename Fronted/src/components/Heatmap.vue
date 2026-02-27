@@ -30,31 +30,37 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue'
+import { fetchActivityStats } from '@/api/content/content.js'
 
-// 生成最近100天的活跃数据
-const generateLast100DaysData = () => {
+const DAYS = 100
+
+// 生成最近 N 天的日期序列，count 默认为 0
+const buildDateSkeleton = () => {
   const data = []
   const today = new Date()
-
-  for (let i = 99; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-
-    // 随机生成活跃度数据 (0-30之间)
-    // 你可以后续替换为真实的后端数据
-    const count = Math.floor(Math.random() * 31)
-
-    data.push({
-      date: date.toISOString().split('T')[0],
-      count: count
-    })
+  for (let i = DAYS - 1; i >= 0; i--) {
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    data.push({ date: d.toISOString().split('T')[0], count: 0 })
   }
-
   return data
 }
 
-const rawActivity = ref(generateLast100DaysData())
+const rawActivity = ref(buildDateSkeleton())
+
+onMounted(async () => {
+  try {
+    const res = await fetchActivityStats(DAYS)
+    const statsMap = res.data || {}
+    rawActivity.value = rawActivity.value.map(item => ({
+      ...item,
+      count: statsMap[item.date] ?? 0
+    }))
+  } catch {
+    // 保持骨架数据（全为 0），静默失败
+  }
+})
 
 const heatmapData = computed(() => {
   return rawActivity.value.map(item => {
@@ -79,11 +85,11 @@ const tooltip = reactive({
 // 根据值获取颜色
 const getCellColor = (value) => {
   if (value === 0) return '#ebedf0'
-  if (value <= 5) return '#ffcdd2'
-  if (value <= 10) return '#ef9a9a'
-  if (value <= 15) return '#e57373'
-  if (value <= 20) return '#ef5350'
-  if (value <= 25) return '#f44336'
+  if (value <= 2) return '#ffcdd2'
+  if (value <= 4) return '#ef9a9a'
+  if (value <= 6) return '#e57373'
+  if (value <= 8) return '#ef5350'
+  if (value <= 10) return '#f44336'
   return '#c62828'
 }
 

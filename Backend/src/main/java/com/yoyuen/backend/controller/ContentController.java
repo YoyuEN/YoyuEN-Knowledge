@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: YoyuEN
@@ -65,6 +66,15 @@ public class ContentController {
     public BaseResponse<List<ContentVO>> listRecommend() {
         List<Content> contents = contentService.listRecommend();
         return ResultUtils.success(contents.stream().map(this::toVO).toList());
+    }
+
+    /**
+     * 获取最近 N 天每日发布数量（热力图数据）
+     */
+    @GetMapping("/activity")
+    public BaseResponse<Map<String, Integer>> getActivityStats(
+            @RequestParam(defaultValue = "100") int days) {
+        return ResultUtils.success(contentService.getActivityStats(days));
     }
 
     /**

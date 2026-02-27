@@ -24,6 +24,14 @@ export function fetchRecommendContent() {
 }
 
 /**
+ * 获取最近 N 天每日发布数量（热力图）
+ * @param {number} days 天数，默认100
+ */
+export function fetchActivityStats(days = 100) {
+  return request.get('/content/activity', { params: { days } })
+}
+
+/**
  * 添加内容
  * @param {{ title: string, description: string, category: string, cover: string, content: string, isRecommend: boolean }} data
  */

@@ -3,6 +3,7 @@ package com.yoyuen.backend.service.system;
 import com.yoyuen.backend.entity.Content;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: YoyuEN
@@ -50,4 +51,10 @@ public interface ContentService {
      * 增加评论数
      */
     void incrementCommentCount(String id);
+
+    /**
+     * 获取最近 N 天每日发布数量（用于热力图）
+     * key = yyyy-MM-dd，value = 当天发布数
+     */
+    Map<String, Integer> getActivityStats(int days);
 }

@@ -11,7 +11,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Author: YoyuEN
@@ -82,5 +86,20 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         wrapper.eq(Content::getId, id)
                 .setSql("comment_count = comment_count + 1");
         this.update(wrapper);
+    }
+
+    @Override
+    public Map<String, Integer> getActivityStats(int days) {
+        LocalDateTime since = LocalDateTime.now().minusDays(days - 1L).toLocalDate().atStartOfDay();
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false)
+                .ge(Content::getCreateTime, since);
+        List<Content> contents = this.list(wrapper);
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        return contents.stream()
+                .collect(Collectors.groupingBy(
+                        c -> c.getCreateTime().format(fmt),
+                        Collectors.collectingAndThen(Collectors.counting(), Long::intValue)
+                ));
     }
 }
