@@ -6,6 +6,7 @@ import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.service.ai.KnowledgeBaseService;
 import com.yoyuen.backend.service.ai.OriginFileResourceService;
 import com.yoyuen.backend.service.system.ContentService;
+import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import jakarta.validation.Valid;
@@ -33,6 +34,10 @@ public class ContentController {
     private final ContentService contentService;
     private final KnowledgeBaseService knowledgeBaseService;
     private final OriginFileResourceService originFileResourceService;
+    private final ObjectStoreService objectStoreService;
+
+    private static final String DEFAULT_BUCKET = "default";
+    private static final String DEFAULT_COVER = "default.jpg";
 
     /**
      * 根据ID获取内容详情
@@ -67,6 +72,9 @@ public class ContentController {
      */
     @PostMapping("/create")
     public BaseResponse<String> create(@Valid @RequestBody ContentVO contentVO) {
+        if (contentVO.getCover() == null || contentVO.getCover().isBlank()) {
+            contentVO.setCover(objectStoreService.getTmpFileUrl(DEFAULT_BUCKET, DEFAULT_COVER));
+        }
         Content content = toEntity(contentVO);
         String id = contentService.addContent(content);
         contentVO.setId(id);

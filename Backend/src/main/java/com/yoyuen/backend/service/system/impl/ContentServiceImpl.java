@@ -42,7 +42,8 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getIsRecommend, true)
                 .eq(Content::getDeleted, false)
-                .orderByDesc(Content::getCreateTime);
+                .orderByDesc(Content::getCreateTime)
+                .last("LIMIT 4");
         return this.list(wrapper);
     }
 
