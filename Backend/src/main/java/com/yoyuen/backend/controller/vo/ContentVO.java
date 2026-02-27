@@ -1,5 +1,6 @@
 package com.yoyuen.backend.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -33,6 +34,7 @@ public class ContentVO {
 
     private Boolean isRecommend;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime createTime;
 
     private String creatorId;

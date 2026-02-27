@@ -537,7 +537,7 @@ html.dark .layout-header {
   height: calc(100% - 30px);
   overflow: hidden;
   border-radius: 8px;
-  margin: 15px;
+  margin: 15px 25px;
   backdrop-filter: blur(10px);
   background-color: var(--menu-panel-bg);
 }

@@ -43,7 +43,7 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         wrapper.eq(Content::getIsRecommend, true)
                 .eq(Content::getDeleted, false)
                 .orderByDesc(Content::getCreateTime)
-                .last("LIMIT 4");
+                .last("LIMIT 2");
         return this.list(wrapper);
     }
 

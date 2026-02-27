@@ -418,7 +418,7 @@ const tags = ref([
 .profile-item--data {
   flex-shrink: 0;
   margin: 0;
-  width: 800px;
+  width: 1000px;
 }
 
 .profile-item--heatmap {
