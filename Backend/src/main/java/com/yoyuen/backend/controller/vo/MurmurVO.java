@@ -1,5 +1,6 @@
 package com.yoyuen.backend.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -18,6 +19,7 @@ public class MurmurVO {
     @NotBlank(message = "内容不能为空")
     private String text;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDateTime createTime;
 
     private String creatorId;

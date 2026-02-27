@@ -39,6 +39,11 @@ public class MurmurServiceImpl extends ServiceImpl<MurmurMapper, Murmur> impleme
         return this.list(wrapper);
     }
 
+    @Override
+    public Murmur getById(String id) {
+        return this.baseMapper.selectById(id);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String addMurmur(Murmur murmur) {

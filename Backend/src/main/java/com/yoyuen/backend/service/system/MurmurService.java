@@ -12,6 +12,11 @@ import java.util.List;
 public interface MurmurService {
 
     /**
+     * 根据ID获取单条碎碎念
+     */
+    Murmur getById(String id);
+
+    /**
      * 获取碎碎念列表
      */
     List<Murmur> list();
