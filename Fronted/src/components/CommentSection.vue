@@ -530,8 +530,12 @@ const submitComment = async () => {
 }
 
 .comment-section-content {
-  padding: 20px;
+  padding: 20px 0;
   position: relative;
+}
+
+.comment-item{
+  padding-left: 20px;
 }
 
 .comment-content {
@@ -541,13 +545,14 @@ const submitComment = async () => {
 }
 .comment-son-item {
   border-top: 1px solid var(--border-color);
+  border-radius: 18px;
   position: relative;
-  padding: 20px 20px 20px 0;
-  margin-top: 20px;
+  padding-top: 20px;
+  margin: 20px 0 20px 20px;
 }
 
 .comment-son-item .comment-time {
-  right: -20px;
+  right: 0;
 }
 
 .comment-time {

@@ -39,7 +39,7 @@
           <div class="ai-label">AI 总结</div>
           <p>{{ currentItem.desc }}</p>
         </div>
-        <div class="article-body" v-html="currentItem.content"></div>
+        <div class="article-body" v-html="currentItem.content" @click="handleContentClick"></div>
       </div>
     </div>
 
@@ -71,7 +71,7 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import 'swiper/css'
 import 'swiper/css/navigation'
@@ -82,6 +82,7 @@ import { fetchContentByCategory, fetchContentById } from '@/api/content/content.
 import { fetchCommentList } from '@/api/comment/comment.js'
 
 const route = useRoute()
+const router = useRouter()
 const type = computed(() => route.params.type)
 const itemId = computed(() => route.params.id)
 
@@ -117,14 +118,19 @@ const onSlideChange = async () => {
   }
 }
 
+// 递归归一化评论字段（所有层级的回复都处理）
+function normalizeComment(c) {
+  return {
+    ...c,
+    time: c.createTime ?? c.time ?? '',
+    replies: (c.replies || []).map(normalizeComment),
+  }
+}
+
 async function loadComments(contentId) {
   try {
     const res = await fetchCommentList(contentId, type.value)
-    itemComments.value = (res.data || []).map(c => ({
-      ...c,
-      time: c.createTime ?? c.time ?? '',
-      replies: (c.replies || []).map(r => ({ ...r, time: r.createTime ?? r.time ?? '' })),
-    }))
+    itemComments.value = (res.data || []).map(normalizeComment)
   } catch {
     itemComments.value = []
   }
@@ -170,6 +176,16 @@ async function loadData() {
   }
 }
 
+// 拦截文章正文中的链接点击，内部链接走 Vue Router 避免整页刷新
+function handleContentClick(e) {
+  const link = e.target.closest('a')
+  if (!link) return
+  const href = link.getAttribute('href')
+  if (!href || href.startsWith('http') || href.startsWith('//') || href.startsWith('mailto:')) return
+  e.preventDefault()
+  router.push(href)
+}
+
 function scrollToHash() {
   const hash = route.hash
   if (!hash) return
@@ -185,8 +201,8 @@ function scrollToHash() {
 
 onMounted(loadData)
 
-// 精确监听 type/id 两个参数，避免 deep watch 误触发
-watch([() => route.params.type, () => route.params.id], ([newType, newId]) => {
+// 监听路由参数变化（直接监听 computed ref，比 getter 更可靠）
+watch([type, itemId], ([newType, newId]) => {
   if (newType && newId) loadData()
 })
 
