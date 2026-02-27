@@ -39,6 +39,9 @@ public class CommentVO {
 
     private String parentId;
 
+    /** 被回复人昵称（非数据库字段，由父评论 author 推导） */
+    private String replyTo;
+
     private LocalDateTime createTime;
 
     private List<CommentVO> replies;

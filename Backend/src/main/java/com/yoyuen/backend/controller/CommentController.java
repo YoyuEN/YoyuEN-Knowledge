@@ -105,12 +105,20 @@ public class CommentController {
      * Entity 转 VO（递归处理子评论）
      */
     private CommentVO toVO(Comment comment) {
+        return toVO(comment, null);
+    }
+
+    private CommentVO toVO(Comment comment, Comment parent) {
         if (comment == null) return null;
         CommentVO vo = new CommentVO();
         BeanUtils.copyProperties(comment, vo);
-        // 递归转换子评论
+        // 通过父评论的 author 推导 replyTo，无需数据库字段
+        if (parent != null) {
+            vo.setReplyTo(parent.getAuthor());
+        }
+        // 递归转换子评论，将当前评论作为其子评论的父级
         if (comment.getReplies() != null && !comment.getReplies().isEmpty()) {
-            vo.setReplies(comment.getReplies().stream().map(this::toVO).toList());
+            vo.setReplies(comment.getReplies().stream().map(reply -> toVO(reply, comment)).toList());
         }
         return vo;
     }

@@ -168,10 +168,10 @@
             </div>
           </div>
 
-          <!-- 其他评论：对评论的评论 -->
+          <!-- 其他评论：对评论的评论（展平所有嵌套回复） -->
           <div v-if="mainComment.replies && mainComment.replies.length > 0">
             <div
-              v-for="reply in mainComment.replies"
+              v-for="reply in flattenReplies(mainComment)"
               :key="reply.id"
               class="comment-son-item"
             >
@@ -193,7 +193,7 @@
                     <el-button
                       type="text"
                       size="small"
-                      @click="showReplyForm(mainComment.id, reply.author)"
+                      @click="showReplyForm(reply.id, reply.author)"
                       :icon="ChatDotRound"
                     >
                     </el-button>
@@ -434,6 +434,16 @@ const getTotalComments = () => {
     }
   });
   return total;
+};
+
+// 展平嵌套 replies，用于渲染时保持单层列表
+const flattenReplies = (comment) => {
+  const result = [];
+  for (const reply of (comment.replies || [])) {
+    result.push(reply);
+    result.push(...flattenReplies(reply));
+  }
+  return result;
 };
 
 // 显示回复表单
