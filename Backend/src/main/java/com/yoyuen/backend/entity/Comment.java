@@ -66,6 +66,12 @@ public class Comment extends BaseEntity {
     private String parentId;
 
     /**
+     * 是否推荐（展示在首页）
+     */
+    @TableField("is_recommend")
+    private Boolean isRecommend;
+
+    /**
      * 子评论列表（非数据库字段）
      */
     @TableField(exist = false)

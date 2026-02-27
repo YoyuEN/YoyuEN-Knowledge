@@ -100,7 +100,7 @@
               <!-- 用户评论区域 -->
               <div class="user-comments">
                 <div class="comments-grid">
-                  <div class="comment-card" v-for="comment in userComments" :key="comment.id">
+                  <div class="comment-card" v-for="comment in userComments" :key="comment.id" @click="goToComment(comment.contentType, comment.contentId, comment.id)" style="cursor: pointer;">
                     <div class="card-top">
                       <div class="comment-avatar">
                         <img :src="comment.avatar" :alt="comment.nickname" />
@@ -129,6 +129,7 @@ import Menu from './menu.vue'
 import { Menu as MenuIcon, Sunny, Moon, House, Document, Setting, User, Close, Message, Bell, Search, Calendar, Clock } from '@element-plus/icons-vue'
 import { useTheme } from '../composables/useTheme'
 import { fetchContentByCategory } from '../api/content/content.js'
+import { fetchRecommendComments } from '../api/comment/comment.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -143,29 +144,7 @@ const dailyQuoteSource = ref('')
 const latestArticles = ref([])
 let timeInterval = null
 
-const userComments = ref([
-  {
-    id: 1,
-    avatar: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
-    nickname: '张三',
-    time: '2小时前',
-    content: '这个网站设计得真不错，界面很清爽，内容也很有深度！'
-  },
-  {
-    id: 2,
-    avatar: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
-    nickname: '李四',
-    time: '5小时前',
-    content: '学到了很多东西，感谢分享！期待更多优质内容。'
-  },
-  {
-    id: 3,
-    avatar: new URL('../assets/picture/YoyuEN.png', import.meta.url).href,
-    nickname: '王五',
-    time: '1天前',
-    content: '文章写得很详细，对我帮助很大，已经收藏了！'
-  }
-])
+const userComments = ref([])
 
 const handleSearchInput = () => {
 }
@@ -191,12 +170,34 @@ const goToArticle = (id) => {
   router.push(`/content-detail/article/${id}`)
 }
 
+const goToComment = (contentType, contentId, commentId) => {
+  showDrawer.value = false
+  router.push(`/content-detail/${contentType}/${contentId}#comment-${commentId}`)
+}
+
 const fetchLatestArticles = async () => {
   try {
     const res = await fetchContentByCategory('article')
     latestArticles.value = (res.data || []).slice(0, 5)
   } catch (e) {
     console.error('获取最新文章失败', e)
+  }
+}
+
+const fetchUserComments = async () => {
+  try {
+    const res = await fetchRecommendComments()
+    userComments.value = (res.data || []).map(c => ({
+      id: c.id,
+      avatar: c.avatar || '',
+      nickname: c.author || '匿名',
+      time: c.createTime || '',
+      content: c.content,
+      contentId: c.contentId,
+      contentType: c.contentType,
+    }))
+  } catch (e) {
+    console.error('获取推荐评论失败', e)
   }
 }
 
@@ -237,6 +238,7 @@ onMounted(() => {
   }, 1000)
   fetchDailyQuote()
   fetchLatestArticles()
+  fetchUserComments()
 })
 
 onUnmounted(() => {

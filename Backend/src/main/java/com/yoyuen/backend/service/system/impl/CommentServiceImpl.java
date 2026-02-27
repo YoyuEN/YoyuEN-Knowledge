@@ -91,6 +91,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
+    public List<Comment> listRecommend() {
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getIsRecommend, true)
+                .eq(Comment::getDeleted, false)
+                .orderByDesc(Comment::getCreateTime);
+        return this.list(wrapper);
+    }
+
+    @Override
     public int countByContent(String contentId, String contentType) {
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getContentId, contentId)

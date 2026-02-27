@@ -1,5 +1,6 @@
 package com.yoyuen.backend.controller.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -39,9 +40,12 @@ public class CommentVO {
 
     private String parentId;
 
+    private Boolean isRecommend;
+
     /** 被回复人昵称（非数据库字段，由父评论 author 推导） */
     private String replyTo;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime createTime;
 
     private List<CommentVO> replies;

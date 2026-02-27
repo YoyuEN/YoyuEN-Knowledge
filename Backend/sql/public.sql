@@ -354,6 +354,7 @@ CREATE TABLE "comment" (
                            user_id      VARCHAR(255),
                            content      TEXT NOT NULL,
                            parent_id    VARCHAR(32),
+                           is_recommend BOOLEAN DEFAULT FALSE,
                            create_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            update_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            deleted      BOOLEAN DEFAULT FALSE,
@@ -458,3 +459,5 @@ CREATE TRIGGER "update_photo_updated_at"
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE INDEX "idx_photo_create_time" ON "photo"(create_time DESC);
+
+ALTER TABLE "comment" ADD COLUMN is_recommend BOOLEAN DEFAULT FALSE;

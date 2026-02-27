@@ -32,6 +32,11 @@ public interface CommentService {
     boolean removeComment(String id);
 
     /**
+     * 获取推荐评论列表
+     */
+    List<Comment> listRecommend();
+
+    /**
      * 获取评论数量
      */
     int countByContent(String contentId, String contentType);

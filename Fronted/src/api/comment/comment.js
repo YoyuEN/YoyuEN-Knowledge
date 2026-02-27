@@ -33,6 +33,13 @@ export function removeComment(id) {
 }
 
 /**
+ * 获取推荐评论列表
+ */
+export function fetchRecommendComments() {
+  return request.get('/comment/recommend')
+}
+
+/**
  * 获取评论数量
  * @param {string} contentId
  * @param {string} contentType

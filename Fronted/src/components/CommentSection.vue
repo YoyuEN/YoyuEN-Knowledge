@@ -129,6 +129,7 @@
       <div
         v-for="mainComment in comments"
         :key="mainComment.id"
+        :id="`comment-${mainComment.id}`"
         class="single-comment-section"
       >
         <!-- 评论区内容列表 -->
@@ -173,6 +174,7 @@
             <div
               v-for="reply in flattenReplies(mainComment)"
               :key="reply.id"
+              :id="`comment-${reply.id}`"
               class="comment-son-item"
             >
               <div class="comment-content">

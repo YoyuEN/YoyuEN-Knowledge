@@ -45,6 +45,15 @@ public class CommentController {
     private static final String AVATAR_BUCKET = "avatars";
 
     /**
+     * 获取推荐评论列表
+     */
+    @GetMapping("/recommend")
+    public BaseResponse<List<CommentVO>> listRecommend() {
+        List<Comment> comments = commentService.listRecommend();
+        return ResultUtils.success(comments.stream().map(this::toVO).toList());
+    }
+
+    /**
      * 获取内容的评论列表（树形结构）
      */
     @GetMapping("/list")

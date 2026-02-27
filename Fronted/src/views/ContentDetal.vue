@@ -87,6 +87,7 @@ const itemId = computed(() => route.params.id)
 
 // 将后端 ContentVO 字段归一化为模板期望的字段
 function normalizeContent(item) {
+  if (!item) return null
   return {
     ...item,
     desc: item.description ?? item.desc ?? '',
@@ -130,19 +131,26 @@ async function loadComments(contentId) {
 }
 
 async function loadData() {
+  // 路由参数尚未就绪时直接返回，等待 watch 触发
+  if (!type.value || !itemId.value) return
+
   loaded.value = false
   try {
     // 1. 获取同类型所有内容（用于 swiper 列表）
     const listRes = await fetchContentByCategory(type.value)
-    swiperItems.value = (listRes.data || []).map(normalizeContent)
+    swiperItems.value = (listRes.data || []).map(normalizeContent).filter(Boolean)
 
     // 2. 确定 initialSlide（数据就绪后才渲染 swiper）
     const idx = swiperItems.value.findIndex(i => String(i.id) === String(itemId.value))
     initialSlide.value = idx >= 0 ? idx : 0
 
-    // 3. 获取当前条目完整详情（同时触发浏览量 +1）
-    const detailRes = await fetchContentById(itemId.value)
-    currentItem.value = normalizeContent(detailRes.data || swiperItems.value[initialSlide.value] || {})
+    // 3. 获取当前条目完整详情（同时触发浏览量 +1），失败时降级使用列表数据
+    try {
+      const detailRes = await fetchContentById(itemId.value)
+      currentItem.value = normalizeContent(detailRes.data) ?? swiperItems.value[initialSlide.value] ?? null
+    } catch {
+      currentItem.value = swiperItems.value[initialSlide.value] ?? null
+    }
 
     // 4. 加载评论
     if (currentItem.value?.id) {
@@ -150,15 +158,42 @@ async function loadData() {
     }
 
     loaded.value = true
+    // 加载完成后定位到目标评论
+    scrollToHash()
   } catch (e) {
     console.error('加载内容失败', e)
+    // 即使出错也尝试用列表中已有的数据展示
+    if (!currentItem.value && swiperItems.value.length > 0) {
+      currentItem.value = swiperItems.value[initialSlide.value] ?? null
+    }
     loaded.value = true
   }
 }
 
+function scrollToHash() {
+  const hash = route.hash
+  if (!hash) return
+  setTimeout(() => {
+    const el = document.querySelector(hash)
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.style.outline = '2px solid #4096ff'
+      setTimeout(() => { el.style.outline = '' }, 2000)
+    }
+  }, 300)
+}
+
 onMounted(loadData)
 
-watch(() => route.params, loadData)
+// 精确监听 type/id 两个参数，避免 deep watch 误触发
+watch([() => route.params.type, () => route.params.id], ([newType, newId]) => {
+  if (newType && newId) loadData()
+})
+
+// hash 单独变化时（同文章不同评论锚点）只滚动，不重新请求数据
+watch(() => route.hash, (hash) => {
+  if (hash) scrollToHash()
+})
 </script>
 
 <style scoped>
