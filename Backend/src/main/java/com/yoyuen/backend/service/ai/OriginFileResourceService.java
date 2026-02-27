@@ -31,4 +31,13 @@ public interface OriginFileResourceService extends IService<OriginFileResource> 
     Long uploadFile(MultipartFile file, String knowledgeId);
 
     List<ResourceVO> resourcesFromIds(List<String> resourceIds);
+
+    /**
+     * 将程序生成的 Markdown 字节上传到知识库（含向量化）
+     * @param content   文件字节内容（UTF-8）
+     * @param fileName  文件名，如 "标题_20260227_153000.md"
+     * @param knowledgeId 目标知识库 ID
+     * @return DocumentEntity ID
+     */
+    Long uploadMarkdown(byte[] content, String fileName, String knowledgeId);
 }

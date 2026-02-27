@@ -158,8 +158,7 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
 //        String objectName = objectNameWithUserId(originalFilename);
         //不使用用户验证
         String objectName = originalFilename;
-        String id = FileUtil.generatorFileId(bucketName, objectName);
-        String newObjectName = String.format("%s/%s", objectName, id);
+        String newObjectName = objectName;
         String path;
         String md5;
         try {
@@ -184,6 +183,68 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
         originFileResource.setContentType(fileInfo.getContentType());
         this.saveOrUpdate(originFileResource);
         return originFileResource;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Long uploadMarkdown(byte[] content, String fileName, String knowledgeId) {
+        // 1. 写入临时文件
+        File tmpFile;
+        String path;
+        String md5;
+        try {
+            tmpFile = FileUtil.createTempFile("md_", "_" + fileName);
+            Files.write(tmpFile.toPath(), content);
+            md5 = FileUtil.md5(tmpFile);
+        } catch (IOException e) {
+            throw new BusinessException(CoreCode.SYSTEM_ERROR, e.getMessage());
+        }
+        // 2. 上传至 MinIO knowledge-file bucket
+        // 文件名已含时间戳，天然唯一，直接作为 objectName 避免生成 "文件名/hash" 的伪目录结构
+        String objectName = fileName;
+        try {
+            path = objectStoreService.uploadFile(tmpFile, KNOWLEDGE_BUCKET_NAME, objectName);
+        } catch (IOException e) {
+            throw new BusinessException(CoreCode.SYSTEM_ERROR, e.getMessage());
+        }
+        StorageFile fileInfo = objectStoreService.getFileInfo(KNOWLEDGE_BUCKET_NAME, objectName);
+        // 3. 保存原始文件记录
+        OriginFileResource originFileResource = new OriginFileResource();
+        originFileResource.setMd5(md5);
+        originFileResource.setFileName(fileName);
+        originFileResource.setPath(path);
+        originFileResource.setId(fileInfo.getId());
+        originFileResource.setBucketName(KNOWLEDGE_BUCKET_NAME);
+        originFileResource.setObjectName(objectName);
+        originFileResource.setIsImage(false);
+        originFileResource.setSize(fileInfo.getSize());
+        originFileResource.setContentType("text/markdown");
+        this.saveOrUpdate(originFileResource);
+        // 4. 保存文档实体
+        DocumentEntity documentEntity = new DocumentEntity();
+        documentEntity.setFileName(fileName);
+        documentEntity.setBaseId(knowledgeId);
+        documentEntity.setPath(path);
+        documentEntity.setIsEmbedding(false);
+        documentEntity.setResourceId(originFileResource.getId());
+        documentEntityMapper.insert(documentEntity);
+        // 5. 向量化
+        Resource resource = new ByteArrayResource(content);
+        TikaDocumentReader tikaDocumentReader = new TikaDocumentReader(resource);
+        List<Document> rawDocumentList = tikaDocumentReader.read();
+        List<Document> splitDocumentList = tokenTextSplitter.split(rawDocumentList);
+        List<Document> hasMetaDocumentList = splitDocumentList.stream().map(item -> {
+            Map<String, Object> metadata = item.getMetadata();
+            metadata.put("knowledge_base_id", knowledgeId);
+            metadata.put("document_id", documentEntity.getId());
+            return new Document(item.getContent(), metadata);
+        }).toList();
+        VectorStore vectorStore = llmService.getVectorStore();
+        vectorStore.accept(hasMetaDocumentList);
+        // 6. 更新嵌入状态
+        documentEntity.setIsEmbedding(true);
+        documentEntityMapper.updateById(documentEntity);
+        return documentEntity.getId();
     }
 
     private String objectNameWithUserId(String filename) {
