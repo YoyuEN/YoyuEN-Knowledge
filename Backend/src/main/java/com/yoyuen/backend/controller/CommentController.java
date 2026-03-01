@@ -95,8 +95,8 @@ public class CommentController {
                     : ".png";
             String objectName = "comment/" + UUID.randomUUID() + ext;
             objectStoreService.uploadFile(avatarFile, AVATAR_BUCKET, objectName);
-            String avatarUrl = objectStoreService.getTmpFileUrl(AVATAR_BUCKET, objectName, 7 * 24 * 3600);
-            commentVO.setAvatar(avatarUrl);
+            // 存储格式：bucket:objectName，避免预览地址过期
+            commentVO.setAvatar(AVATAR_BUCKET + ":" + objectName);
         }
 
         Comment comment = toEntity(commentVO);
@@ -162,6 +162,18 @@ public class CommentController {
         if (comment == null) return null;
         CommentVO vo = new CommentVO();
         BeanUtils.copyProperties(comment, vo);
+
+        // 动态生成头像预览地址
+        if (comment.getAvatar() != null && comment.getAvatar().contains(":")) {
+            String[] parts = comment.getAvatar().split(":", 2);
+            if (parts.length == 2) {
+                String bucket = parts[0];
+                String objectName = parts[1];
+                String avatarUrl = objectStoreService.getTmpFileUrl(bucket, objectName, 7 * 24 * 3600);
+                vo.setAvatar(avatarUrl);
+            }
+        }
+
         if (parent != null) {
             vo.setReplyTo(parent.getAuthor());
         }
