@@ -1,0 +1,29 @@
+{
+  "name": "fronted",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.13.5",
+    "element-plus": "^2.13.0",
+    "gsap": "^3.14.2",
+    "marked": "^17.0.1",
+    "swiper": "^12.0.3",
+    "tippy.js": "^6.3.7",
+    "vue": "^3.5.24",
+    "vue-router": "^4.6.4",
+    "vue3-calendar-heatmap": "^2.0.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "autoprefixer": "^10.4.16",
+    "naive-ui": "^2.43.2",
+    "postcss": "^8.4.38",
+    "vite": "^7.2.4"
+  }
+}

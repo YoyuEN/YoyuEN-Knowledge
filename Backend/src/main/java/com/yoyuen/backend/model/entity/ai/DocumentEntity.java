@@ -1,0 +1,57 @@
+package com.yoyuen.backend.model.entity.ai;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.yoyuen.backend.pojo.BaseEntity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
+/**
+ * @Author: YoyuEN
+ * @Date: 2026/2/24
+ * @Time: 9:17
+ * @Description: 知识库的附件
+ */
+@Data
+@EqualsAndHashCode(callSuper = true)
+@TableName(value = "document_entity")
+public class DocumentEntity extends BaseEntity {
+
+    /*
+    *
+    * */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+
+    /*
+    *
+    * */
+    @TableField(value = "file_name")
+    private String fileName;
+
+    /*
+    * 路径
+    * */
+    @TableField(value = "path")
+    private String path;
+
+    /*
+    * 是否存储到了向量数据库中
+    * */
+    @TableField(value = "is_embedding")
+    private Boolean isEmbedding;
+
+    /*
+    *
+    * */
+    @TableField(value = "base_id")
+    private String baseId;
+
+    /*
+    * 资源ID
+    * */
+    @TableField(value = "resource_id")
+    private String resourceId;
+}
