@@ -39,12 +39,11 @@
             <!-- AI思考中的加载动画 -->
             <div v-if="isThinking" class="reply-item thinking">
               <div class="thinking-wrapper">
-                <div class="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
+                <div class="thinking-text">
+                  <span class="thinking-dot">.</span>
+                  <span class="thinking-dot">.</span>
+                  <span class="thinking-dot">.</span>
                 </div>
-                <div class="thinking-text">AI正在思考中...</div>
               </div>
             </div>
           </div>
@@ -96,6 +95,10 @@
           </span>
         </button>
       </div>
+    </div>
+    <!-- 相关的文章列表 -->
+    <div class="message-list">
+
     </div>
   </div>
 </template>
@@ -239,21 +242,28 @@ onUnmounted(() => {
   padding: 20px;
   height: calc(100vh - 80px);
   display: flex;
-  gap: 0;
+  gap: 20px;
   margin-top: 60px;
 }
 
 .chat-area {
   width: 1200px;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
+}
+
+.message-list {
+  flex: 1;
+  border: 1px solid #e8e8e8;
+  padding-left: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .reply-content {
   flex: 1;
   padding: 20px;
-  border-radius: 20px;
+  border-radius: 8px;
   border: 1px solid #f0f0f0;
   overflow: hidden;
   display: flex;
@@ -603,46 +613,45 @@ onUnmounted(() => {
 .thinking-wrapper {
   display: flex;
   align-items: center;
-  gap: 12px;
   padding: 0;
 }
 
-.typing-indicator {
+.thinking-text {
+  color: #667eea;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 2px;
   display: flex;
-  gap: 4px;
+  align-items: baseline;
 }
 
-.typing-indicator span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #667eea;
-  animation: typing 1.4s infinite;
+.thinking-dot {
+  animation: blink 1.4s infinite;
+  opacity: 0;
 }
 
-.typing-indicator span:nth-child(2) {
+.thinking-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.thinking-dot:nth-child(2) {
   animation-delay: 0.2s;
 }
 
-.typing-indicator span:nth-child(3) {
+.thinking-dot:nth-child(3) {
   animation-delay: 0.4s;
 }
 
-@keyframes typing {
-  0%, 60%, 100% {
-    transform: translateY(0);
-    opacity: 0.4;
+@keyframes blink {
+  0%, 20% {
+    opacity: 0;
   }
-  30% {
-    transform: translateY(-8px);
+  40% {
     opacity: 1;
   }
-}
-
-.thinking-text {
-  color: #999;
-  font-size: 14px;
-  font-weight: 400;
+  100% {
+    opacity: 0;
+  }
 }
 
 /* 输入区域 */

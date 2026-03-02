@@ -548,6 +548,7 @@ const submitComment = async () => {
   border-radius: 18px;
   position: relative;
   padding-top: 20px;
+  padding-left: 20px;
   margin: 20px 0 20px 20px;
 }
 
