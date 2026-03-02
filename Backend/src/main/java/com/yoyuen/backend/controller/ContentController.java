@@ -7,6 +7,7 @@ import com.yoyuen.backend.service.ai.KnowledgeBaseService;
 import com.yoyuen.backend.service.ai.OriginFileResourceService;
 import com.yoyuen.backend.service.system.ContentService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
+import com.yoyuen.backend.service.system.RedisService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: YoyuEN
@@ -36,6 +38,7 @@ public class ContentController {
     private final KnowledgeBaseService knowledgeBaseService;
     private final OriginFileResourceService originFileResourceService;
     private final ObjectStoreService objectStoreService;
+    private final RedisService redisService;
 
     private static final String DEFAULT_BUCKET = "default";
     private static final String DEFAULT_COVER = "default.jpg";
@@ -45,9 +48,22 @@ public class ContentController {
      */
     @GetMapping("/{id}")
     public BaseResponse<ContentVO> getById(@PathVariable String id) {
+        // 尝试从缓存获取
+        String cacheKey = "content:detail:" + id;
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("从缓存获取内容详情: {}", id);
+            return ResultUtils.success((ContentVO) cached);
+        }
+
+        // 缓存未命中，查询数据库
         Content content = contentService.getById(id);
         contentService.incrementViewCount(id);
-        return ResultUtils.success(toVO(content));
+        ContentVO vo = toVO(content);
+
+        // 写入缓存，10分钟过期
+        redisService.set(cacheKey, vo, 10, TimeUnit.MINUTES);
+        return ResultUtils.success(vo);
     }
 
     /**
@@ -55,8 +71,21 @@ public class ContentController {
      */
     @GetMapping("/list/{category}")
     public BaseResponse<List<ContentVO>> listByCategory(@PathVariable String category) {
+        // 尝试从缓存获取
+        String cacheKey = "content:list:" + category;
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("从缓存获取分类列表: {}", category);
+            return ResultUtils.success((List<ContentVO>) cached);
+        }
+
+        // 缓存未命中，查询数据库
         List<Content> contents = contentService.listByCategory(category);
-        return ResultUtils.success(contents.stream().map(this::toVO).toList());
+        List<ContentVO> voList = contents.stream().map(this::toVO).toList();
+
+        // 写入缓存，5分钟过期
+        redisService.set(cacheKey, voList, 5, TimeUnit.MINUTES);
+        return ResultUtils.success(voList);
     }
 
     /**
@@ -64,8 +93,21 @@ public class ContentController {
      */
     @GetMapping("/recommend")
     public BaseResponse<List<ContentVO>> listRecommend() {
+        // 尝试从缓存获取
+        String cacheKey = "content:recommend";
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("从缓存获取推荐列表");
+            return ResultUtils.success((List<ContentVO>) cached);
+        }
+
+        // 缓存未命中，查询数据库
         List<Content> contents = contentService.listRecommend();
-        return ResultUtils.success(contents.stream().map(this::toVO).toList());
+        List<ContentVO> voList = contents.stream().map(this::toVO).toList();
+
+        // 写入缓存，10分钟过期
+        redisService.set(cacheKey, voList, 10, TimeUnit.MINUTES);
+        return ResultUtils.success(voList);
     }
 
     /**
@@ -74,7 +116,20 @@ public class ContentController {
     @GetMapping("/activity")
     public BaseResponse<Map<String, Integer>> getActivityStats(
             @RequestParam(defaultValue = "100") int days) {
-        return ResultUtils.success(contentService.getActivityStats(days));
+        // 尝试从缓存获取
+        String cacheKey = "content:activity:" + days;
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("从缓存获取热力图数据: {} 天", days);
+            return ResultUtils.success((Map<String, Integer>) cached);
+        }
+
+        // 缓存未命中，查询数据库
+        Map<String, Integer> stats = contentService.getActivityStats(days);
+
+        // 写入缓存，1小时过期
+        redisService.set(cacheKey, stats, 1, TimeUnit.HOURS);
+        return ResultUtils.success(stats);
     }
 
     /**
@@ -89,6 +144,9 @@ public class ContentController {
         String id = contentService.addContent(content);
         contentVO.setId(id);
         syncToKnowledgeBase(contentVO, "新增");
+
+        // 清除相关缓存
+        clearContentCache(contentVO.getCategory());
         return ResultUtils.success(id);
     }
 
@@ -100,6 +158,10 @@ public class ContentController {
         Content content = toEntity(contentVO);
         boolean result = contentService.updateContent(content);
         syncToKnowledgeBase(contentVO, "更新");
+
+        // 清除相关缓存
+        redisService.delete("content:detail:" + contentVO.getId());
+        clearContentCache(contentVO.getCategory());
         return ResultUtils.success(result);
     }
 
@@ -112,6 +174,9 @@ public class ContentController {
         boolean result = contentService.removeContent(contentVO.getId());
         if (existing != null) {
             syncToKnowledgeBase(toVO(existing), "删除");
+            // 清除相关缓存
+            redisService.delete("content:detail:" + contentVO.getId());
+            clearContentCache(existing.getCategory());
         }
         return ResultUtils.success(result);
     }
@@ -185,5 +250,20 @@ public class ContentController {
             sb.append("## 内容\n\n").append(contentVO.getContent()).append("\n");
         }
         return sb.toString();
+    }
+
+    /**
+     * 清除内容相关缓存
+     */
+    private void clearContentCache(String category) {
+        // 清除分类列表缓存
+        if (category != null) {
+            redisService.delete("content:list:" + category);
+        }
+        // 清除推荐列表缓存
+        redisService.delete("content:recommend");
+        // 清除热力图缓存（可能有多个天数的缓存，这里只清除常用的）
+        redisService.delete("content:activity:100");
+        redisService.delete("content:activity:365");
     }
 }

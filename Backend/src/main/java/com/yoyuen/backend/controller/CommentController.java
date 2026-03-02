@@ -9,6 +9,7 @@ import com.yoyuen.backend.service.ai.OriginFileResourceService;
 import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
+import com.yoyuen.backend.service.system.RedisService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import jakarta.validation.Valid;
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: YoyuEN
@@ -41,6 +43,7 @@ public class CommentController {
     private final ObjectStoreService objectStoreService;
     private final KnowledgeBaseService knowledgeBaseService;
     private final OriginFileResourceService originFileResourceService;
+    private final RedisService redisService;
 
     private static final String AVATAR_BUCKET = "avatars";
 
@@ -49,8 +52,21 @@ public class CommentController {
      */
     @GetMapping("/recommend")
     public BaseResponse<List<CommentVO>> listRecommend() {
+        // 尝试从缓存获取
+        String cacheKey = "comment:recommend";
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("从缓存获取推荐评论列表");
+            return ResultUtils.success((List<CommentVO>) cached);
+        }
+
+        // 缓存未命中，查询数据库
         List<Comment> comments = commentService.listRecommend();
-        return ResultUtils.success(comments.stream().map(this::toVO).toList());
+        List<CommentVO> voList = comments.stream().map(this::toVO).toList();
+
+        // 写入缓存，5分钟过期
+        redisService.set(cacheKey, voList, 5, TimeUnit.MINUTES);
+        return ResultUtils.success(voList);
     }
 
     /**
@@ -79,8 +95,8 @@ public class CommentController {
                     : ".png";
             String objectName = "comment/" + UUID.randomUUID() + ext;
             objectStoreService.uploadFile(avatarFile, AVATAR_BUCKET, objectName);
-            String avatarUrl = objectStoreService.getTmpFileUrl(AVATAR_BUCKET, objectName, 7 * 24 * 3600);
-            commentVO.setAvatar(avatarUrl);
+            // 存储格式：bucket:objectName，避免预览地址过期
+            commentVO.setAvatar(AVATAR_BUCKET + ":" + objectName);
         }
 
         Comment comment = toEntity(commentVO);
@@ -88,6 +104,9 @@ public class CommentController {
         contentService.incrementCommentCount(commentVO.getContentId());
         commentVO.setId(commentId);
         syncToKnowledgeBase(commentVO, "新增");
+
+        // 清除推荐评论缓存
+        redisService.delete("comment:recommend");
         return ResultUtils.success(commentId);
     }
 
@@ -101,6 +120,9 @@ public class CommentController {
         contentService.incrementCommentCount(commentVO.getContentId());
         commentVO.setId(commentId);
         syncToKnowledgeBase(commentVO, "新增");
+
+        // 清除推荐评论缓存
+        redisService.delete("comment:recommend");
         return ResultUtils.success(commentId);
     }
 
@@ -113,6 +135,8 @@ public class CommentController {
         boolean result = commentService.removeComment(commentVO.getId());
         if (existing != null) {
             syncToKnowledgeBase(toVO(existing), "删除");
+            // 清除推荐评论缓存
+            redisService.delete("comment:recommend");
         }
         return ResultUtils.success(result);
     }
@@ -138,6 +162,18 @@ public class CommentController {
         if (comment == null) return null;
         CommentVO vo = new CommentVO();
         BeanUtils.copyProperties(comment, vo);
+
+        // 动态生成头像预览地址
+        if (comment.getAvatar() != null && comment.getAvatar().contains(":")) {
+            String[] parts = comment.getAvatar().split(":", 2);
+            if (parts.length == 2) {
+                String bucket = parts[0];
+                String objectName = parts[1];
+                String avatarUrl = objectStoreService.getTmpFileUrl(bucket, objectName, 7 * 24 * 3600);
+                vo.setAvatar(avatarUrl);
+            }
+        }
+
         if (parent != null) {
             vo.setReplyTo(parent.getAuthor());
         }

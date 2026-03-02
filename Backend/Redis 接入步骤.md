@@ -29,7 +29,7 @@
 # Redis
 spring.data.redis.host=localhost
 spring.data.redis.port=6379
-# spring.data.redis.password=你的密码（没有设密码就注释掉）
+# spring.data.redis.password=242431
 spring.data.redis.database=0
 spring.data.redis.timeout=3000ms
 # Lettuce 连接池（需要 commons-pool2）

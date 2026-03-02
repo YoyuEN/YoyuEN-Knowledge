@@ -114,6 +114,17 @@
             <version>${mongodb.version}</version>
         </dependency>
 
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <!-- 连接池（推荐，避免连接泄漏）-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
         <!-- Jackson (由 Spring Boot 管理版本) -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
