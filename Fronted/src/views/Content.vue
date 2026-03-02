@@ -352,7 +352,7 @@ onMounted(async () => {
 .rc-image {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 400px;
   overflow: hidden;
   background: #f0f0f0;
 }
