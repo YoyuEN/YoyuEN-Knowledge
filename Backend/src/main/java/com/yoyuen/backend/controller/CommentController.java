@@ -214,7 +214,14 @@ public class CommentController {
             String safeAuthor = commentVO.getAuthor().replaceAll("[\\\\/:*?\"<>|\\s]", "_");
             String fileName = "comment_" + safeAuthor + "_" + timeStr + ".md";
             byte[] mdBytes = buildMarkdown(commentVO, operation, contentTitle, now).getBytes(StandardCharsets.UTF_8);
-            originFileResourceService.uploadMarkdown(mdBytes, fileName, knowledgeId);
+            originFileResourceService.uploadMarkdownWithMetadata(
+                mdBytes,
+                fileName,
+                knowledgeId,
+                "comment",                  // contentType
+                commentVO.getId(),          // contentId (评论ID)
+                commentVO.getContentId()    // articleId (所属文章ID)
+            );
             log.info("[知识库同步-评论] 成功，operation={}, author={}, file={}", operation, commentVO.getAuthor(), fileName);
         } catch (Exception e) {
             log.error("[知识库同步-评论] 失败，operation={}, author={}, error={}", operation, commentVO.getAuthor(), e.getMessage(), e);

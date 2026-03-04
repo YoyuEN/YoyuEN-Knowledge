@@ -40,4 +40,17 @@ public interface OriginFileResourceService extends IService<OriginFileResource> 
      * @return DocumentEntity ID
      */
     Long uploadMarkdown(byte[] content, String fileName, String knowledgeId);
+
+    /**
+     * 将程序生成的 Markdown 字节上传到知识库（含向量化），支持自定义metadata
+     * @param content   文件字节内容（UTF-8）
+     * @param fileName  文件名，如 "标题_20260227_153000.md"
+     * @param knowledgeId 目标知识库 ID
+     * @param contentType 内容类型：article, comment
+     * @param contentId 内容ID（文章ID或评论ID）
+     * @param articleId 如果是评论，需要关联的文章ID
+     * @return DocumentEntity ID
+     */
+    Long uploadMarkdownWithMetadata(byte[] content, String fileName, String knowledgeId,
+                                     String contentType, String contentId, String articleId);
 }

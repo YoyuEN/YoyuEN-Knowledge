@@ -188,6 +188,13 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
     @Transactional(rollbackFor = Exception.class)
     @Override
     public Long uploadMarkdown(byte[] content, String fileName, String knowledgeId) {
+        return uploadMarkdownWithMetadata(content, fileName, knowledgeId, null, null, null);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Long uploadMarkdownWithMetadata(byte[] content, String fileName, String knowledgeId,
+                                           String contentType, String contentId, String articleId) {
         // 1. 写入临时文件
         File tmpFile;
         String path;
@@ -200,7 +207,6 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
             throw new BusinessException(CoreCode.SYSTEM_ERROR, e.getMessage());
         }
         // 2. 上传至 MinIO knowledge-file bucket
-        // 文件名已含时间戳，天然唯一，直接作为 objectName 避免生成 "文件名/hash" 的伪目录结构
         String objectName = fileName;
         try {
             path = objectStoreService.uploadFile(tmpFile, KNOWLEDGE_BUCKET_NAME, objectName);
@@ -237,6 +243,18 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
             Map<String, Object> metadata = item.getMetadata();
             metadata.put("knowledge_base_id", knowledgeId);
             metadata.put("document_id", documentEntity.getId());
+
+            // 添加内容类型和ID信息
+            if (contentType != null) {
+                metadata.put("content_type", contentType);
+            }
+            if (contentId != null) {
+                metadata.put("content_id", contentId);
+            }
+            if (articleId != null) {
+                metadata.put("article_id", articleId);
+            }
+
             return new Document(item.getContent(), metadata);
         }).toList();
         VectorStore vectorStore = llmService.getVectorStore();

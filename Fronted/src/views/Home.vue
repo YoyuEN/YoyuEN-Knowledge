@@ -32,6 +32,25 @@
             <div v-for="(reply, index) in aiReplies" :key="index" class="reply-item">
               <div class="reply-content-wrapper">
                 <div class="reply-text markdown-body" v-html="renderMarkdown(reply.content)"></div>
+
+                <!-- 引用文档链接 -->
+                <div v-if="getValidReferences(reply.references).length > 0" class="references-section">
+                  <div class="references-title">📚 引用来源</div>
+                  <div class="references-list">
+                    <a
+                      v-for="ref in getValidReferences(reply.references)"
+                      :key="ref.documentId"
+                      :href="getContentUrl(ref)"
+                      class="reference-link"
+                      target="_blank"
+                    >
+                      <span class="reference-icon">{{ ref.contentType === 'comment' ? '💬' : '📄' }}</span>
+                      <span class="reference-name">{{ ref.documentName }}</span>
+                      <span class="reference-base">{{ ref.knowledgeBaseName }}</span>
+                    </a>
+                  </div>
+                </div>
+
                 <div class="reply-time">{{ reply.time }}</div>
               </div>
             </div>
@@ -106,7 +125,7 @@
 <script setup>
 import { ref, nextTick, computed, onUnmounted } from 'vue'
 import { marked } from 'marked'
-import { chatStreamRAG, createConversation } from '@/api/chat/chat.js'
+import { chatStreamRAGWithReferences, createConversation } from '@/api/chat/chat.js'
 
 const currentQuestion = ref('')
 const aiReplies = ref([])
@@ -165,6 +184,35 @@ const removeFile = (index) => {
   uploadedFiles.value.splice(index, 1)
 }
 
+// 过滤有效的引用（只显示有contentType和contentId的）
+const getValidReferences = (references) => {
+  if (!references) return []
+  return references.filter(ref => ref.contentType && ref.contentId)
+}
+
+// 根据引用类型生成跳转URL
+const getContentUrl = (ref) => {
+  if (!ref.contentType || !ref.contentId) {
+    // 如果没有内容类型信息，回退到文档详情页
+    return `/document/${ref.documentId}`
+  }
+
+  if (ref.contentType === 'article') {
+    // 文章详情页
+    return `/content-detail/article/${ref.contentId}`
+  } else if (ref.contentType === 'comment') {
+    // 评论：跳转到文章详情页并定位到评论
+    if (ref.articleId) {
+      return `/content-detail/article/${ref.articleId}#comment-${ref.contentId}`
+    } else {
+      return `/document/${ref.documentId}`
+    }
+  }
+
+  // 其他类型，回退到文档详情页
+  return `/document/${ref.documentId}`
+}
+
 // 发送消息
 const sendMessage = async () => {
   if (!canSend.value) return
@@ -202,15 +250,20 @@ const sendMessage = async () => {
 
   // 添加空的回复条目，流式内容追加到这里
   const replyIndex = aiReplies.value.length
-  aiReplies.value.push({ content: '', time: getCurrentTime() })
+  aiReplies.value.push({ content: '', time: getCurrentTime(), references: [] })
 
-  currentAbortController = chatStreamRAG(
+  currentAbortController = chatStreamRAGWithReferences(
     userInput,
     conversationId.value,
     // onChunk：每次收到新内容片段时追加
     (chunk) => {
       if (isThinking.value) isThinking.value = false
       aiReplies.value[replyIndex].content += chunk
+      scrollToBottom()
+    },
+    // onReferences：收到引用信息
+    (references) => {
+      aiReplies.value[replyIndex].references = references
       scrollToBottom()
     },
     // onDone：流结束
@@ -603,6 +656,81 @@ onUnmounted(() => {
   color: #999;
   margin-top: 10px;
   text-align: right;
+}
+
+/* 引用文档样式 */
+.references-section {
+  margin-top: 16px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #f0f2f5 100%);
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.references-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.references-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reference-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid #e0e0e0;
+}
+
+.reference-link:hover {
+  background: #667eea;
+  border-color: #667eea;
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+.reference-link:hover .reference-name,
+.reference-link:hover .reference-base {
+  color: white;
+}
+
+.reference-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.reference-name {
+  flex: 1;
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reference-base {
+  font-size: 12px;
+  color: #999;
+  padding: 2px 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.reference-link:hover .reference-base {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 /* AI思考中样式 */

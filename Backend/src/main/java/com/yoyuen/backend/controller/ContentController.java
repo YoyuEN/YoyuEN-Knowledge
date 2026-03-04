@@ -227,7 +227,14 @@ public class ContentController {
             String fileName = safeTitle + "_" + timeStr + ".md";
             // 生成 Markdown 内容（时间由后端记录，不依赖前端传入的 createTime）
             byte[] mdBytes = buildMarkdown(contentVO, operation, now).getBytes(StandardCharsets.UTF_8);
-            originFileResourceService.uploadMarkdown(mdBytes, fileName, knowledgeId);
+            originFileResourceService.uploadMarkdownWithMetadata(
+                mdBytes,
+                fileName,
+                knowledgeId,
+                "article",           // contentType
+                contentVO.getId(),   // contentId
+                null                 // articleId (文章本身不需要)
+            );
             log.info("[知识库同步] 成功，operation={}, title={}, file={}", operation, contentVO.getTitle(), fileName);
         } catch (Exception e) {
             log.error("[知识库同步] 失败，operation={}, title={}, error={}", operation, contentVO.getTitle(), e.getMessage(), e);
