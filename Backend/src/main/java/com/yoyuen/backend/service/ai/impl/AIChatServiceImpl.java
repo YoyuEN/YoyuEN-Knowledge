@@ -14,6 +14,10 @@ import com.yoyuen.backend.model.enums.ChatType;
 import com.yoyuen.backend.service.ai.AIChatService;
 import com.yoyuen.backend.service.ai.LLMService;
 import com.yoyuen.backend.service.ai.OriginFileResourceService;
+import com.yoyuen.backend.service.system.CommentService;
+import com.yoyuen.backend.service.system.ContentService;
+import com.yoyuen.backend.entity.Comment;
+import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.utils.CoreCode;
 import com.yoyuen.backend.utils.SecurityFrameworkUtil;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +64,10 @@ public class AIChatServiceImpl implements AIChatService {
     private final DocumentEntityMapper documentEntityMapper;
 
     private final KnowledgeBaseMapper knowledgeBaseMapper;
+
+    private final ContentService contentService;
+
+    private final CommentService commentService;
 
     @Value("classpath:prompt/RAG.txt")
     private Resource ragPromptResource;
@@ -207,7 +215,29 @@ public class AIChatServiceImpl implements AIChatService {
                                 ref.setContentType(metadata.get("content_type").toString());
                             }
                             if (metadata.containsKey("content_id")) {
-                                ref.setContentId(metadata.get("content_id").toString());
+                                String contentId = metadata.get("content_id").toString();
+                                ref.setContentId(contentId);
+
+                                // 根据内容类型查询详细信息
+                                if ("article".equals(ref.getContentType())) {
+                                    Content content = contentService.getById(contentId);
+                                    if (content != null) {
+                                        ref.setTitle(content.getTitle());
+                                        ref.setAuthor(content.getCreator());
+                                        ref.setPublishTime(content.getCreateTime() != null ?
+                                            content.getCreateTime().toString() : null);
+                                    }
+                                } else if ("comment".equals(ref.getContentType())) {
+                                    Comment comment = commentService.getById(contentId);
+                                    if (comment != null) {
+                                        ref.setTitle(comment.getContent().length() > 30 ?
+                                            comment.getContent().substring(0, 30) + "..." :
+                                            comment.getContent());
+                                        ref.setAuthor(comment.getAuthor());
+                                        ref.setPublishTime(comment.getCreateTime() != null ?
+                                            comment.getCreateTime().toString() : null);
+                                    }
+                                }
                             }
                             if (metadata.containsKey("article_id")) {
                                 ref.setArticleId(metadata.get("article_id").toString());

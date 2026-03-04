@@ -63,5 +63,20 @@ public class ChatResponseWithReferencesVO {
          * 如果是评论，需要关联的文章ID
          */
         private String articleId;
+
+        /**
+         * 文章标题（article）或评论内容（comment）
+         */
+        private String title;
+
+        /**
+         * 作者/发布人
+         */
+        private String author;
+
+        /**
+         * 发布时间
+         */
+        private String publishTime;
     }
 }
