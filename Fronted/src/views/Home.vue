@@ -32,6 +32,30 @@
             <div v-for="(reply, index) in aiReplies" :key="index" class="reply-item">
               <div class="reply-content-wrapper">
                 <div class="reply-text markdown-body" v-html="renderMarkdown(reply.content)"></div>
+
+                <!-- 引用文档链接 -->
+                <div v-if="getValidReferences(reply.references).length > 0" class="references-section">
+                  <div class="references-title">引用来源</div>
+                  <div class="references-list">
+                    <a
+                      v-for="ref in getValidReferences(reply.references)"
+                      :key="ref.documentId"
+                      :href="getContentUrl(ref)"
+                      class="reference-link"
+                      target="_blank"
+                    >
+                      <span class="reference-icon">{{ ref.contentType === 'comment' ? '💬' : '📄' }}</span>
+                      <div class="reference-content">
+                        <div class="reference-title">{{ ref.title || ref.documentName }}</div>
+                        <div class="reference-meta">
+                          <span v-if="ref.author" class="reference-author">{{ ref.author }}</span>
+                          <span v-if="ref.publishTime" class="reference-time">{{ formatTime(ref.publishTime) }}</span>
+                        </div>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+
                 <div class="reply-time">{{ reply.time }}</div>
               </div>
             </div>
@@ -106,7 +130,7 @@
 <script setup>
 import { ref, nextTick, computed, onUnmounted } from 'vue'
 import { marked } from 'marked'
-import { chatStreamRAG, createConversation } from '@/api/chat/chat.js'
+import { chatStreamRAGWithReferences, createConversation } from '@/api/chat/chat.js'
 
 const currentQuestion = ref('')
 const aiReplies = ref([])
@@ -165,6 +189,49 @@ const removeFile = (index) => {
   uploadedFiles.value.splice(index, 1)
 }
 
+// 过滤有效的引用（只显示有contentType和contentId的）
+const getValidReferences = (references) => {
+  if (!references) return []
+  return references.filter(ref => ref.contentType && ref.contentId)
+}
+
+// 根据引用类型生成跳转URL
+const getContentUrl = (ref) => {
+  if (!ref.contentType || !ref.contentId) {
+    // 如果没有内容类型信息，回退到文档详情页
+    return `/document/${ref.documentId}`
+  }
+
+  if (ref.contentType === 'article') {
+    // 文章详情页
+    return `/content-detail/article/${ref.contentId}`
+  } else if (ref.contentType === 'comment') {
+    // 评论：跳转到文章详情页并定位到评论
+    if (ref.articleId) {
+      return `/content-detail/article/${ref.articleId}#comment-${ref.contentId}`
+    } else {
+      return `/document/${ref.documentId}`
+    }
+  }
+
+  // 其他类型，回退到文档详情页
+  return `/document/${ref.documentId}`
+}
+
+// 格式化时间
+const formatTime = (timeStr) => {
+  if (!timeStr) return ''
+  try {
+    const date = new Date(timeStr)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  } catch (e) {
+    return timeStr
+  }
+}
+
 // 发送消息
 const sendMessage = async () => {
   if (!canSend.value) return
@@ -202,15 +269,20 @@ const sendMessage = async () => {
 
   // 添加空的回复条目，流式内容追加到这里
   const replyIndex = aiReplies.value.length
-  aiReplies.value.push({ content: '', time: getCurrentTime() })
+  aiReplies.value.push({ content: '', time: getCurrentTime(), references: [] })
 
-  currentAbortController = chatStreamRAG(
+  currentAbortController = chatStreamRAGWithReferences(
     userInput,
     conversationId.value,
     // onChunk：每次收到新内容片段时追加
     (chunk) => {
       if (isThinking.value) isThinking.value = false
       aiReplies.value[replyIndex].content += chunk
+      scrollToBottom()
+    },
+    // onReferences：收到引用信息
+    (references) => {
+      aiReplies.value[replyIndex].references = references
       scrollToBottom()
     },
     // onDone：流结束
@@ -249,6 +321,7 @@ onUnmounted(() => {
 .chat-area {
   width: 1200px;
   display: flex;
+  margin: 0 auto;
   flex-direction: column;
 }
 
@@ -603,6 +676,91 @@ onUnmounted(() => {
   color: #999;
   margin-top: 10px;
   text-align: right;
+}
+
+/* 引用文档样式 */
+.references-section {
+  margin-top: 20px;
+  padding: 0;
+}
+
+.references-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: #999;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.references-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.reference-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 0;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.reference-link:last-child {
+  border-bottom: none;
+}
+
+.reference-link:hover {
+  transform: translateX(2px);
+}
+
+.reference-link:hover .reference-title {
+  color: #667eea;
+}
+
+.reference-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+.reference-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.reference-title {
+  font-size: 13px;
+  color: #333;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.reference-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  color: #999;
+}
+
+.reference-author {
+  display: flex;
+  align-items: center;
+}
+
+.reference-time {
+  display: flex;
+  align-items: center;
 }
 
 /* AI思考中样式 */
