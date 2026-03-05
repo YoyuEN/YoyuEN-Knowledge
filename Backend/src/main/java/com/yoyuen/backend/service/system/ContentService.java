@@ -13,6 +13,16 @@ import java.util.Map;
 public interface ContentService {
 
     /**
+     * 获取所有有内容的分类列表
+     */
+    List<String> listCategories();
+
+    /**
+     * 获取内容总数
+     */
+    long countAll();
+
+    /**
      * 根据ID获取内容
      */
     Content getById(String id);

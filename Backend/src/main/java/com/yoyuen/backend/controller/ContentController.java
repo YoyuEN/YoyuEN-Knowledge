@@ -1,10 +1,12 @@
 package com.yoyuen.backend.controller;
 
+import com.yoyuen.backend.controller.vo.ContentCategoryVO;
 import com.yoyuen.backend.controller.vo.ContentVO;
 import com.yoyuen.backend.controller.vo.KnowledgeBaseVO;
 import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.service.ai.KnowledgeBaseService;
 import com.yoyuen.backend.service.ai.OriginFileResourceService;
+import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.service.system.RedisService;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class ContentController {
 
     private final ContentService contentService;
+    private final CommentService commentService;
     private final KnowledgeBaseService knowledgeBaseService;
     private final OriginFileResourceService originFileResourceService;
     private final ObjectStoreService objectStoreService;
@@ -42,6 +46,50 @@ public class ContentController {
 
     private static final String DEFAULT_BUCKET = "default";
     private static final String DEFAULT_COVER = "default.jpg";
+
+    // 分类 type → 展示名称，维护在后端
+    private static final Map<String, String> CATEGORY_NAME_MAP = new LinkedHashMap<>() {{
+        put("article", "文章");
+        put("game", "游戏");
+        put("study", "学习");
+        put("video", "视频");
+    }};
+
+    /**
+     * 获取内容统计数据（文章数、评论数）
+     */
+    @GetMapping("/stats")
+    public BaseResponse<Map<String, Long>> stats() {
+        String cacheKey = "content:stats";
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            return ResultUtils.success((Map<String, Long>) cached);
+        }
+        Map<String, Long> stats = Map.of(
+                "contentCount", contentService.countAll(),
+                "commentCount", commentService.countAll()
+        );
+        redisService.set(cacheKey, stats, 5, TimeUnit.MINUTES);
+        return ResultUtils.success(stats);
+    }
+
+    /**
+     * 获取所有有内容的分类
+     */
+    @GetMapping("/categories")
+    public BaseResponse<List<ContentCategoryVO>> listCategories() {
+        String cacheKey = "content:categories";
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            return ResultUtils.success((List<ContentCategoryVO>) cached);
+        }
+        List<String> types = contentService.listCategories();
+        List<ContentCategoryVO> categories = types.stream()
+                .map(type -> new ContentCategoryVO(type, CATEGORY_NAME_MAP.getOrDefault(type, type)))
+                .toList();
+        redisService.set(cacheKey, categories, 5, TimeUnit.MINUTES);
+        return ResultUtils.success(categories);
+    }
 
     /**
      * 根据ID获取内容详情
@@ -269,6 +317,10 @@ public class ContentController {
         }
         // 清除推荐列表缓存
         redisService.delete("content:recommend");
+        // 清除分类列表缓存
+        redisService.delete("content:categories");
+        // 清除统计缓存
+        redisService.delete("content:stats");
         // 清除热力图缓存（可能有多个天数的缓存，这里只清除常用的）
         redisService.delete("content:activity:100");
         redisService.delete("content:activity:365");

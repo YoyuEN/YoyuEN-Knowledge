@@ -11,7 +11,7 @@
           <span class="module-more">查看更多</span>
         </div>
         <div class="recommend-grid">
-          <div v-for="item in recommendList" :key="item.id" class="recommend-card" @click="goToDetail(item, categoryTypeMap[item.category] || 'article')">
+          <div v-for="item in recommendList" :key="item.id" class="recommend-card" @click="goToDetail(item, item.category)">
             <div class="rc-image">
               <img :src="item.cover" :alt="item.title" />
               <div class="rc-overlay"></div>
@@ -37,104 +37,17 @@
         </div>
       </section>
 
-      <!-- 文章模块 -->
-      <section class="module">
+      <!-- 内容模块 -->
+      <section v-for="category in contentCategories" :key="category.type" class="module">
         <div class="module-header">
-          <h2 class="module-title">文章</h2>
+          <h2 class="module-title">{{ category.title }}</h2>
           <span class="module-more">查看更多</span>
         </div>
         <div class="list">
-          <div v-for="item in articleList" :key="item.id" class="list-item" @click="goToDetail(item, 'article')">
-            <div class="item-thumb">
+          <div v-for="item in category.list" :key="item.id" class="list-item" @click="goToDetail(item, category.type)">
+            <div class="item-thumb" :class="{ 'video-thumb': category.type === 'video' }">
               <img :src="item.cover" :alt="item.title" />
-            </div>
-            <div class="item-body">
-              <div class="item-title">{{ item.title }}</div>
-              <div class="item-desc">{{ item.desc }}</div>
-              <div class="item-meta">
-                <span class="meta-date">{{ item.date }}</span>
-                <span class="meta-divider">·</span>
-                <span class="meta-comment">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  {{ item.comments }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 游戏模块 -->
-      <section class="module">
-        <div class="module-header">
-          <h2 class="module-title">游戏</h2>
-          <span class="module-more">查看更多</span>
-        </div>
-        <div class="list">
-          <div v-for="item in gameList" :key="item.id" class="list-item" @click="goToDetail(item, 'game')">
-            <div class="item-thumb">
-              <img :src="item.cover" :alt="item.title" />
-            </div>
-            <div class="item-body">
-              <div class="item-title">{{ item.title }}</div>
-              <div class="item-desc">{{ item.desc }}</div>
-              <div class="item-meta">
-                <span class="meta-date">{{ item.date }}</span>
-                <span class="meta-divider">·</span>
-                <span class="meta-comment">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  {{ item.comments }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 学习模块 -->
-      <section class="module">
-        <div class="module-header">
-          <h2 class="module-title">学习</h2>
-          <span class="module-more">查看更多</span>
-        </div>
-        <div class="list">
-          <div v-for="item in studyList" :key="item.id" class="list-item" @click="goToDetail(item, 'study')">
-            <div class="item-thumb">
-              <img :src="item.cover" :alt="item.title" />
-            </div>
-            <div class="item-body">
-              <div class="item-title">{{ item.title }}</div>
-              <div class="item-desc">{{ item.desc }}</div>
-              <div class="item-meta">
-                <span class="meta-date">{{ item.date }}</span>
-                <span class="meta-divider">·</span>
-                <span class="meta-comment">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  {{ item.comments }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 视频模块 -->
-      <section class="module">
-        <div class="module-header">
-          <h2 class="module-title">视频</h2>
-          <span class="module-more">查看更多</span>
-        </div>
-        <div class="list">
-          <div v-for="item in videoList" :key="item.id" class="list-item" @click="goToDetail(item, 'video')">
-            <div class="item-thumb video-thumb">
-              <img :src="item.cover" :alt="item.title" />
-              <span class="play-icon">
+              <span v-if="category.type === 'video'" class="play-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                   <polygon points="5 3 19 12 5 21 5 3"></polygon>
                 </svg>
@@ -176,17 +89,12 @@
         </div>
         <div class="profile-stats">
           <div class="stat-item">
-            <span class="stat-num">100</span>
+            <span class="stat-num">{{ siteStats.contentCount }}</span>
             <span class="stat-label">文章</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
-            <span class="stat-num">1k</span>
-            <span class="stat-label">动态</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-num">10k</span>
+            <span class="stat-num">{{ siteStats.commentCount }}</span>
             <span class="stat-label">评论</span>
           </div>
         </div>
@@ -211,12 +119,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { fetchRecommendContent, fetchContentByCategory } from '@/api/content/content.js'
+import { fetchRecommendContent, fetchContentByCategory, fetchContentCategories, fetchContentStats } from '@/api/content/content.js'
 import { fetchLatestMurmur } from '@/api/murmur/murmur.js'
 
 const router = useRouter()
-
-const categoryTypeMap = { '文章': 'article', '游戏': 'game', '学习': 'study', '视频': 'video' }
 
 const goToDetail = (item, type) => {
   router.push({ name: 'ContentDetail', params: { type, id: item.id } })
@@ -233,38 +139,21 @@ function normalizeContent(item) {
 }
 
 const recommendList = ref([])
-const articleList = ref([])
-const gameList = ref([])
-const studyList = ref([])
-const videoList = ref([])
 const murmurList = ref([])
+const contentCategories = ref([])
+const siteStats = ref({ contentCount: 0, commentCount: 0 })
 
 onMounted(async () => {
-  const [recommend, articles, games, studies, videos, murmurs] = await Promise.allSettled([
+  const [categoriesRes, recommend, murmurs, statsRes] = await Promise.allSettled([
+    fetchContentCategories(),
     fetchRecommendContent(),
-    fetchContentByCategory('article'),
-    fetchContentByCategory('game'),
-    fetchContentByCategory('study'),
-    fetchContentByCategory('video'),
     fetchLatestMurmur(5),
+    fetchContentStats(),
   ])
 
   if (recommend.status === 'fulfilled') {
     recommendList.value = (recommend.value.data || []).map(normalizeContent)
   }
-  if (articles.status === 'fulfilled') {
-    articleList.value = (articles.value.data || []).map(normalizeContent)
-  }
-  if (games.status === 'fulfilled') {
-    gameList.value = (games.value.data || []).map(normalizeContent)
-  }
-  if (studies.status === 'fulfilled') {
-    studyList.value = (studies.value.data || []).map(normalizeContent)
-  }
-  if (videos.status === 'fulfilled') {
-    videoList.value = (videos.value.data || []).map(normalizeContent)
-  }
-  console.log(videoList.value)
   if (murmurs.status === 'fulfilled') {
     murmurList.value = (murmurs.value.data || []).map(m => ({
       ...m,
@@ -272,6 +161,29 @@ onMounted(async () => {
       date: m.createTime ?? m.date ?? '',
     }))
   }
+  if (statsRes.status === 'fulfilled' && statsRes.value.data) {
+    siteStats.value = statsRes.value.data
+  }
+
+  // 根据后端返回的分类动态加载，没有内容的分类不显示
+  // 接口失败时降级为固定顺序的分类列表（名称也由后端提供）
+  const fallbackCategories = [
+    { type: 'article', name: '文章' },
+    { type: 'game', name: '游戏' },
+    { type: 'study', name: '学习' },
+    { type: 'video', name: '视频' },
+  ]
+  const cats = (categoriesRes.status === 'fulfilled' && categoriesRes.value.data?.length > 0)
+    ? categoriesRes.value.data
+    : fallbackCategories
+  const results = await Promise.allSettled(cats.map(cat => fetchContentByCategory(cat.type)))
+  contentCategories.value = cats
+    .map((cat, i) => ({
+      type: cat.type,
+      title: cat.name,
+      list: results[i].status === 'fulfilled' ? (results[i].value.data || []).map(normalizeContent) : [],
+    }))
+    .filter(c => c.list.length > 0)
 })
 </script>
 

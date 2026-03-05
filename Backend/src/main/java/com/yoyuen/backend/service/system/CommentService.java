@@ -40,4 +40,9 @@ public interface CommentService {
      * 获取评论数量
      */
     int countByContent(String contentId, String contentType);
+
+    /**
+     * 获取评论总数
+     */
+    long countAll();
 }

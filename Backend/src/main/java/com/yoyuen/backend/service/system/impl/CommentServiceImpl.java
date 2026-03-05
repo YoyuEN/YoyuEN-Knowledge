@@ -107,4 +107,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                 .eq(Comment::getDeleted, false);
         return (int) this.count(wrapper);
     }
+
+    @Override
+    public long countAll() {
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getDeleted, false);
+        return this.count(wrapper);
+    }
 }

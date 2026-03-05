@@ -28,6 +28,25 @@ import java.util.stream.Collectors;
 public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> implements ContentService {
 
     @Override
+    public long countAll() {
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public List<String> listCategories() {
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false)
+                .select(Content::getCategory)
+                .groupBy(Content::getCategory);
+        return this.list(wrapper).stream()
+                .map(Content::getCategory)
+                .distinct()
+                .toList();
+    }
+
+    @Override
     public Content getById(String id) {
         return this.baseMapper.selectById(id);
     }
@@ -37,7 +56,8 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getCategory, category)
                 .eq(Content::getDeleted, false)
-                .orderByDesc(Content::getCreateTime);
+                .orderByDesc(Content::getCreateTime)
+                .last("LIMIT 5");
         return this.list(wrapper);
     }
 

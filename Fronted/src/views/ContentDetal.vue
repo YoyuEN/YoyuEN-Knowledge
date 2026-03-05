@@ -39,7 +39,7 @@
           <div class="ai-label">AI 总结</div>
           <p>{{ currentItem.desc }}</p>
         </div>
-        <div class="article-body" v-html="currentItem.content" @click="handleContentClick"></div>
+        <div class="article-body markdown-body" v-html="renderMarkdown(currentItem.content)" @click="handleContentClick"></div>
       </div>
     </div>
 
@@ -80,6 +80,10 @@ import Card16x9 from '../components/Card16x9.vue'
 import CommentSection from '../components/CommentSection.vue'
 import { fetchContentByCategory, fetchContentById } from '@/api/content/content.js'
 import { fetchCommentList } from '@/api/comment/comment.js'
+import { marked } from 'marked'
+
+marked.setOptions({ breaks: true, gfm: true })
+const renderMarkdown = (content) => content ? marked(content) : ''
 
 const route = useRoute()
 const router = useRouter()
@@ -355,11 +359,29 @@ watch(() => route.hash, (hash) => {
   line-height: 1.9;
 }
 
+.article-body :deep(h1) {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 28px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.article-body :deep(h2) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 24px 0 10px;
+  padding-left: 10px;
+  border-left: 3px solid #888;
+}
+
 .article-body :deep(h3) {
   font-size: 16px;
   font-weight: 600;
   color: #1a1a1a;
-  margin: 24px 0 10px;
+  margin: 20px 0 8px;
   padding-left: 10px;
   border-left: 3px solid #d0d0d0;
 }
@@ -369,12 +391,84 @@ watch(() => route.hash, (hash) => {
   color: #555;
 }
 
+.article-body :deep(ul), .article-body :deep(ol) {
+  padding-left: 20px;
+  margin: 0 0 14px;
+  color: #555;
+}
+
+.article-body :deep(li) {
+  margin-bottom: 4px;
+}
+
 .article-body :deep(code) {
   background: #f2f2f2;
   padding: 1px 5px;
   border-radius: 3px;
   font-size: 13px;
   font-family: 'Consolas', monospace;
+}
+
+.article-body :deep(pre) {
+  background: #1e1e1e;
+  border-radius: 6px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 0 0 16px;
+}
+
+.article-body :deep(pre code) {
+  background: none;
+  color: #d4d4d4;
+  padding: 0;
+  font-size: 13px;
+}
+
+.article-body :deep(blockquote) {
+  margin: 0 0 14px;
+  padding: 10px 16px;
+  border-left: 3px solid #ddd;
+  background: #f9f9f9;
+  color: #777;
+}
+
+.article-body :deep(a) {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.article-body :deep(a:hover) {
+  text-decoration: underline;
+}
+
+.article-body :deep(img) {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 8px 0;
+}
+
+.article-body :deep(hr) {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 20px 0;
+}
+
+.article-body :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+
+.article-body :deep(th), .article-body :deep(td) {
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.article-body :deep(th) {
+  background: #f5f5f5;
+  font-weight: 600;
 }
 
 /* ---- 右侧 ---- */

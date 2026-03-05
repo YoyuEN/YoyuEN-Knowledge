@@ -1,6 +1,20 @@
 import request from '@/utils/request'
 
 /**
+ * 获取内容统计数据
+ */
+export function fetchContentStats() {
+  return request.get('/content/stats')
+}
+
+/**
+ * 获取所有有内容的分类列表
+ */
+export function fetchContentCategories() {
+  return request.get('/content/categories')
+}
+
+/**
  * 根据ID获取内容详情（同时增加浏览量）
  * @param {string} id
  */

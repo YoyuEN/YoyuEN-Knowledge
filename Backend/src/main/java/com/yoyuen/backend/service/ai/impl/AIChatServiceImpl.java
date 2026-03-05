@@ -9,7 +9,6 @@ import com.yoyuen.backend.mapper.DocumentEntityMapper;
 import com.yoyuen.backend.mapper.KnowledgeBaseMapper;
 import com.yoyuen.backend.model.entity.ai.DocumentEntity;
 import com.yoyuen.backend.model.entity.ai.KnowledgeBase;
-import com.yoyuen.backend.model.entity.user.SystemUser;
 import com.yoyuen.backend.model.enums.ChatType;
 import com.yoyuen.backend.service.ai.AIChatService;
 import com.yoyuen.backend.service.ai.LLMService;
@@ -19,7 +18,6 @@ import com.yoyuen.backend.service.system.ContentService;
 import com.yoyuen.backend.entity.Comment;
 import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.utils.CoreCode;
-import com.yoyuen.backend.utils.SecurityFrameworkUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -40,7 +38,6 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.yoyuen.backend.constant.AppConstant.*;
 
