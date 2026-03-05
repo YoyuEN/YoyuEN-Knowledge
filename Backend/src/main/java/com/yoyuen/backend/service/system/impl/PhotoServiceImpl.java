@@ -71,10 +71,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 byte[] thumbBytes = thumbOutput.toByteArray();
                 objectStoreService.uploadFile(
                     new ByteArrayInputStream(thumbBytes),
+                    thumbBytes.length,
                     PHOTO_BUCKET,
                     thumbnailName,
-                    file.getContentType(),
-                    thumbBytes.length
+                    file.getContentType()
                 );
                 log.info("[照片上传] 缩略图生成成功，size={}KB", thumbBytes.length / 1024);
             } catch (Exception e) {
