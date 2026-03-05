@@ -75,16 +75,13 @@
                 <div class="latest-articles">
                   <div class="section-card">
                     <div
-                      class="timeline-item"
+                      class="article-item"
                       v-for="article in latestArticles"
                       :key="article.id"
                       @click="goToArticle(article.id)"
                     >
-                      <div class="timeline-dot"></div>
-                      <div class="timeline-content">
-                        <div class="timeline-date">{{ article.createTime }}</div>
-                        <div class="timeline-title">{{ article.title }}</div>
-                      </div>
+                      <div class="article-title">{{ article.title }}</div>
+                      <div class="article-date">{{ article.createTime }}</div>
                     </div>
                   </div>
                 </div>
@@ -686,63 +683,44 @@ html.dark .layout-header {
   overflow: hidden;
 }
 
-.timeline-item {
-  position: relative;
-  padding-left: 30px;
-  padding-bottom: 20px;
-  border-left: 2px solid var(--border-color);
-}
-
-.timeline-item:last-child {
-  padding-bottom: 0;
-  border-left: 2px solid transparent;
-}
-
-.timeline-dot {
-  position: absolute;
-  left: -6px;
-  top: 6px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  border: 2px solid var(--bg-primary);
-  transition: all 0.3s ease;
-}
-
-.timeline-item:hover .timeline-dot {
-  transform: scale(1.3);
-  box-shadow: 0 0 0 4px rgba(5, 145, 255, 0.1);
-}
-
-.timeline-content {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.article-item {
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
   cursor: pointer;
   transition: all 0.3s ease;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
-.timeline-content:hover {
-  transform: translateX(4px);
+.article-item:hover {
+  background-color: var(--hover-bg);
+  transform: translateY(-2px);
 }
 
-.timeline-date {
-  font-size: 11px;
-  color: var(--text-tertiary);
-  font-weight: 500;
-}
-
-.timeline-title {
+.article-title {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
   line-height: 1.4;
   transition: color 0.3s ease;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.timeline-content:hover .timeline-title {
+.article-item:hover .article-title {
   color: var(--primary-color);
+}
+
+.article-date {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
 /* 右侧界面导航样式 */

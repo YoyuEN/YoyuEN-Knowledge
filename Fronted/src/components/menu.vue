@@ -115,21 +115,18 @@ const handleSelect = () => {
 .el-menu-vertical-demo :deep(.el-sub-menu__title:hover) {
   background-color: var(--hover-bg);
   color: var(--text-primary);
-  transform: translateX(4px);
 }
 
 .el-menu-vertical-demo :deep(.el-menu-item:hover .el-icon),
 .el-menu-vertical-demo :deep(.el-sub-menu__title:hover .el-icon) {
   color: var(--primary-color);
-  transform: scale(1.1);
 }
 
 /* 激活状态 */
 .el-menu-vertical-demo :deep(.el-menu-item.is-active) {
   color: var(--primary-color);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  background-color: var(--hover-bg);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
 }
 
 .el-menu-vertical-demo :deep(.el-menu-item.is-active .el-icon) {
@@ -147,12 +144,11 @@ const handleSelect = () => {
 .el-menu-vertical-demo :deep(.el-sub-menu .el-menu-item:hover) {
   background-color: var(--hover-bg);
   color: var(--text-primary);
-  transform: translateX(4px);
 }
 
 .el-menu-vertical-demo :deep(.el-sub-menu .el-menu-item.is-active) {
   color: var(--primary-color);
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  background-color: var(--hover-bg);
   font-weight: 500;
 }
 

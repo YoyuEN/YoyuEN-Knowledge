@@ -516,7 +516,7 @@ const tags = ref([
 .photo-item :deep(.n-image img) {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   transition: transform 0.3s ease;
 }
 
