@@ -120,6 +120,10 @@
         </button>
       </div>
     </div>
+    <!-- 相关的文章列表 -->
+    <div class="message-list">
+
+    </div>
   </div>
 </template>
 
@@ -319,6 +323,14 @@ onUnmounted(() => {
   display: flex;
   margin: 0 auto;
   flex-direction: column;
+}
+
+.message-list {
+  flex: 1;
+  border: 1px solid #e8e8e8;
+  padding-left: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .reply-content {
