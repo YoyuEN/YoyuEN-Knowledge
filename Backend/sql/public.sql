@@ -432,3 +432,10 @@ CREATE TRIGGER "update_photo_updated_at"
 CREATE INDEX "idx_photo_create_time" ON "photo"(create_time DESC);
 
 ALTER TABLE "comment" ADD COLUMN is_recommend BOOLEAN DEFAULT FALSE;
+
+-- PostgreSQL 版本：为 photo 表添加 thumbnail_name 字段
+ALTER TABLE photo ADD COLUMN thumbnail_name VARCHAR(255);
+COMMENT ON COLUMN photo.thumbnail_name IS '缩略图对象名称';
+
+-- 对于已存在的照片，将 thumbnail_name 设置为 object_name（使用原图）
+UPDATE photo SET thumbnail_name = object_name WHERE thumbnail_name IS NULL;

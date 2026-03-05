@@ -9,10 +9,13 @@ import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.service.system.PhotoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.coobird.thumbnailator.Thumbnails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -28,6 +31,8 @@ import java.util.List;
 public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements PhotoService {
 
     private static final String PHOTO_BUCKET = "photo";
+    private static final int THUMBNAIL_WIDTH = 800;
+    private static final int THUMBNAIL_HEIGHT = 600;
 
     private final ObjectStoreService objectStoreService;
 
@@ -50,12 +55,37 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     ? originalFilename.substring(originalFilename.lastIndexOf("."))
                     : ".jpg";
             String objectName = "photo_" + timeStr + ext;
+            String thumbnailName = "thumb_" + timeStr + ext;
 
+            // 上传原图
             objectStoreService.uploadFile(file, PHOTO_BUCKET, objectName);
+
+            // 生成并上传缩略图
+            try {
+                ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
+                Thumbnails.of(file.getInputStream())
+                        .size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
+                        .outputQuality(0.8)
+                        .toOutputStream(thumbOutput);
+
+                byte[] thumbBytes = thumbOutput.toByteArray();
+                objectStoreService.uploadFile(
+                    new ByteArrayInputStream(thumbBytes),
+                    PHOTO_BUCKET,
+                    thumbnailName,
+                    file.getContentType(),
+                    thumbBytes.length
+                );
+                log.info("[照片上传] 缩略图生成成功，size={}KB", thumbBytes.length / 1024);
+            } catch (Exception e) {
+                log.warn("[照片上传] 缩略图生成失败，使用原图，error={}", e.getMessage());
+                thumbnailName = objectName; // 降级使用原图
+            }
 
             Photo photo = new Photo();
             photo.setBucketName(PHOTO_BUCKET);
             photo.setObjectName(objectName);
+            photo.setThumbnailName(thumbnailName);
             photo.setDescription(description);
             this.save(photo);
 
@@ -73,6 +103,10 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (photo != null) {
             try {
                 objectStoreService.deleteFile(photo.getBucketName(), photo.getObjectName());
+                // 删除缩略图（如果不是原图）
+                if (photo.getThumbnailName() != null && !photo.getThumbnailName().equals(photo.getObjectName())) {
+                    objectStoreService.deleteFile(photo.getBucketName(), photo.getThumbnailName());
+                }
             } catch (Exception e) {
                 log.warn("[照片删除] MinIO删除失败，继续删除DB记录，objectName={}, error={}", photo.getObjectName(), e.getMessage());
             }
@@ -85,7 +119,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         vo.setId(photo.getId());
         vo.setDescription(photo.getDescription());
         vo.setCreateTime(photo.getCreateTime());
-        String url = objectStoreService.getTmpFileUrl(photo.getBucketName(), photo.getObjectName());
+        // 使用缩略图URL，如果没有则使用原图
+        String thumbnailName = (photo.getThumbnailName() != null && !photo.getThumbnailName().isEmpty())
+                ? photo.getThumbnailName()
+                : photo.getObjectName();
+        String url = objectStoreService.getTmpFileUrl(photo.getBucketName(), thumbnailName);
         vo.setUrl(url);
         return vo;
     }

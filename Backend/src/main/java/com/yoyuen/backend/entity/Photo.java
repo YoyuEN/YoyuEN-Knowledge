@@ -34,6 +34,12 @@ public class Photo extends BaseEntity {
     private String objectName;
 
     /**
+     * 缩略图对象名称
+     */
+    @TableField("thumbnail_name")
+    private String thumbnailName;
+
+    /**
      * 照片描述
      */
     @TableField("description")

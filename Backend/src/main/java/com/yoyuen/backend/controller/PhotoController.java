@@ -2,6 +2,7 @@ package com.yoyuen.backend.controller;
 
 import com.yoyuen.backend.controller.vo.PhotoVO;
 import com.yoyuen.backend.service.system.PhotoService;
+import com.yoyuen.backend.service.system.RedisService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Author: YoyuEN
@@ -23,13 +25,23 @@ import java.util.List;
 public class PhotoController {
 
     private final PhotoService photoService;
+    private final RedisService redisService;
 
     /**
      * 获取照片列表
      */
     @GetMapping("/list")
     public BaseResponse<List<PhotoVO>> list() {
-        return ResultUtils.success(photoService.listPhotos());
+        String cacheKey = "photo:list";
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("从缓存获取照片列表");
+            return ResultUtils.success((List<PhotoVO>) cached);
+        }
+
+        List<PhotoVO> photos = photoService.listPhotos();
+        redisService.set(cacheKey, photos, 10, TimeUnit.MINUTES);
+        return ResultUtils.success(photos);
     }
 
     /**
@@ -40,6 +52,8 @@ public class PhotoController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "description", required = false, defaultValue = "") String description) {
         PhotoVO vo = photoService.upload(file, description);
+        // 清除缓存
+        redisService.delete("photo:list");
         return ResultUtils.success(vo);
     }
 
@@ -48,6 +62,9 @@ public class PhotoController {
      */
     @PostMapping("/remove")
     public BaseResponse<Boolean> remove(@RequestParam String id) {
-        return ResultUtils.success(photoService.remove(id));
+        boolean result = photoService.remove(id);
+        // 清除缓存
+        redisService.delete("photo:list");
+        return ResultUtils.success(result);
     }
 }
