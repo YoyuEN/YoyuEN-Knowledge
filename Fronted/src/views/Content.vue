@@ -41,7 +41,7 @@
       <section v-for="category in contentCategories" :key="category.type" class="module">
         <div class="module-header">
           <h2 class="module-title">{{ category.title }}</h2>
-          <span class="module-more">查看更多</span>
+          <span class="module-count">{{ category.count }} 篇</span>
         </div>
         <div class="list">
           <div v-for="item in category.list" :key="item.id" class="list-item" @click="goToDetail(item, category.type)">
@@ -168,10 +168,10 @@ onMounted(async () => {
   // 根据后端返回的分类动态加载，没有内容的分类不显示
   // 接口失败时降级为固定顺序的分类列表（名称也由后端提供）
   const fallbackCategories = [
-    { type: 'article', name: '文章' },
-    { type: 'game', name: '游戏' },
-    { type: 'study', name: '学习' },
-    { type: 'video', name: '视频' },
+    { type: 'article', name: '文章', count: 0 },
+    { type: 'game', name: '游戏', count: 0 },
+    { type: 'study', name: '学习', count: 0 },
+    { type: 'video', name: '视频', count: 0 },
   ]
   const cats = (categoriesRes.status === 'fulfilled' && categoriesRes.value.data?.length > 0)
     ? categoriesRes.value.data
@@ -181,6 +181,7 @@ onMounted(async () => {
     .map((cat, i) => ({
       type: cat.type,
       title: cat.name,
+      count: cat.count || 0,
       list: results[i].status === 'fulfilled' ? (results[i].value.data || []).map(normalizeContent) : [],
     }))
     .filter(c => c.list.length > 0)
@@ -233,12 +234,12 @@ onMounted(async () => {
 .module-more {
   font-size: 13px;
   color: #999;
-  cursor: pointer;
   transition: color 0.2s;
 }
 
-.module-more:hover {
-  color: #555;
+.module-count {
+  font-size: 13px;
+  color: #999;
 }
 
 /* ---- 推荐网格 ---- */

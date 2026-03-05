@@ -85,7 +85,10 @@ public class ContentController {
         }
         List<String> types = contentService.listCategories();
         List<ContentCategoryVO> categories = types.stream()
-                .map(type -> new ContentCategoryVO(type, CATEGORY_NAME_MAP.getOrDefault(type, type)))
+                .map(type -> {
+                    long count = contentService.countByCategory(type);
+                    return new ContentCategoryVO(type, CATEGORY_NAME_MAP.getOrDefault(type, type), count);
+                })
                 .toList();
         redisService.set(cacheKey, categories, 5, TimeUnit.MINUTES);
         return ResultUtils.success(categories);

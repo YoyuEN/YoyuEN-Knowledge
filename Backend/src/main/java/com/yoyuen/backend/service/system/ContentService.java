@@ -18,6 +18,11 @@ public interface ContentService {
     List<String> listCategories();
 
     /**
+     * 根据分类统计内容数量
+     */
+    long countByCategory(String category);
+
+    /**
      * 获取内容总数
      */
     long countAll();

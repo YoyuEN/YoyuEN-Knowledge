@@ -13,4 +13,5 @@ import lombok.Data;
 public class ContentCategoryVO {
     private String type;
     private String name;
+    private Long count;
 }

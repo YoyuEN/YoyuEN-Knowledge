@@ -26,6 +26,17 @@
             </div>
           </Card16x9>
         </swiper-slide>
+        <!-- 切换提示图标 -->
+        <div v-if="swiperItems.length > 1" class="swipe-hint swipe-hint-left" @click="handleSwipeHintClickPrev">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </div>
+        <div v-if="swiperItems.length > 1" class="swipe-hint swipe-hint-right" @click="handleSwipeHintClick">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </div>
       </swiper>
 
       <!-- 文章内容区 -->
@@ -201,6 +212,18 @@ function scrollToHash() {
       setTimeout(() => { el.style.outline = '' }, 2000)
     }
   }, 300)
+}
+
+function handleSwipeHintClick() {
+  if (swiperInstance) {
+    swiperInstance.slideNext()
+  }
+}
+
+function handleSwipeHintClickPrev() {
+  if (swiperInstance) {
+    swiperInstance.slidePrev()
+  }
 }
 
 onMounted(loadData)
@@ -537,5 +560,52 @@ watch(() => route.hash, (hash) => {
   border: 1px solid #ebebeb;
   border-radius: 10px;
   overflow: hidden;
+}
+
+/* 切换提示图标 */
+.swipe-hint {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  animation: breathe 2s ease-in-out infinite;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.swipe-hint-left {
+  left: 20px;
+}
+
+.swipe-hint-right {
+  right: 20px;
+}
+
+.swipe-hint:hover {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.swipe-hint svg {
+  color: #666;
+}
+
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-50%) scale(1.1);
+  }
 }
 </style>

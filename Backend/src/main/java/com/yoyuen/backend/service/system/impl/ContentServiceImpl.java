@@ -35,6 +35,14 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
     }
 
     @Override
+    public long countByCategory(String category) {
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getCategory, category)
+                .eq(Content::getDeleted, false);
+        return this.count(wrapper);
+    }
+
+    @Override
     public List<String> listCategories() {
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getDeleted, false)
