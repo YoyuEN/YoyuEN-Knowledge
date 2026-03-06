@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yoyuen.backend.controller.vo.PhotoVO;
 import com.yoyuen.backend.entity.Photo;
 import com.yoyuen.backend.mapper.PhotoMapper;
+import com.yoyuen.backend.service.ai.ImageGenerationService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.service.system.PhotoService;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     private static final int THUMBNAIL_HEIGHT = 600;
 
     private final ObjectStoreService objectStoreService;
+    private final ImageGenerationService imageGenerationService;
 
     @Override
     public List<PhotoVO> listPhotos() {
@@ -57,8 +59,28 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             String objectName = "photo_" + timeStr + ext;
             String thumbnailName = "thumb_" + timeStr + ext;
 
-            // 上传原图
-            objectStoreService.uploadFile(file, PHOTO_BUCKET, objectName);
+            // 动漫化处理（在上传前处理）
+            String animePath = null;
+            try {
+                log.info("[照片上传] 开始动漫化处理...");
+                byte[] originalBytes = file.getBytes();
+                animePath = imageGenerationService.convertToAnime(originalBytes);
+                if (animePath != null) {
+                    log.info("[照片上传] 动漫化成功: {}", animePath);
+                    // 使用动漫化后的图片作为主图
+                    objectName = animePath.substring(animePath.lastIndexOf("/") + 1);
+                } else {
+                    log.warn("[照片上传] 动漫化失败，使用原图");
+                }
+            } catch (Exception e) {
+                log.error("[照片上传] 动漫化异常，使用原图，error={}", e.getMessage(), e);
+            }
+
+            // 如果动漫化失败，上传原图
+            if (animePath == null) {
+                String originalPath = objectStoreService.uploadFile(file, PHOTO_BUCKET, objectName);
+                log.info("[照片上传] 原图上传成功: {}", originalPath);
+            }
 
             // 生成并上传缩略图
             try {
@@ -72,7 +94,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 objectStoreService.uploadFile(
                     new ByteArrayInputStream(thumbBytes),
                     thumbBytes.length,
-                    PHOTO_BUCKET,
+                    animePath != null ? "photos" : PHOTO_BUCKET,
                     thumbnailName,
                     file.getContentType()
                 );
@@ -83,7 +105,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             }
 
             Photo photo = new Photo();
-            photo.setBucketName(PHOTO_BUCKET);
+            photo.setBucketName(animePath != null ? "photos" : PHOTO_BUCKET);
             photo.setObjectName(objectName);
             photo.setThumbnailName(thumbnailName);
             photo.setDescription(description);

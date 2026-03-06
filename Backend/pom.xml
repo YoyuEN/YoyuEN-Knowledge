@@ -20,7 +20,7 @@
         <mysql.version>8.0.33</mysql.version>
         <mongodb.version>5.2.1</mongodb.version>
         <minio.version>8.5.9</minio.version>
-        <hutools.version>5.8.0</hutools.version>
+<hutools.version>5.8.0</hutools.version>
         <tika.version>3.0.0</tika.version>
         <pdfbox.version>3.0.3</pdfbox.version>
         <tabula.version>1.0.12</tabula.version>
@@ -165,7 +165,7 @@
             <artifactId>minio</artifactId>
             <version>${minio.version}</version>
         </dependency>
-        <!-- Hutool -->
+<!-- Hutool -->
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-all</artifactId>

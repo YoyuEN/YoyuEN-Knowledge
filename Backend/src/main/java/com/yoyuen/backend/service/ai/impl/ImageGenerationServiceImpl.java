@@ -3,6 +3,7 @@ package com.yoyuen.backend.service.ai.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yoyuen.backend.config.ImageGenerationConfig;
+import com.yoyuen.backend.config.ImageToImageConfig;
 import com.yoyuen.backend.service.ai.ImageGenerationService;
 import com.yoyuen.backend.service.ai.LLMService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
@@ -29,6 +30,7 @@ import java.util.UUID;
 public class ImageGenerationServiceImpl implements ImageGenerationService {
 
     private final ImageGenerationConfig config;
+    private final ImageToImageConfig imageToImageConfig;
     private final LLMService llmService;
     private final ObjectStoreService objectStoreService;
     private final RestTemplate restTemplate = new RestTemplate();
@@ -119,9 +121,16 @@ public class ImageGenerationServiceImpl implements ImageGenerationService {
      * 轮询获取任务结果
      */
     private String pollTaskResult(String taskId) throws Exception {
+        return pollTaskResult(taskId, config.getApiKey());
+    }
+
+    /**
+     * 轮询获取任务结果（支持自定义API Key）
+     */
+    private String pollTaskResult(String taskId, String apiKey) throws Exception {
         String queryUrl = "https://dashscope.aliyuncs.com/api/v1/tasks/" + taskId;
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + config.getApiKey());
+        headers.set("Authorization", "Bearer " + apiKey);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
         int maxRetries = 30;
@@ -185,6 +194,91 @@ public class ImageGenerationServiceImpl implements ImageGenerationService {
             return objectPath;
         } catch (Exception e) {
             log.error("下载并上传图片失败", e);
+            return null;
+        }
+    }
+
+    @Override
+    public String convertToAnime(byte[] imageBytes) {
+        try {
+            // 转换为base64
+            String base64Image = java.util.Base64.getEncoder().encodeToString(imageBytes);
+
+            // 构建请求体
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", imageToImageConfig.getModel());
+
+            Map<String, Object> input = new HashMap<>();
+            input.put("sketch_image_url", "data:image/jpeg;base64," + base64Image);
+            input.put("prompt", "动漫风格,高质量");
+            requestBody.put("input", input);
+
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("n", 1);
+            requestBody.put("parameters", parameters);
+
+            // 设置请求头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.set("Authorization", "Bearer " + imageToImageConfig.getApiKey());
+            headers.set("X-DashScope-Async", "enable");
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+
+            // 发送请求
+            log.info("调用图生图API");
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                    imageToImageConfig.getBaseUrl(),
+                    entity,
+                    String.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                JsonNode jsonNode = objectMapper.readTree(response.getBody());
+                String taskId = jsonNode.path("output").path("task_id").asText();
+
+                // 轮询获取结果
+                String animeImageUrl = pollTaskResult(taskId, imageToImageConfig.getApiKey());
+
+                if (animeImageUrl != null) {
+                    // 下载并上传到MinIO
+                    return downloadAndUploadAnimeImage(animeImageUrl);
+                }
+            } else {
+                log.error("图生图API调用失败: {}", response.getBody());
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("图片动漫化失败", e);
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * 下载动漫化图片并上传到MinIO
+     */
+    private String downloadAndUploadAnimeImage(String imageUrl) {
+        try {
+            URL url = new URL(imageUrl);
+            InputStream inputStream = url.openStream();
+
+            String fileName = "anime_" + UUID.randomUUID().toString() + ".png";
+
+            byte[] imageBytes = inputStream.readAllBytes();
+            long fileSize = imageBytes.length;
+
+            String objectPath = objectStoreService.uploadFile(
+                    new java.io.ByteArrayInputStream(imageBytes),
+                    fileSize,
+                    "photos",
+                    fileName,
+                    "image/png"
+            );
+
+            return objectPath;
+        } catch (Exception e) {
+            log.error("下载并上传动漫化图片失败", e);
             return null;
         }
     }
