@@ -5,11 +5,14 @@
     <div class="swiper-col">
       <swiper
         v-if="loaded"
+        :modules="modules"
         :slides-per-view="1"
         :space-between="16"
         :navigation="true"
         :pagination="{ clickable: true }"
         :initial-slide="initialSlide"
+        :effect="'fade'"
+        :speed="600"
         @swiper="onSwiper"
         @slide-change="onSlideChange"
         class="content-swiper"
@@ -63,8 +66,8 @@
         </div>
         <p class="detail-desc">{{ currentItem.desc }}</p>
         <div class="detail-stats">
-          <span>📅 {{ currentItem.date }}</span>
-          <span>💬 {{ currentItem.comments }} 评论</span>
+          <span>{{ currentItem.date }}</span>
+          <span>{{ currentItem.comments }} 评论</span>
         </div>
       </div>
       <div class="comment-wrap">
@@ -84,17 +87,22 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Swiper, SwiperSlide } from 'swiper/vue'
+import { EffectFade } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
+import 'swiper/css/effect-fade'
 import Card16x9 from '../components/Card16x9.vue'
 import CommentSection from '../components/CommentSection.vue'
 import { fetchContentByCategory, fetchContentById } from '@/api/content/content.js'
 import { fetchCommentList } from '@/api/comment/comment.js'
 import { marked } from 'marked'
+import { transitionContent } from '@/js/contentTransition'
 
 marked.setOptions({ breaks: true, gfm: true })
 const renderMarkdown = (content) => content ? marked(content) : ''
+
+const modules = [EffectFade]
 
 const route = useRoute()
 const router = useRouter()
@@ -126,10 +134,12 @@ const onSwiper = (swiper) => {
 
 const onSlideChange = async () => {
   if (swiperInstance) {
-    currentItem.value = swiperItems.value[swiperInstance.activeIndex] || null
-    if (currentItem.value) {
-      await loadComments(currentItem.value.id)
-    }
+    await transitionContent(async () => {
+      currentItem.value = swiperItems.value[swiperInstance.activeIndex] || null
+      if (currentItem.value) {
+        await loadComments(currentItem.value.id)
+      }
+    })
   }
 }
 

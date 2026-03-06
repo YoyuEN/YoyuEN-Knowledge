@@ -5,13 +5,13 @@
     <div class="content-main">
 
       <!-- 推荐内容 -->
-      <section class="module">
+      <section class="module fade-in">
         <div class="module-header">
           <h2 class="module-title">推荐内容</h2>
           <span class="module-more">查看更多</span>
         </div>
         <div class="recommend-grid">
-          <div v-for="item in recommendList" :key="item.id" class="recommend-card" @click="goToDetail(item, item.category)">
+          <div v-for="item in recommendList" :key="item.id" class="recommend-card fade-in" @click="goToDetail(item, item.category)">
             <div class="rc-image">
               <img :src="item.cover" :alt="item.title" />
               <div class="rc-overlay"></div>
@@ -38,13 +38,13 @@
       </section>
 
       <!-- 内容模块 -->
-      <section v-for="category in contentCategories" :key="category.type" class="module">
+      <section v-for="category in contentCategories" :key="category.type" class="module fade-in">
         <div class="module-header">
           <h2 class="module-title">{{ category.title }}</h2>
           <span class="module-count">{{ category.count }} 篇</span>
         </div>
         <div class="list">
-          <div v-for="item in category.list" :key="item.id" class="list-item" @click="goToDetail(item, category.type)">
+          <div v-for="item in category.list" :key="item.id" class="list-item fade-in" @click="goToDetail(item, category.type)">
             <div class="item-thumb" :class="{ 'video-thumb': category.type === 'video' }">
               <img :src="item.cover" :alt="item.title" />
               <span v-if="category.type === 'video'" class="play-icon">
@@ -70,14 +70,13 @@
           </div>
         </div>
       </section>
-
     </div>
 
     <!-- 右侧：固定边栏 -->
     <aside class="sidebar">
 
       <!-- 个人信息卡 -->
-      <div class="sidebar-card profile-card">
+      <div class="sidebar-card profile-card fade-in">
         <div class="profile-avatar">
           <img src="/src/assets/picture/YoyuEN.png" alt="YoyuEN" />
         </div>
@@ -101,7 +100,7 @@
       </div>
 
       <!-- 每日碎碎念 -->
-      <div class="sidebar-card">
+      <div class="sidebar-card fade-in">
         <div class="sidebar-card-title">每日碎碎念</div>
         <div class="murmur-list">
           <div v-for="item in murmurList" :key="item.id" class="murmur-item">
@@ -121,6 +120,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { fetchRecommendContent, fetchContentByCategory, fetchContentCategories, fetchContentStats } from '@/api/content/content.js'
 import { fetchLatestMurmur } from '@/api/murmur/murmur.js'
+import { initFadeIn } from '@/js/fadeIn'
 
 const router = useRouter()
 
@@ -185,6 +185,11 @@ onMounted(async () => {
       list: results[i].status === 'fulfilled' ? (results[i].value.data || []).map(normalizeContent) : [],
     }))
     .filter(c => c.list.length > 0)
+
+  // 数据加载完成后触发淡入动画
+  setTimeout(() => {
+    initFadeIn()
+  }, 100)
 })
 </script>
 
