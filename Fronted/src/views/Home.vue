@@ -1,5 +1,9 @@
 <template>
   <div class="home-container">
+    <!-- 相关的文章列表 -->
+    <div class="message-list">
+
+    </div>
     <div class="chat-area">
       <!-- 回复区域 -->
       <div class="reply-content">
