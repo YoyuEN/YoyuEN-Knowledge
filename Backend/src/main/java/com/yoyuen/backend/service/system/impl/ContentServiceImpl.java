@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yoyuen.backend.mapper.ContentMapper;
 import com.yoyuen.backend.entity.Content;
+import com.yoyuen.backend.service.ai.ImageGenerationService;
+import com.yoyuen.backend.service.ai.LLMService;
 import com.yoyuen.backend.service.system.ContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> implements ContentService {
+
+    private final ImageGenerationService imageGenerationService;
+    private final LLMService llmService;
 
     @Override
     public long countAll() {
@@ -64,8 +69,7 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getCategory, category)
                 .eq(Content::getDeleted, false)
-                .orderByDesc(Content::getCreateTime)
-                .last("LIMIT 5");
+                .orderByDesc(Content::getCreateTime);
         return this.list(wrapper);
     }
 
@@ -84,6 +88,49 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
     public String addContent(Content content) {
         content.setCommentCount(0);
         content.setViewCount(0);
+
+        // 如果没有封面，自动生成
+        if (content.getCover() == null || content.getCover().isEmpty()) {
+            try {
+                log.info("开始为文章生成封面: {}", content.getTitle());
+                String coverUrl = imageGenerationService.generateCoverForContent(
+                        content.getTitle(),
+                        content.getContent()
+                );
+                if (coverUrl != null) {
+                    content.setCover(coverUrl);
+                    log.info("封面生成成功: {}", coverUrl);
+                } else {
+                    log.warn("封面生成失败，使用默认封面");
+                    content.setCover("default/default.jpg");
+                }
+            } catch (Exception e) {
+                log.error("生成封面时发生异常", e);
+                content.setCover("default/default.jpg");
+            }
+        }
+
+        // 如果没有描述，自动生成
+        if (content.getDescription() == null || content.getDescription().isEmpty()) {
+            try {
+                log.info("开始为文章生成描述: {}", content.getTitle());
+                String descriptionPrompt = String.format(
+                        "根据以下文章标题和内容，生成一段简洁的文章描述。" +
+                        "要求：概括文章核心内容，不超过100字，语言简洁流畅。" +
+                        "只返回描述内容，不要其他内容。\n\n" +
+                        "标题：%s\n内容：%s",
+                        content.getTitle(),
+                        content.getContent().length() > 500 ? content.getContent().substring(0, 500) : content.getContent()
+                );
+                String description = llmService.getChatModel().call(descriptionPrompt);
+                content.setDescription(description.trim());
+                log.info("描述生成成功: {}", description);
+            } catch (Exception e) {
+                log.error("生成描述时发生异常", e);
+                content.setDescription("暂无描述");
+            }
+        }
+
         this.save(content);
         return content.getId();
     }

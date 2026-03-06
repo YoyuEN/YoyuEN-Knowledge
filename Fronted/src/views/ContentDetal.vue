@@ -22,7 +22,7 @@
           :key="item.id"
           class="content-swiper-slide"
         >
-          <Card16x9 :background-image="item.cover" class="content-card-item">
+          <Card16x9 :background-image="item.cover" class="content-card-item" @click="viewImage(item.cover)">
             <div class="card-overlay">
               <h4 class="card-name">{{ item.title }}</h4>
               <span class="card-badge">{{ item.category }}</span>
@@ -80,6 +80,14 @@
       </div>
     </div>
 
+    <!-- 图片预览模态框 -->
+    <div v-if="showImagePreview" class="image-preview-modal" @click="closeImagePreview">
+      <div class="image-preview-content" @click.stop>
+        <img :src="previewImageUrl" alt="预览图片" />
+        <button class="close-btn" @click="closeImagePreview">✕</button>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -125,6 +133,8 @@ const initialSlide = ref(0)
 const currentItem = ref(null)
 const itemComments = ref([])
 const loaded = ref(false)
+const showImagePreview = ref(false)
+const previewImageUrl = ref('')
 
 let swiperInstance = null
 
@@ -234,6 +244,21 @@ function handleSwipeHintClickPrev() {
   if (swiperInstance) {
     swiperInstance.slidePrev()
   }
+}
+
+function viewImage(coverPath) {
+  if (!coverPath) return
+  // 构建完整图片URL
+  const imageUrl = coverPath.startsWith('http')
+    ? coverPath
+    : `${import.meta.env.VITE_API_BASE_URL || ''}/api/file/view/${coverPath}`
+  previewImageUrl.value = imageUrl
+  showImagePreview.value = true
+}
+
+function closeImagePreview() {
+  showImagePreview.value = false
+  previewImageUrl.value = ''
 }
 
 onMounted(loadData)
@@ -616,6 +641,70 @@ watch(() => route.hash, (hash) => {
   50% {
     opacity: 1;
     transform: translateY(-50%) scale(1.1);
+  }
+}
+
+/* 图片预览模态框 */
+.image-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+.image-preview-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview-content img {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.close-btn {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 </style>

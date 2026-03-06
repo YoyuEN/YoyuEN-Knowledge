@@ -188,9 +188,7 @@ public class ContentController {
      */
     @PostMapping("/create")
     public BaseResponse<String> create(@Valid @RequestBody ContentVO contentVO) {
-        if (contentVO.getCover() == null || contentVO.getCover().isBlank()) {
-            contentVO.setCover(DEFAULT_BUCKET + "/" + DEFAULT_COVER);
-        }
+        // 不再在这里设置默认封面，让 Service 层处理（自动生成或使用默认）
         Content content = toEntity(contentVO);
         String id = contentService.addContent(content);
         contentVO.setId(id);

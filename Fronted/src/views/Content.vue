@@ -182,7 +182,7 @@ onMounted(async () => {
       type: cat.type,
       title: cat.name,
       count: cat.count || 0,
-      list: results[i].status === 'fulfilled' ? (results[i].value.data || []).map(normalizeContent) : [],
+      list: results[i].status === 'fulfilled' ? (results[i].value.data || []).map(normalizeContent).slice(0, 5) : [],
     }))
     .filter(c => c.list.length > 0)
 
