@@ -201,15 +201,27 @@ public class ImageGenerationServiceImpl implements ImageGenerationService {
     @Override
     public String convertToAnime(byte[] imageBytes) {
         try {
-            // 转换为base64
-            String base64Image = java.util.Base64.getEncoder().encodeToString(imageBytes);
+            // 先上传到MinIO获取公开URL
+            String tempObjectName = "temp/anime_input_" + UUID.randomUUID() + ".jpg";
+            String uploadPath = objectStoreService.uploadFile(
+                new java.io.ByteArrayInputStream(imageBytes),
+                imageBytes.length,
+                "photos",
+                tempObjectName,
+                "image/jpeg"
+            );
+
+            // 获取公开访问URL（不带签名）
+            String publicUrl = ((com.yoyuen.backend.objectstore.service.MinIOService) objectStoreService)
+                    .getPublicUrl("photos", tempObjectName);
+            log.info("公开图片URL: {}", publicUrl);
 
             // 构建请求体
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", imageToImageConfig.getModel());
 
             Map<String, Object> input = new HashMap<>();
-            input.put("sketch_image_url", "data:image/jpeg;base64," + base64Image);
+            input.put("sketch_image_url", publicUrl);
             input.put("prompt", "动漫风格,高质量");
             requestBody.put("input", input);
 

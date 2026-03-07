@@ -199,10 +199,48 @@ public class MinIOService implements ObjectStoreService {
     public void createBucket(String bucketName) {
         try {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            // 设置bucket为公开读
+            setBucketPublic(bucketName);
         }
         catch (Exception e) {
             log.error("Create bucket failed", e);
             throw new RuntimeException("Bucket creation failed");
         }
+    }
+
+    /**
+     * 设置bucket为公开读
+     */
+    private void setBucketPublic(String bucketName) {
+        try {
+            String policy = """
+                {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {"AWS": "*"},
+                            "Action": ["s3:GetObject"],
+                            "Resource": ["arn:aws:s3:::%s/*"]
+                        }
+                    ]
+                }
+                """.formatted(bucketName);
+
+            minioClient.setBucketPolicy(SetBucketPolicyArgs.builder()
+                    .bucket(bucketName)
+                    .config(policy)
+                    .build());
+            log.info("Set bucket {} to public read", bucketName);
+        } catch (Exception e) {
+            log.warn("Failed to set bucket public: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 获取公开访问URL（不带签名）
+     */
+    public String getPublicUrl(String bucketName, String objectName) {
+        return minioProperties.getEndpoint() + "/" + bucketName + "/" + objectName;
     }
 }

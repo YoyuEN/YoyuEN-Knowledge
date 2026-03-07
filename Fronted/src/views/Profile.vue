@@ -98,9 +98,16 @@
             v-for="(photo, index) in photos"
             :key="photo.id"
             class="photo-item"
-            :style="{ animationDelay: `${index * 0.1}s` }"
+            :style="{
+              animationDelay: `${index * 0.1}s`,
+              width: photo.displayWidth || 'auto'
+            }"
           >
-            <n-image :src="photo.url" :alt="photo.description || '照片'" />
+            <n-image
+              :src="photo.url"
+              :alt="photo.description || '照片'"
+              @load="(e) => handleImageLoad(e, photo)"
+            />
           </div>
         </div>
       </div>
@@ -113,6 +120,16 @@ import Heatmap from "../components/Heatmap.vue";
 import { fetchPhotoList } from "../api/photo/photo.js";
 
 const photos = ref([]);
+
+const ROW_HEIGHT = 200; // 固定行高
+
+// 图片加载完成后计算宽度
+const handleImageLoad = (event, photo) => {
+  const img = event.target;
+  const aspectRatio = img.naturalWidth / img.naturalHeight;
+  const calculatedWidth = ROW_HEIGHT * aspectRatio;
+  photo.displayWidth = `${calculatedWidth}px`;
+};
 
 onMounted(async () => {
   try {
@@ -468,10 +485,11 @@ const tags = ref([
 }
 
 .photo-wall-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
   padding: 10px 0;
+  align-items: flex-start;
 }
 
 .photo-item {
@@ -482,6 +500,9 @@ const tags = ref([
   transition: all 0.3s ease;
   animation: fadeInUp 0.6s ease-out backwards;
   cursor: pointer;
+  height: 200px; /* 固定行高 */
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 
 .photo-item:hover {

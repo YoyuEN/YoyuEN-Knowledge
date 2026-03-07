@@ -60,15 +60,22 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             String thumbnailName = "thumb_" + timeStr + ext;
 
             // 动漫化处理（在上传前处理）
-            String animePath = null;
+            String animeUrl = null;
+            boolean isExternalUrl = false;
             try {
                 log.info("[照片上传] 开始动漫化处理...");
                 byte[] originalBytes = file.getBytes();
-                animePath = imageGenerationService.convertToAnime(originalBytes);
-                if (animePath != null) {
-                    log.info("[照片上传] 动漫化成功: {}", animePath);
-                    // 使用动漫化后的图片作为主图
-                    objectName = animePath.substring(animePath.lastIndexOf("/") + 1);
+                animeUrl = imageGenerationService.convertToAnime(originalBytes);
+                if (animeUrl != null) {
+                    log.info("[照片上传] 动漫化成功: {}", animeUrl);
+                    // 判断是否为外部URL（火山引擎临时URL）
+                    if (animeUrl.startsWith("http://") || animeUrl.startsWith("https://")) {
+                        isExternalUrl = true;
+                        log.info("[照片上传] 使用外部URL作为动漫化结果");
+                    } else {
+                        // MinIO路径格式：photos/anime_xxx.jpg
+                        objectName = animeUrl.substring(animeUrl.lastIndexOf("/") + 1);
+                    }
                 } else {
                     log.warn("[照片上传] 动漫化失败，使用原图");
                 }
@@ -76,8 +83,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 log.error("[照片上传] 动漫化异常，使用原图，error={}", e.getMessage(), e);
             }
 
-            // 如果动漫化失败，上传原图
-            if (animePath == null) {
+            // 如果动漫化失败或返回的是MinIO路径，上传原图
+            if (animeUrl == null || !isExternalUrl) {
                 String originalPath = objectStoreService.uploadFile(file, PHOTO_BUCKET, objectName);
                 log.info("[照片上传] 原图上传成功: {}", originalPath);
             }
@@ -94,7 +101,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 objectStoreService.uploadFile(
                     new ByteArrayInputStream(thumbBytes),
                     thumbBytes.length,
-                    animePath != null ? "photos" : PHOTO_BUCKET,
+                    isExternalUrl ? "photos" : PHOTO_BUCKET,
                     thumbnailName,
                     file.getContentType()
                 );
@@ -105,9 +112,17 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             }
 
             Photo photo = new Photo();
-            photo.setBucketName(animePath != null ? "photos" : PHOTO_BUCKET);
-            photo.setObjectName(objectName);
-            photo.setThumbnailName(thumbnailName);
+            if (isExternalUrl) {
+                // 外部URL：直接存储完整URL
+                photo.setBucketName("external");
+                photo.setObjectName(animeUrl);
+                photo.setThumbnailName(animeUrl); // 缩略图也使用外部URL
+            } else {
+                // MinIO路径
+                photo.setBucketName(animeUrl != null ? "photos" : PHOTO_BUCKET);
+                photo.setObjectName(objectName);
+                photo.setThumbnailName(thumbnailName);
+            }
             photo.setDescription(description);
             this.save(photo);
 
@@ -141,12 +156,19 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         vo.setId(photo.getId());
         vo.setDescription(photo.getDescription());
         vo.setCreateTime(photo.getCreateTime());
-        // 使用缩略图URL，如果没有则使用原图
-        String thumbnailName = (photo.getThumbnailName() != null && !photo.getThumbnailName().isEmpty())
-                ? photo.getThumbnailName()
-                : photo.getObjectName();
-        String url = objectStoreService.getTmpFileUrl(photo.getBucketName(), thumbnailName);
-        vo.setUrl(url);
+
+        // 判断是否为外部URL
+        if ("external".equals(photo.getBucketName())) {
+            // 直接使用外部URL
+            vo.setUrl(photo.getObjectName());
+        } else {
+            // 使用缩略图URL，如果没有则使用原图
+            String thumbnailName = (photo.getThumbnailName() != null && !photo.getThumbnailName().isEmpty())
+                    ? photo.getThumbnailName()
+                    : photo.getObjectName();
+            String url = objectStoreService.getTmpFileUrl(photo.getBucketName(), thumbnailName);
+            vo.setUrl(url);
+        }
         return vo;
     }
 }
