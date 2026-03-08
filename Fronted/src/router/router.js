@@ -9,9 +9,8 @@ import Dashboard from '../views/admin/Dashboard.vue'
 import ArticleList from '../views/admin/ArticleList.vue'
 import CategoryList from '../views/admin/CategoryList.vue'
 import TagList from '../views/admin/TagList.vue'
-import UserList from '../views/admin/UserList.vue'
-import RoleList from '../views/admin/RoleList.vue'
-import PermissionList from '../views/admin/PermissionList.vue'
+import CommentList from '../views/admin/CommentList.vue'
+import PhotoList from '../views/admin/PhotoList.vue'
 import Statistics from '../views/admin/Statistics.vue'
 
 const routes = [
@@ -78,22 +77,16 @@ const routes = [
         meta: { title: '标签管理' },
       },
       {
-        path: 'users',
-        name: 'AdminUsers',
-        component: UserList,
-        meta: { title: '用户管理' },
+        path: 'comments',
+        name: 'AdminComments',
+        component: CommentList,
+        meta: { title: '评论管理' },
       },
       {
-        path: 'roles',
-        name: 'AdminRoles',
-        component: RoleList,
-        meta: { title: '角色管理' },
-      },
-      {
-        path: 'permissions',
-        name: 'AdminPermissions',
-        component: PermissionList,
-        meta: { title: '权限管理' },
+        path: 'photos',
+        name: 'AdminPhotos',
+        component: PhotoList,
+        meta: { title: '图片管理' },
       },
       {
         path: 'statistics',
@@ -114,11 +107,15 @@ const routes = [
         redirect: '/admin/statistics',
       },
       {
-        path: 'comments',
-        redirect: '/admin/permissions',
+        path: 'users',
+        redirect: '/admin/comments',
       },
       {
-        path: 'photos',
+        path: 'roles',
+        redirect: '/admin/photos',
+      },
+      {
+        path: 'permissions',
         redirect: '/admin/tags',
       },
     ],

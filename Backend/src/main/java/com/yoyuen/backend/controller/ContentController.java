@@ -1,6 +1,7 @@
 package com.yoyuen.backend.controller;
 
 import com.yoyuen.backend.controller.vo.ContentCategoryVO;
+import com.yoyuen.backend.controller.vo.ContentTagVO;
 import com.yoyuen.backend.controller.vo.ContentVO;
 import com.yoyuen.backend.controller.vo.KnowledgeBaseVO;
 import com.yoyuen.backend.entity.Content;
@@ -11,26 +12,23 @@ import com.yoyuen.backend.service.system.ContentService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.service.system.RedisService;
 import com.yoyuen.backend.utils.BaseResponse;
+import com.yoyuen.backend.utils.CoreCode;
 import com.yoyuen.backend.utils.ResultUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
-/**
- * @Author: YoyuEN
- * @Date: 2026/2/26
- * @Description: 内容控制器
- */
 @Slf4j
 @RestController
 @RequestMapping("/content")
@@ -44,20 +42,19 @@ public class ContentController {
     private final ObjectStoreService objectStoreService;
     private final RedisService redisService;
 
-    private static final String DEFAULT_BUCKET = "default";
-    private static final String DEFAULT_COVER = "default.jpg";
+    private static final String CATEGORY_META_KEY = "content:category:meta";
+    private static final String TAG_ALL_KEY = "content:tag:all";
+    private static final String CONTENT_TAG_PREFIX = "content:tags:";
 
-    // 分类 type → 展示名称，维护在后端
-    private static final Map<String, String> CATEGORY_NAME_MAP = new LinkedHashMap<>() {{
+    private static final String COVER_BUCKET = "default";
+
+    private static final Map<String, String> DEFAULT_CATEGORY_NAME_MAP = new LinkedHashMap<>() {{
         put("article", "文章");
         put("game", "游戏");
         put("study", "学习");
         put("video", "视频");
     }};
 
-    /**
-     * 获取内容统计数据（文章数、评论数）
-     */
     @GetMapping("/stats")
     public BaseResponse<Map<String, Long>> stats() {
         String cacheKey = "content:stats";
@@ -73,97 +70,208 @@ public class ContentController {
         return ResultUtils.success(stats);
     }
 
-    /**
-     * 获取所有有内容的分类
-     */
     @GetMapping("/categories")
     public BaseResponse<List<ContentCategoryVO>> listCategories() {
-        String cacheKey = "content:categories";
-        Object cached = redisService.get(cacheKey);
-        if (cached != null) {
-            return ResultUtils.success((List<ContentCategoryVO>) cached);
-        }
-        List<String> types = contentService.listCategories();
-        List<ContentCategoryVO> categories = types.stream()
-                .map(type -> {
-                    long count = contentService.countByCategory(type);
-                    return new ContentCategoryVO(type, CATEGORY_NAME_MAP.getOrDefault(type, type), count);
-                })
-                .toList();
-        redisService.set(cacheKey, categories, 5, TimeUnit.MINUTES);
+        List<ContentCategoryVO> categories = buildCategoryList();
         return ResultUtils.success(categories);
     }
 
-    /**
-     * 根据ID获取内容详情
-     */
+    @PostMapping("/category/create")
+    public BaseResponse<Boolean> createCategory(@RequestBody ContentCategoryVO categoryVO) {
+        if (categoryVO == null || categoryVO.getType() == null || categoryVO.getType().isBlank() ||
+                categoryVO.getName() == null || categoryVO.getName().isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "分类标识和名称不能为空");
+        }
+        Map<String, String> meta = getCategoryMeta();
+        if (meta.containsKey(categoryVO.getType())) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, "分类标识已存在");
+        }
+        meta.put(categoryVO.getType(), categoryVO.getName());
+        redisService.set(CATEGORY_META_KEY, meta);
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/category/update")
+    public BaseResponse<Boolean> updateCategory(@RequestBody Map<String, String> payload) {
+        String oldType = payload.get("oldType");
+        String newType = payload.get("newType");
+        String name = payload.get("name");
+
+        if (oldType == null || oldType.isBlank() || newType == null || newType.isBlank() || name == null || name.isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "分类参数不完整");
+        }
+
+        Map<String, String> meta = getCategoryMeta();
+        if (!oldType.equals(newType) && meta.containsKey(newType)) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, "新的分类标识已存在");
+        }
+
+        meta.remove(oldType);
+        meta.put(newType, name);
+        redisService.set(CATEGORY_META_KEY, meta);
+
+        if (!oldType.equals(newType)) {
+            List<Content> contentList = contentService.listAll(null, null).stream()
+                    .filter(c -> oldType.equals(c.getCategory()))
+                    .toList();
+            for (Content c : contentList) {
+                c.setCategory(newType);
+                contentService.updateContent(c);
+                redisService.delete(CONTENT_TAG_PREFIX + c.getId());
+            }
+        }
+
+        clearContentCache(newType);
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/category/remove")
+    public BaseResponse<Boolean> removeCategory(@RequestBody Map<String, String> payload) {
+        String type = payload.get("type");
+        if (type == null || type.isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "分类标识不能为空");
+        }
+        long count = contentService.countByCategory(type);
+        if (count > 0) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, "该分类下仍有文章，无法删除");
+        }
+
+        Map<String, String> meta = getCategoryMeta();
+        meta.remove(type);
+        redisService.set(CATEGORY_META_KEY, meta);
+        return ResultUtils.success(true);
+    }
+
+    @GetMapping("/tags")
+    public BaseResponse<List<ContentTagVO>> listTags() {
+        List<String> tags = getAllTags();
+        Map<String, Long> counts = countTagUsage();
+        List<ContentTagVO> result = tags.stream()
+                .map(tag -> new ContentTagVO(tag, counts.getOrDefault(tag, 0L)))
+                .sorted(Comparator.comparing(ContentTagVO::getCount).reversed())
+                .toList();
+        return ResultUtils.success(result);
+    }
+
+    @PostMapping("/tag/create")
+    public BaseResponse<Boolean> createTag(@RequestBody Map<String, String> payload) {
+        String name = payload.get("name");
+        if (name == null || name.isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "标签名不能为空");
+        }
+        List<String> tags = getAllTags();
+        if (tags.contains(name)) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, "标签已存在");
+        }
+        tags.add(name);
+        tags.sort(String::compareTo);
+        redisService.set(TAG_ALL_KEY, tags);
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/tag/update")
+    public BaseResponse<Boolean> updateTag(@RequestBody Map<String, String> payload) {
+        String oldName = payload.get("oldName");
+        String newName = payload.get("newName");
+        if (oldName == null || oldName.isBlank() || newName == null || newName.isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "标签参数不完整");
+        }
+
+        List<String> tags = getAllTags();
+        if (!tags.contains(oldName)) {
+            return ResultUtils.error(CoreCode.NOT_FOUND_ERROR, "标签不存在");
+        }
+        if (!oldName.equals(newName) && tags.contains(newName)) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, "新的标签名已存在");
+        }
+
+        tags.remove(oldName);
+        tags.add(newName);
+        tags.sort(String::compareTo);
+        redisService.set(TAG_ALL_KEY, tags);
+
+        List<Content> contents = contentService.listAll(null, null);
+        for (Content content : contents) {
+            List<String> contentTags = getContentTags(content.getId());
+            if (contentTags.contains(oldName)) {
+                List<String> replaced = contentTags.stream()
+                        .map(tag -> oldName.equals(tag) ? newName : tag)
+                        .distinct()
+                        .toList();
+                redisService.set(CONTENT_TAG_PREFIX + content.getId(), replaced);
+            }
+        }
+
+        return ResultUtils.success(true);
+    }
+
+    @PostMapping("/tag/remove")
+    public BaseResponse<Boolean> removeTag(@RequestBody Map<String, String> payload) {
+        String name = payload.get("name");
+        if (name == null || name.isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "标签名不能为空");
+        }
+
+        Map<String, Long> usage = countTagUsage();
+        if (usage.getOrDefault(name, 0L) > 0) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, "标签仍被文章使用，无法删除");
+        }
+
+        List<String> tags = getAllTags();
+        tags.remove(name);
+        redisService.set(TAG_ALL_KEY, tags);
+        return ResultUtils.success(true);
+    }
+
     @GetMapping("/{id}")
     public BaseResponse<ContentVO> getById(@PathVariable String id) {
-        // 尝试从缓存获取
         String cacheKey = "content:detail:" + id;
         Object cached = redisService.get(cacheKey);
         if (cached != null) {
-            log.debug("从缓存获取内容详情: {}", id);
             return ResultUtils.success((ContentVO) cached);
         }
 
-        // 缓存未命中，查询数据库
         Content content = contentService.getById(id);
+        if (content == null) {
+            return ResultUtils.error(CoreCode.NOT_FOUND_ERROR, "内容不存在");
+        }
         contentService.incrementViewCount(id);
         ContentVO vo = toVO(content);
 
-        // 写入缓存，10分钟过期
         redisService.set(cacheKey, vo, 10, TimeUnit.MINUTES);
         return ResultUtils.success(vo);
     }
 
-    /**
-     * 根据分类获取内容列表
-     */
     @GetMapping("/list/{category}")
     public BaseResponse<List<ContentVO>> listByCategory(@PathVariable String category) {
-        // 尝试从缓存获取
         String cacheKey = "content:list:" + category;
         Object cached = redisService.get(cacheKey);
         if (cached != null) {
-            log.debug("从缓存获取分类列表: {}", category);
             return ResultUtils.success((List<ContentVO>) cached);
         }
 
-        // 缓存未命中，查询数据库
         List<Content> contents = contentService.listByCategory(category);
         List<ContentVO> voList = contents.stream().map(this::toVO).toList();
 
-        // 写入缓存，5分钟过期
         redisService.set(cacheKey, voList, 5, TimeUnit.MINUTES);
         return ResultUtils.success(voList);
     }
 
-    /**
-     * 获取推荐内容列表
-     */
     @GetMapping("/recommend")
     public BaseResponse<List<ContentVO>> listRecommend() {
-        // 尝试从缓存获取
         String cacheKey = "content:recommend";
         Object cached = redisService.get(cacheKey);
         if (cached != null) {
-            log.debug("从缓存获取推荐列表");
             return ResultUtils.success((List<ContentVO>) cached);
         }
 
-        // 缓存未命中，查询数据库
         List<Content> contents = contentService.listRecommend();
         List<ContentVO> voList = contents.stream().map(this::toVO).toList();
 
-        // 写入缓存，10分钟过期
         redisService.set(cacheKey, voList, 10, TimeUnit.MINUTES);
         return ResultUtils.success(voList);
     }
 
-    /**
-     * 获取所有内容列表（后台管理用）
-     */
     @GetMapping("/all")
     public BaseResponse<List<ContentVO>> listAll(
             @RequestParam(required = false) String keyword,
@@ -173,99 +281,110 @@ public class ContentController {
         return ResultUtils.success(voList);
     }
 
-    /**
-     * 切换内容推荐状态
-     */
     @PostMapping("/recommend")
     public BaseResponse<Boolean> toggleRecommend(@RequestBody ContentVO contentVO) {
         boolean result = contentService.toggleRecommend(contentVO.getId(), contentVO.getIsRecommend());
-        // 清除相关缓存
         redisService.delete("content:detail:" + contentVO.getId());
         clearContentCache(null);
         return ResultUtils.success(result);
     }
 
-    /**
-     * 获取最近 N 天每日发布数量（热力图数据）
-     */
     @GetMapping("/activity")
-    public BaseResponse<Map<String, Integer>> getActivityStats(
-            @RequestParam(defaultValue = "100") int days) {
-        // 尝试从缓存获取
+    public BaseResponse<Map<String, Integer>> getActivityStats(@RequestParam(defaultValue = "100") int days) {
         String cacheKey = "content:activity:" + days;
         Object cached = redisService.get(cacheKey);
         if (cached != null) {
-            log.debug("从缓存获取热力图数据: {} 天", days);
             return ResultUtils.success((Map<String, Integer>) cached);
         }
 
-        // 缓存未命中，查询数据库
         Map<String, Integer> stats = contentService.getActivityStats(days);
-
-        // 写入缓存，1小时过期
         redisService.set(cacheKey, stats, 1, TimeUnit.HOURS);
         return ResultUtils.success(stats);
     }
 
-    /**
-     * 添加内容
-     */
+    @PostMapping(value = "/upload-cover", consumes = "multipart/form-data")
+    public BaseResponse<Map<String, String>> uploadCover(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "封面文件不能为空");
+        }
+        String ext = ".jpg";
+        String original = file.getOriginalFilename();
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf('.'));
+        }
+        String objectName = "content/cover_" + UUID.randomUUID() + ext;
+        objectStoreService.uploadFile(file, COVER_BUCKET, objectName);
+        String coverPath = COVER_BUCKET + "/" + objectName;
+        String previewUrl = objectStoreService.getTmpFileUrl(COVER_BUCKET, objectName, 7 * 24 * 3600);
+
+        Map<String, String> result = new HashMap<>();
+        result.put("cover", coverPath);
+        result.put("url", previewUrl);
+        return ResultUtils.success(result);
+    }
+
     @PostMapping("/create")
     public BaseResponse<String> create(@Valid @RequestBody ContentVO contentVO) {
-        // 不再在这里设置默认封面，让 Service 层处理（自动生成或使用默认）
         Content content = toEntity(contentVO);
         String id = contentService.addContent(content);
         contentVO.setId(id);
+        saveContentTags(id, contentVO.getTags());
         syncToKnowledgeBase(contentVO, "新增");
 
-        // 清除相关缓存
         clearContentCache(contentVO.getCategory());
         return ResultUtils.success(id);
     }
 
-    /**
-     * 更新内容
-     */
     @PostMapping("/update")
     public BaseResponse<Boolean> update(@Valid @RequestBody ContentVO contentVO) {
         Content content = toEntity(contentVO);
         boolean result = contentService.updateContent(content);
+        saveContentTags(contentVO.getId(), contentVO.getTags());
         syncToKnowledgeBase(contentVO, "更新");
 
-        // 清除相关缓存
         redisService.delete("content:detail:" + contentVO.getId());
         clearContentCache(contentVO.getCategory());
         return ResultUtils.success(result);
     }
 
-    /**
-     * 删除内容（先查询再删除，保留完整信息写入知识库）
-     */
     @PostMapping("/remove")
     public BaseResponse<Boolean> remove(@RequestBody ContentVO contentVO) {
+        if (contentVO == null || contentVO.getId() == null || contentVO.getId().isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "内容ID不能为空");
+        }
+
+        int commentCount = commentService.countByContentId(contentVO.getId());
+        if (commentCount > 0) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, "该文章下仍有评论（" + commentCount + " 条），请先删除评论后再删除文章");
+        }
+
         Content existing = contentService.getById(contentVO.getId());
         boolean result = contentService.removeContent(contentVO.getId());
         if (existing != null) {
             syncToKnowledgeBase(toVO(existing), "删除");
-            // 清除相关缓存
             redisService.delete("content:detail:" + contentVO.getId());
+            redisService.delete(CONTENT_TAG_PREFIX + contentVO.getId());
             clearContentCache(existing.getCategory());
         }
         return ResultUtils.success(result);
     }
 
-    /**
-     * Entity 转 VO
-     */
     private ContentVO toVO(Content content) {
-        if (content == null) return null;
+        if (content == null) {
+            return null;
+        }
         ContentVO vo = new ContentVO();
         BeanUtils.copyProperties(content, vo);
         vo.setCreatorId(content.getCreator());
-        // 若封面存的是 "bucket/objectName" 路径，则实时生成预签名 URL
+
+        Map<String, String> categoryMeta = getCategoryMeta();
+        vo.setCategoryName(categoryMeta.getOrDefault(content.getCategory(), content.getCategory()));
+
+        vo.setTags(getContentTags(content.getId()));
+
         String cover = content.getCover();
         if (cover != null && cover.contains("/") && !cover.startsWith("http")) {
-            int slash = cover.indexOf("/");
+            int slash = cover.indexOf('/');
             String bucket = cover.substring(0, slash);
             String objectName = cover.substring(slash + 1);
             vo.setCover(objectStoreService.getTmpFileUrl(bucket, objectName));
@@ -273,55 +392,48 @@ public class ContentController {
         return vo;
     }
 
-    /**
-     * VO 转 Entity
-     */
     private Content toEntity(ContentVO vo) {
         Content content = new Content();
         BeanUtils.copyProperties(vo, content);
         return content;
     }
 
-    /**
-     * 将内容同步写入 MD 文件并上传至知识库（knowledge-file bucket）
-     */
     private void syncToKnowledgeBase(ContentVO contentVO, String operation) {
         try {
             List<KnowledgeBaseVO> bases = knowledgeBaseService.KnowledgeList();
             if (bases.isEmpty()) {
-                log.warn("[知识库同步] 未找到任何知识库，跳过同步，title={}", contentVO.getTitle());
+                log.warn("[知识库同步] no knowledge base, skip, title={}", contentVO.getTitle());
                 return;
             }
             String knowledgeId = bases.get(0).getId();
-            // 文件名：标题（去除特殊字符）+ 时间
             String safeTitle = contentVO.getTitle().replaceAll("[\\\\/:*?\"<>|\\s]", "_");
             LocalDateTime now = LocalDateTime.now();
             String timeStr = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             String fileName = safeTitle + "_" + timeStr + ".md";
-            // 生成 Markdown 内容（时间由后端记录，不依赖前端传入的 createTime）
             byte[] mdBytes = buildMarkdown(contentVO, operation, now).getBytes(StandardCharsets.UTF_8);
             originFileResourceService.uploadMarkdownWithMetadata(
-                mdBytes,
-                fileName,
-                knowledgeId,
-                "article",           // contentType
-                contentVO.getId(),   // contentId
-                null                 // articleId (文章本身不需要)
+                    mdBytes,
+                    fileName,
+                    knowledgeId,
+                    "article",
+                    contentVO.getId(),
+                    null
             );
-            log.info("[知识库同步] 成功，operation={}, title={}, file={}", operation, contentVO.getTitle(), fileName);
+            log.info("[知识库同步] success operation={}, title={}, file={}", operation, contentVO.getTitle(), fileName);
         } catch (Exception e) {
-            log.error("[知识库同步] 失败，operation={}, title={}, error={}", operation, contentVO.getTitle(), e.getMessage(), e);
+            log.error("[知识库同步] failed operation={}, title={}, error={}", operation, contentVO.getTitle(), e.getMessage(), e);
         }
     }
 
-    /**
-     * 根据内容 VO 构建 Markdown 字符串
-     */
     private String buildMarkdown(ContentVO contentVO, String operation, LocalDateTime now) {
         StringBuilder sb = new StringBuilder();
         sb.append("# ").append(contentVO.getTitle()).append("\n\n");
+        sb.append("**操作**: ").append(operation).append("  \n");
         sb.append("**分类**: ").append(contentVO.getCategory()).append("  \n");
         sb.append("**时间**: ").append(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))).append("  \n");
+        if (contentVO.getTags() != null && !contentVO.getTags().isEmpty()) {
+            sb.append("**标签**: ").append(String.join(", ", contentVO.getTags())).append("  \n");
+        }
         sb.append("\n");
         if (contentVO.getDescription() != null && !contentVO.getDescription().isBlank()) {
             sb.append("## 简介\n\n").append(contentVO.getDescription()).append("\n\n");
@@ -332,22 +444,85 @@ public class ContentController {
         return sb.toString();
     }
 
-    /**
-     * 清除内容相关缓存
-     */
     private void clearContentCache(String category) {
-        // 清除分类列表缓存
         if (category != null) {
             redisService.delete("content:list:" + category);
         }
-        // 清除推荐列表缓存
         redisService.delete("content:recommend");
-        // 清除分类列表缓存
         redisService.delete("content:categories");
-        // 清除统计缓存
         redisService.delete("content:stats");
-        // 清除热力图缓存（可能有多个天数的缓存，这里只清除常用的）
         redisService.delete("content:activity:100");
         redisService.delete("content:activity:365");
+    }
+
+    private Map<String, String> getCategoryMeta() {
+        Map<String, String> result = new LinkedHashMap<>(DEFAULT_CATEGORY_NAME_MAP);
+        Object cached = redisService.get(CATEGORY_META_KEY);
+        if (cached instanceof Map<?, ?> map) {
+            for (Map.Entry<?, ?> entry : map.entrySet()) {
+                if (entry.getKey() != null && entry.getValue() != null) {
+                    result.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+                }
+            }
+        }
+        return result;
+    }
+
+    private List<ContentCategoryVO> buildCategoryList() {
+        Map<String, String> meta = getCategoryMeta();
+        List<String> categoriesInContent = contentService.listCategories();
+        Set<String> all = new LinkedHashSet<>();
+        all.addAll(meta.keySet());
+        all.addAll(categoriesInContent);
+
+        return all.stream()
+                .map(type -> new ContentCategoryVO(type, meta.getOrDefault(type, type), contentService.countByCategory(type)))
+                .toList();
+    }
+
+    private List<String> getAllTags() {
+        Object cached = redisService.get(TAG_ALL_KEY);
+        if (cached instanceof List<?> list) {
+            return list.stream().map(String::valueOf).distinct().collect(Collectors.toCollection(ArrayList::new));
+        }
+        return new ArrayList<>();
+    }
+
+    private List<String> getContentTags(String contentId) {
+        Object cached = redisService.get(CONTENT_TAG_PREFIX + contentId);
+        if (cached instanceof List<?> list) {
+            return list.stream().map(String::valueOf).distinct().toList();
+        }
+        return List.of();
+    }
+
+    private void saveContentTags(String contentId, List<String> tags) {
+        if (contentId == null || contentId.isBlank()) {
+            return;
+        }
+        List<String> cleaned = tags == null ? List.of() : tags.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .toList();
+
+        redisService.set(CONTENT_TAG_PREFIX + contentId, cleaned);
+
+        List<String> all = getAllTags();
+        Set<String> merged = new LinkedHashSet<>(all);
+        merged.addAll(cleaned);
+        redisService.set(TAG_ALL_KEY, new ArrayList<>(merged));
+    }
+
+    private Map<String, Long> countTagUsage() {
+        Map<String, Long> usage = new HashMap<>();
+        List<Content> contents = contentService.listAll(null, null);
+        for (Content content : contents) {
+            for (String tag : getContentTags(content.getId())) {
+                usage.put(tag, usage.getOrDefault(tag, 0L) + 1);
+            }
+        }
+        return usage;
     }
 }

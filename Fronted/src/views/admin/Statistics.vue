@@ -3,42 +3,43 @@
     <div class="admin-page-header">
       <div>
         <h1 class="admin-page-title">数据统计</h1>
-        <p class="admin-page-desc">观察内容生产、审核效率与访问趋势。</p>
+        <p class="admin-page-desc">展示近 30 天内容发布趋势。</p>
       </div>
-      <el-button>导出报表</el-button>
+      <el-button @click="loadData">刷新</el-button>
     </div>
 
-    <div class="admin-metric-grid">
-      <article class="admin-metric-card" v-for="item in metrics" :key="item.label">
-        <p class="admin-metric-label">{{ item.label }}</p>
-        <p class="admin-metric-value">{{ item.value }}</p>
-        <p class="admin-metric-extra">{{ item.extra }}</p>
-      </article>
-    </div>
-
-    <el-card class="admin-section-card">
-      <template #header>发布漏斗</template>
-      <el-row :gutter="16">
-        <el-col :span="8" v-for="item in funnel" :key="item.label">
-          <p class="admin-metric-label">{{ item.label }}</p>
-          <el-progress :percentage="item.percent" :stroke-width="10" />
-        </el-col>
-      </el-row>
+    <el-card class="admin-section-card" v-loading="loading">
+      <template #header>发布统计（近 30 天）</template>
+      <el-table :data="tableRows" stripe>
+        <el-table-column prop="date" label="日期" width="180" />
+        <el-table-column prop="count" label="发布数" width="120" />
+      </el-table>
     </el-card>
   </section>
 </template>
 
 <script setup>
-const metrics = [
-  { label: '近 7 天发布量', value: '84', extra: '较上周 +13%' },
-  { label: '平均审核时长', value: '2.6h', extra: '较上周 -0.5h' },
-  { label: '阅读转化率', value: '27.4%', extra: '较上周 +2.1%' },
-  { label: '活跃贡献者', value: '39', extra: '较上周 +4' },
-]
+import { onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
+import { fetchActivityStats } from '@/api/content/content'
 
-const funnel = [
-  { label: '草稿创建', percent: 100 },
-  { label: '提交审核', percent: 72 },
-  { label: '审核通过', percent: 63 },
-]
+const loading = ref(false)
+const tableRows = ref([])
+
+const loadData = async () => {
+  loading.value = true
+  try {
+    const res = await fetchActivityStats(30)
+    const map = res.data || {}
+    tableRows.value = Object.keys(map)
+      .sort((a, b) => (a > b ? -1 : 1))
+      .map((date) => ({ date, count: map[date] }))
+  } catch (error) {
+    ElMessage.error(error.message || '加载统计失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadData)
 </script>

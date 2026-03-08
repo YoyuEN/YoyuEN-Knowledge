@@ -3,8 +3,8 @@ package com.yoyuen.backend.service.system.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.yoyuen.backend.mapper.ContentMapper;
 import com.yoyuen.backend.entity.Content;
+import com.yoyuen.backend.mapper.ContentMapper;
 import com.yoyuen.backend.service.ai.ImageGenerationService;
 import com.yoyuen.backend.service.ai.LLMService;
 import com.yoyuen.backend.service.system.ContentService;
@@ -19,11 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * @Author: YoyuEN
- * @Date: 2026/2/26
- * @Description: 内容服务实现类
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -88,18 +83,11 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getDeleted, false);
 
-        // 关键词搜索（标题或内容）
         if (keyword != null && !keyword.isEmpty()) {
             wrapper.and(w -> w.like(Content::getTitle, keyword)
                     .or()
                     .like(Content::getContent, keyword));
         }
-
-        // 状态筛选（这里假设 status 对应某个字段，如果没有可以去掉）
-        // 如果你的 Content 实体有 status 字段，取消下面的注释
-        // if (status != null && !status.isEmpty()) {
-        //     wrapper.eq(Content::getStatus, status);
-        // }
 
         wrapper.orderByDesc(Content::getCreateTime);
         return this.list(wrapper);
@@ -120,44 +108,37 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         content.setCommentCount(0);
         content.setViewCount(0);
 
-        // 如果没有封面，自动生成
         if (content.getCover() == null || content.getCover().isEmpty()) {
             try {
-                log.info("开始为文章生成封面: {}", content.getTitle());
+                log.info("Generating cover for article: {}", content.getTitle());
                 String coverUrl = imageGenerationService.generateCoverForContent(
                         content.getTitle(),
                         content.getContent()
                 );
                 if (coverUrl != null) {
                     content.setCover(coverUrl);
-                    log.info("封面生成成功: {}", coverUrl);
                 } else {
-                    log.warn("封面生成失败，使用默认封面");
                     content.setCover("default/default.jpg");
                 }
             } catch (Exception e) {
-                log.error("生成封面时发生异常", e);
+                log.error("Generate cover failed", e);
                 content.setCover("default/default.jpg");
             }
         }
 
-        // 如果没有描述，自动生成
         if (content.getDescription() == null || content.getDescription().isEmpty()) {
             try {
-                log.info("开始为文章生成描述: {}", content.getTitle());
+                String rawContent = content.getContent() == null ? "" : content.getContent();
+                String excerpt = rawContent.length() > 500 ? rawContent.substring(0, 500) : rawContent;
                 String descriptionPrompt = String.format(
-                        "根据以下文章标题和内容，生成一段简洁的文章描述。" +
-                        "要求：概括文章核心内容，不超过100字，语言简洁流畅。" +
-                        "只返回描述内容，不要其他内容。\n\n" +
-                        "标题：%s\n内容：%s",
+                        "根据以下文章标题和内容，生成一段简洁的文章描述。要求：不超过100字，只返回描述内容。\n\n标题：%s\n内容：%s",
                         content.getTitle(),
-                        content.getContent().length() > 500 ? content.getContent().substring(0, 500) : content.getContent()
+                        excerpt
                 );
                 String description = llmService.getChatModel().call(descriptionPrompt);
-                content.setDescription(description.trim());
-                log.info("描述生成成功: {}", description);
+                content.setDescription(description == null ? "暂无描述" : description.trim());
             } catch (Exception e) {
-                log.error("生成描述时发生异常", e);
+                log.error("Generate description failed", e);
                 content.setDescription("暂无描述");
             }
         }
@@ -191,6 +172,17 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         LambdaUpdateWrapper<Content> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(Content::getId, id)
                 .setSql("comment_count = comment_count + 1");
+        this.update(wrapper);
+    }
+
+    @Override
+    public void decrementCommentCount(String id, int delta) {
+        if (delta <= 0) {
+            return;
+        }
+        LambdaUpdateWrapper<Content> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Content::getId, id)
+                .setSql("comment_count = GREATEST(comment_count - " + delta + ", 0)");
         this.update(wrapper);
     }
 

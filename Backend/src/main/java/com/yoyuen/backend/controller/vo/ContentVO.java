@@ -5,12 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-/**
- * @Author: YoyuEN
- * @Date: 2026/2/26
- * @Description: 内容视图对象
- */
 @Data
 public class ContentVO {
 
@@ -24,6 +20,8 @@ public class ContentVO {
     @NotBlank(message = "分类不能为空")
     private String category;
 
+    private String categoryName;
+
     private String cover;
 
     private String content;
@@ -34,7 +32,9 @@ public class ContentVO {
 
     private Boolean isRecommend;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
+    private List<String> tags;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 
     private String creatorId;

@@ -5,8 +5,9 @@
         <div class="brand-mark">Y</div>
         <div class="brand-text">
           <strong>YoyuEN Console</strong>
-          <span>Knowledge Operations</span>
+          <span>Personal Studio</span>
         </div>
+        <span class="brand-chip">my space</span>
       </div>
 
       <div class="admin-shell__crumb">
@@ -25,14 +26,13 @@
         />
         <el-dropdown trigger="click">
           <button class="user-trigger" type="button">
-            <el-avatar :size="28">A</el-avatar>
+            <el-avatar :size="26">A</el-avatar>
             <span>管理员</span>
             <el-icon><ArrowDown /></el-icon>
           </button>
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item>个人中心</el-dropdown-item>
-              <el-dropdown-item>账号设置</el-dropdown-item>
               <el-dropdown-item divided>退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -41,51 +41,37 @@
     </el-header>
 
     <el-container>
-      <el-aside :width="isCollapse ? '72px' : '248px'" class="admin-shell__aside">
+      <el-aside :width="isCollapse ? '68px' : '230px'" class="admin-shell__aside">
         <div class="menu-toolbar" :class="{ collapsed: isCollapse }">
-          <el-tooltip content="折叠菜单" placement="right">
-            <el-button
-              :icon="isCollapse ? Expand : Fold"
-              text
-              circle
-              @click="toggleCollapse"
-            />
-          </el-tooltip>
+          <el-button :icon="isCollapse ? Expand : Fold" text circle @click="toggleCollapse" />
           <span v-if="!isCollapse">导航</span>
         </div>
 
-        <el-menu
-          :default-active="route.path"
-          :collapse="isCollapse"
-          router
-          class="console-menu"
-          unique-opened
-        >
+        <el-menu :default-active="route.path" :collapse="isCollapse" router class="console-menu" unique-opened>
           <el-menu-item index="/admin/dashboard">
             <el-icon><House /></el-icon>
             <template #title>仪表盘</template>
           </el-menu-item>
-
-          <el-sub-menu index="knowledge">
-            <template #title>
-              <el-icon><Reading /></el-icon>
-              <span>知识管理</span>
-            </template>
-            <el-menu-item index="/admin/articles">文章管理</el-menu-item>
-            <el-menu-item index="/admin/categories">分类管理</el-menu-item>
-            <el-menu-item index="/admin/tags">标签管理</el-menu-item>
-          </el-sub-menu>
-
-          <el-sub-menu index="system">
-            <template #title>
-              <el-icon><Setting /></el-icon>
-              <span>系统设置</span>
-            </template>
-            <el-menu-item index="/admin/users">用户管理</el-menu-item>
-            <el-menu-item index="/admin/roles">角色管理</el-menu-item>
-            <el-menu-item index="/admin/permissions">权限管理</el-menu-item>
-          </el-sub-menu>
-
+          <el-menu-item index="/admin/articles">
+            <el-icon><Document /></el-icon>
+            <template #title>文章管理</template>
+          </el-menu-item>
+          <el-menu-item index="/admin/categories">
+            <el-icon><Collection /></el-icon>
+            <template #title>分类管理</template>
+          </el-menu-item>
+          <el-menu-item index="/admin/tags">
+            <el-icon><PriceTag /></el-icon>
+            <template #title>标签管理</template>
+          </el-menu-item>
+          <el-menu-item index="/admin/comments">
+            <el-icon><ChatDotRound /></el-icon>
+            <template #title>评论管理</template>
+          </el-menu-item>
+          <el-menu-item index="/admin/photos">
+            <el-icon><Picture /></el-icon>
+            <template #title>图片管理</template>
+          </el-menu-item>
           <el-menu-item index="/admin/statistics">
             <el-icon><TrendCharts /></el-icon>
             <template #title>数据统计</template>
@@ -98,7 +84,9 @@
       </el-aside>
 
       <el-main class="admin-shell__main">
-        <router-view />
+        <div class="admin-content">
+          <router-view />
+        </div>
       </el-main>
     </el-container>
   </el-container>
@@ -113,10 +101,13 @@ import {
   Fold,
   House,
   Moon,
-  Reading,
-  Setting,
   Sunny,
   TrendCharts,
+  Document,
+  Collection,
+  PriceTag,
+  ChatDotRound,
+  Picture,
 } from '@element-plus/icons-vue'
 import { useTheme } from '../composables/useTheme'
 import '../views/admin/admin-theme.css'
