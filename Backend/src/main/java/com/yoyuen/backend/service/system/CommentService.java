@@ -37,6 +37,21 @@ public interface CommentService {
     List<Comment> listRecommend();
 
     /**
+     * 获取所有评论列表（后台管理用）
+     */
+    List<Comment> listAll(String keyword, String status);
+
+    /**
+     * 审核通过评论
+     */
+    boolean approveComment(String id);
+
+    /**
+     * 切换推荐状态
+     */
+    boolean toggleRecommend(String id, Boolean isRecommend);
+
+    /**
      * 获取评论数量
      */
     int countByContent(String contentId, String contentType);

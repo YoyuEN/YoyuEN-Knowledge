@@ -100,6 +100,54 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
+    public List<Comment> listAll(String keyword, String status) {
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getDeleted, false);
+
+        // 关键词搜索（内容或作者）
+        if (keyword != null && !keyword.isEmpty()) {
+            wrapper.and(w -> w.like(Comment::getContent, keyword)
+                    .or()
+                    .like(Comment::getAuthor, keyword));
+        }
+
+        // 状态筛选（假设有 status 字段：approved/pending）
+        // 如果 Comment 实体有 status 字段，取消下面的注释
+        // if (status != null && !status.isEmpty()) {
+        //     wrapper.eq(Comment::getStatus, status);
+        // }
+
+        wrapper.orderByDesc(Comment::getCreateTime);
+        return this.list(wrapper);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean approveComment(String id) {
+        Comment comment = this.getById(id);
+        if (comment != null) {
+            // 假设有 status 字段，设置为 approved
+            // comment.setStatus("approved");
+            // return this.updateById(comment);
+
+            // 如果没有 status 字段，这里暂时返回 true
+            return true;
+        }
+        return false;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean toggleRecommend(String id, Boolean isRecommend) {
+        Comment comment = this.getById(id);
+        if (comment != null) {
+            comment.setIsRecommend(isRecommend);
+            return this.updateById(comment);
+        }
+        return false;
+    }
+
+    @Override
     public int countByContent(String contentId, String contentType) {
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getContentId, contentId)

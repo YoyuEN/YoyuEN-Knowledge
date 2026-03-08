@@ -65,6 +65,17 @@ public class MurmurController {
     }
 
     /**
+     * 更新碎碎念
+     */
+    @PostMapping("/update")
+    public BaseResponse<Boolean> update(@Valid @RequestBody MurmurVO murmurVO) {
+        Murmur murmur = toEntity(murmurVO);
+        boolean result = murmurService.updateMurmur(murmur);
+        syncToKnowledgeBase(murmurVO, "更新");
+        return ResultUtils.success(result);
+    }
+
+    /**
      * 删除碎碎念（先查询再删除，保留完整信息写入知识库）
      */
     @PostMapping("/remove")

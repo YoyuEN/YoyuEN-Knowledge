@@ -70,6 +70,40 @@ public class CommentController {
     }
 
     /**
+     * 获取所有评论列表（后台管理用）
+     */
+    @GetMapping("/all")
+    public BaseResponse<List<CommentVO>> listAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status) {
+        List<Comment> comments = commentService.listAll(keyword, status);
+        List<CommentVO> voList = comments.stream().map(this::toVO).toList();
+        return ResultUtils.success(voList);
+    }
+
+    /**
+     * 审核通过评论
+     */
+    @PostMapping("/approve")
+    public BaseResponse<Boolean> approve(@RequestBody CommentVO commentVO) {
+        boolean result = commentService.approveComment(commentVO.getId());
+        // 清除推荐评论缓存
+        redisService.delete("comment:recommend");
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 切换评论推荐状态
+     */
+    @PostMapping("/recommend")
+    public BaseResponse<Boolean> toggleRecommend(@RequestBody CommentVO commentVO) {
+        boolean result = commentService.toggleRecommend(commentVO.getId(), commentVO.getIsRecommend());
+        // 清除推荐评论缓存
+        redisService.delete("comment:recommend");
+        return ResultUtils.success(result);
+    }
+
+    /**
      * 获取内容的评论列表（树形结构）
      */
     @GetMapping("/list")

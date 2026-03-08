@@ -24,6 +24,14 @@ export function createMurmur(data) {
 }
 
 /**
+ * 更新碎碎念
+ * @param {{ id: string, content: string }} data
+ */
+export function updateMurmur(data) {
+  return request.post('/murmur/update', data)
+}
+
+/**
  * 删除碎碎念
  * @param {string} id
  */

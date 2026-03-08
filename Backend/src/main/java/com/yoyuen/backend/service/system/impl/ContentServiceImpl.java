@@ -83,6 +83,37 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         return this.list(wrapper);
     }
 
+    @Override
+    public List<Content> listAll(String keyword, String status) {
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false);
+
+        // 关键词搜索（标题或内容）
+        if (keyword != null && !keyword.isEmpty()) {
+            wrapper.and(w -> w.like(Content::getTitle, keyword)
+                    .or()
+                    .like(Content::getContent, keyword));
+        }
+
+        // 状态筛选（这里假设 status 对应某个字段，如果没有可以去掉）
+        // 如果你的 Content 实体有 status 字段，取消下面的注释
+        // if (status != null && !status.isEmpty()) {
+        //     wrapper.eq(Content::getStatus, status);
+        // }
+
+        wrapper.orderByDesc(Content::getCreateTime);
+        return this.list(wrapper);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public boolean toggleRecommend(String id, Boolean isRecommend) {
+        LambdaUpdateWrapper<Content> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(Content::getId, id)
+                .set(Content::getIsRecommend, isRecommend);
+        return this.update(wrapper);
+    }
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String addContent(Content content) {

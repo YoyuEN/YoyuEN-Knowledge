@@ -53,6 +53,12 @@ public class MurmurServiceImpl extends ServiceImpl<MurmurMapper, Murmur> impleme
 
     @Transactional(rollbackFor = Exception.class)
     @Override
+    public boolean updateMurmur(Murmur murmur) {
+        return this.updateById(murmur);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
     public boolean removeMurmur(String id) {
         return this.removeById(id);
     }

@@ -6,10 +6,7 @@ import com.yoyuen.backend.service.ai.KnowledgeBaseService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -32,14 +29,31 @@ public class KnowledgeBaseController {
         return ResultUtils.success(knowledgeBaseService.addKnowledgeBase(knowledgeBaseVO));
     }
 
+    @PostMapping("/update")
+    public BaseResponse<Boolean> updateKnowledgeBase(@RequestBody KnowledgeBaseVO knowledgeBaseVO) {
+        return ResultUtils.success(knowledgeBaseService.updateKnowledgeBase(knowledgeBaseVO));
+    }
+
     @PostMapping("/remove")
     public BaseResponse<Integer> removeKnowledgeBase(@RequestBody KnowledgeBaseVO knowledgeBaseVO) {
         return ResultUtils.success(knowledgeBaseService.removeKnowledgeBase(knowledgeBaseVO));
     }
 
+    @GetMapping("/list")
+    public BaseResponse<List<KnowledgeBaseVO>> listKnowledgeBase(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category) {
+        return ResultUtils.success(knowledgeBaseService.listKnowledge(keyword, category));
+    }
+
     @PostMapping("/list")
-    public BaseResponse<List<KnowledgeBaseVO>> listKnowledgeBase() {
+    public BaseResponse<List<KnowledgeBaseVO>> listKnowledgeBasePost() {
         return ResultUtils.success(knowledgeBaseService.KnowledgeList());
+    }
+
+    @GetMapping("/{id}")
+    public BaseResponse<KnowledgeBaseVO> getById(@PathVariable String id) {
+        return ResultUtils.success(knowledgeBaseService.getKnowledgeById(id));
     }
 
     @PostMapping("/simple")

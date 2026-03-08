@@ -24,3 +24,11 @@ export function uploadPhoto(formData) {
 export function removePhoto(id) {
   return request.post('/photo/remove', null, { params: { id } })
 }
+
+/**
+ * 更新照片信息
+ * @param {{ id: string, description: string }} data
+ */
+export function updatePhoto(data) {
+  return request.post('/photo/update', data)
+}

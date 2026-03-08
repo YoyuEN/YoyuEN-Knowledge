@@ -34,7 +34,19 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
         knowledgeBase.setName(knowledgeBaseVO.getName());
         knowledgeBase.setDescription(knowledgeBaseVO.getDescription());
         this.save(knowledgeBase);
-        return knowledgeBaseVO.getId();
+        return knowledgeBase.getId();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public Boolean updateKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO) {
+        KnowledgeBase knowledgeBase = this.getById(knowledgeBaseVO.getId());
+        if (knowledgeBase != null) {
+            knowledgeBase.setName(knowledgeBaseVO.getName());
+            knowledgeBase.setDescription(knowledgeBaseVO.getDescription());
+            return this.updateById(knowledgeBase);
+        }
+        return false;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -48,6 +60,27 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
     public List<KnowledgeBaseVO> KnowledgeList() {
         List<KnowledgeBase> knowledgeBaseList = this.list();
         return transfer(knowledgeBaseList);
+    }
+
+    @Override
+    public List<KnowledgeBaseVO> listKnowledge(String keyword, String category) {
+        List<KnowledgeBase> knowledgeBaseList = this.list();
+
+        // 简单的客户端过滤（如果需要数据库级别的过滤，可以使用 LambdaQueryWrapper）
+        if (keyword != null && !keyword.isEmpty()) {
+            knowledgeBaseList = knowledgeBaseList.stream()
+                .filter(kb -> kb.getName().contains(keyword) ||
+                             (kb.getDescription() != null && kb.getDescription().contains(keyword)))
+                .toList();
+        }
+
+        return transfer(knowledgeBaseList);
+    }
+
+    @Override
+    public KnowledgeBaseVO getKnowledgeById(String id) {
+        KnowledgeBase knowledgeBase = this.getById(id);
+        return knowledgeBase != null ? transfer(knowledgeBase) : null;
     }
 
     @Override

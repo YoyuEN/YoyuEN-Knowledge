@@ -1,9 +1,8 @@
 <template>
-  <Layout />
+  <router-view />
 </template>
 
 <script setup>
-import Layout from './components/Layout.vue'
 import { useTheme } from './composables/useTheme'
 
 // 立即初始化主题，避免闪烁

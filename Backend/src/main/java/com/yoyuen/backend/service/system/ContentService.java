@@ -43,6 +43,16 @@ public interface ContentService {
     List<Content> listRecommend();
 
     /**
+     * 获取所有内容列表（后台管理用）
+     */
+    List<Content> listAll(String keyword, String status);
+
+    /**
+     * 切换推荐状态
+     */
+    boolean toggleRecommend(String id, Boolean isRecommend);
+
+    /**
      * 添加内容
      */
     String addContent(Content content);

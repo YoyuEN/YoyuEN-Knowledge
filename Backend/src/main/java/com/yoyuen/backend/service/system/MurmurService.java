@@ -32,6 +32,11 @@ public interface MurmurService {
     String addMurmur(Murmur murmur);
 
     /**
+     * 更新碎碎念
+     */
+    boolean updateMurmur(Murmur murmur);
+
+    /**
      * 删除碎碎念
      */
     boolean removeMurmur(String id);

@@ -68,3 +68,20 @@ export function updateContent(data) {
 export function removeContent(id) {
   return request.post('/content/remove', { id })
 }
+
+/**
+ * 获取所有内容列表（后台管理用）
+ * @param {{ keyword?: string, status?: string }} params
+ */
+export function fetchAllContent(params) {
+  return request.get('/content/all', { params })
+}
+
+/**
+ * 切换内容推荐状态
+ * @param {string} id
+ * @param {boolean} isRecommend
+ */
+export function toggleContentRecommend(id, isRecommend) {
+  return request.post('/content/recommend', { id, isRecommend })
+}

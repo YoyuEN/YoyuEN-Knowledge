@@ -47,3 +47,28 @@ export function fetchRecommendComments() {
 export function fetchCommentCount(contentId, contentType) {
   return request.get('/comment/count', { params: { contentId, contentType } })
 }
+
+/**
+ * 获取所有评论列表（后台管理用）
+ * @param {{ keyword?: string, status?: string }} params
+ */
+export function fetchAllComments(params) {
+  return request.get('/comment/all', { params })
+}
+
+/**
+ * 审核通过评论
+ * @param {string} id
+ */
+export function approveComment(id) {
+  return request.post('/comment/approve', { id })
+}
+
+/**
+ * 切换评论推荐状态
+ * @param {string} id
+ * @param {boolean} isRecommend
+ */
+export function toggleCommentRecommend(id, isRecommend) {
+  return request.post('/comment/recommend', { id, isRecommend })
+}

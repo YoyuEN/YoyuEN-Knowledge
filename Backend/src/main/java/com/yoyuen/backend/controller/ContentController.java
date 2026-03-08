@@ -162,6 +162,30 @@ public class ContentController {
     }
 
     /**
+     * 获取所有内容列表（后台管理用）
+     */
+    @GetMapping("/all")
+    public BaseResponse<List<ContentVO>> listAll(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status) {
+        List<Content> contents = contentService.listAll(keyword, status);
+        List<ContentVO> voList = contents.stream().map(this::toVO).toList();
+        return ResultUtils.success(voList);
+    }
+
+    /**
+     * 切换内容推荐状态
+     */
+    @PostMapping("/recommend")
+    public BaseResponse<Boolean> toggleRecommend(@RequestBody ContentVO contentVO) {
+        boolean result = contentService.toggleRecommend(contentVO.getId(), contentVO.getIsRecommend());
+        // 清除相关缓存
+        redisService.delete("content:detail:" + contentVO.getId());
+        clearContentCache(null);
+        return ResultUtils.success(result);
+    }
+
+    /**
      * 获取最近 N 天每日发布数量（热力图数据）
      */
     @GetMapping("/activity")
