@@ -1,215 +1,131 @@
-<template>
-  <div class="admin-layout">
-    <aside class="admin-sidebar" :class="{ collapsed: sidebarCollapsed }">
-      <div class="sidebar-header">
-        <h2 v-if="!sidebarCollapsed">后台管理</h2>
-        <button class="toggle-btn" @click="toggleSidebar">
-          <span v-if="sidebarCollapsed">☰</span>
-          <span v-else>✕</span>
-        </button>
+﻿<template>
+  <el-container class="admin-shell">
+    <el-header class="admin-shell__header">
+      <div class="admin-shell__brand">
+        <div class="brand-mark">Y</div>
+        <div class="brand-text">
+          <strong>YoyuEN Console</strong>
+          <span>Knowledge Operations</span>
+        </div>
       </div>
-      <nav class="sidebar-nav">
-        <router-link
-          v-for="item in menuItems"
-          :key="item.path"
-          :to="item.path"
-          class="nav-item"
-          active-class="active"
+
+      <div class="admin-shell__crumb">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item>后台管理</el-breadcrumb-item>
+          <el-breadcrumb-item>{{ route.meta.title || '页面' }}</el-breadcrumb-item>
+        </el-breadcrumb>
+      </div>
+
+      <div class="admin-shell__actions">
+        <el-button
+          :icon="currentTheme === 'dark' ? Sunny : Moon"
+          class="theme-toggle"
+          circle
+          @click="toggleTheme"
+        />
+        <el-dropdown trigger="click">
+          <button class="user-trigger" type="button">
+            <el-avatar :size="28">A</el-avatar>
+            <span>管理员</span>
+            <el-icon><ArrowDown /></el-icon>
+          </button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item>个人中心</el-dropdown-item>
+              <el-dropdown-item>账号设置</el-dropdown-item>
+              <el-dropdown-item divided>退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
+    </el-header>
+
+    <el-container>
+      <el-aside :width="isCollapse ? '72px' : '248px'" class="admin-shell__aside">
+        <div class="menu-toolbar" :class="{ collapsed: isCollapse }">
+          <el-tooltip content="折叠菜单" placement="right">
+            <el-button
+              :icon="isCollapse ? Expand : Fold"
+              text
+              circle
+              @click="toggleCollapse"
+            />
+          </el-tooltip>
+          <span v-if="!isCollapse">导航</span>
+        </div>
+
+        <el-menu
+          :default-active="route.path"
+          :collapse="isCollapse"
+          router
+          class="console-menu"
+          unique-opened
         >
-          <span class="nav-icon">{{ item.icon }}</span>
-          <span v-if="!sidebarCollapsed" class="nav-text">{{ item.label }}</span>
-        </router-link>
-      </nav>
-      <div class="sidebar-footer">
-        <router-link to="/" class="back-home">
-          <span class="nav-icon">🏠</span>
-          <span v-if="!sidebarCollapsed">返回前台</span>
-        </router-link>
-      </div>
-    </aside>
-    <main class="admin-main">
-      <router-view />
-    </main>
-  </div>
+          <el-menu-item index="/admin/dashboard">
+            <el-icon><House /></el-icon>
+            <template #title>仪表盘</template>
+          </el-menu-item>
+
+          <el-sub-menu index="knowledge">
+            <template #title>
+              <el-icon><Reading /></el-icon>
+              <span>知识管理</span>
+            </template>
+            <el-menu-item index="/admin/articles">文章管理</el-menu-item>
+            <el-menu-item index="/admin/categories">分类管理</el-menu-item>
+            <el-menu-item index="/admin/tags">标签管理</el-menu-item>
+          </el-sub-menu>
+
+          <el-sub-menu index="system">
+            <template #title>
+              <el-icon><Setting /></el-icon>
+              <span>系统设置</span>
+            </template>
+            <el-menu-item index="/admin/users">用户管理</el-menu-item>
+            <el-menu-item index="/admin/roles">角色管理</el-menu-item>
+            <el-menu-item index="/admin/permissions">权限管理</el-menu-item>
+          </el-sub-menu>
+
+          <el-menu-item index="/admin/statistics">
+            <el-icon><TrendCharts /></el-icon>
+            <template #title>数据统计</template>
+          </el-menu-item>
+        </el-menu>
+
+        <div class="admin-footer-link">
+          <router-link to="/">返回客户端</router-link>
+        </div>
+      </el-aside>
+
+      <el-main class="admin-shell__main">
+        <router-view />
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import {
+  ArrowDown,
+  Expand,
+  Fold,
+  House,
+  Moon,
+  Reading,
+  Setting,
+  Sunny,
+  TrendCharts,
+} from '@element-plus/icons-vue'
+import { useTheme } from '../composables/useTheme'
+import '../views/admin/admin-theme.css'
 
-const sidebarCollapsed = ref(false);
+const route = useRoute()
+const isCollapse = ref(false)
+const { currentTheme, toggleTheme } = useTheme()
 
-const menuItems = [
-  { path: '/admin/dashboard', label: '仪表盘', icon: '📊' },
-  { path: '/admin/content', label: '内容管理', icon: '📝' },
-  { path: '/admin/knowledge', label: '知识库管理', icon: '📚' },
-  { path: '/admin/moments', label: '碎碎念管理', icon: '💭' },
-  { path: '/admin/comments', label: '评论管理', icon: '💬' },
-  { path: '/admin/photos', label: '照片管理', icon: '🖼️' }
-];
-
-const toggleSidebar = () => {
-  sidebarCollapsed.value = !sidebarCollapsed.value;
-};
+const toggleCollapse = () => {
+  isCollapse.value = !isCollapse.value
+}
 </script>
-
-<style scoped>
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-  background: #fff;
-}
-
-.admin-sidebar {
-  width: 240px;
-  background: #fff;
-  border-right: 1px solid #000;
-  display: flex;
-  flex-direction: column;
-  transition: width 0.3s ease;
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 100;
-}
-
-.admin-sidebar.collapsed {
-  width: 60px;
-}
-
-.sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid #000;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.sidebar-header h2 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #000;
-}
-
-.toggle-btn {
-  background: none;
-  border: 1px solid #000;
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: 16px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.toggle-btn:hover {
-  background: #000;
-  color: #fff;
-}
-
-.sidebar-nav {
-  flex: 1;
-  padding: 10px 0;
-  overflow-y: auto;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  color: #000;
-  text-decoration: none;
-  transition: all 0.2s;
-  border-left: 3px solid transparent;
-}
-
-.nav-item:hover {
-  background: #f5f5f5;
-  border-left-color: #000;
-}
-
-.nav-item.active {
-  background: #f5f5f5;
-  border-left-color: #000;
-  font-weight: 600;
-}
-
-.nav-icon {
-  font-size: 20px;
-  min-width: 20px;
-  margin-right: 12px;
-}
-
-.collapsed .nav-icon {
-  margin-right: 0;
-}
-
-.nav-text {
-  white-space: nowrap;
-}
-
-.sidebar-footer {
-  padding: 10px;
-  border-top: 1px solid #000;
-}
-
-.back-home {
-  display: flex;
-  align-items: center;
-  padding: 12px 10px;
-  color: #666;
-  text-decoration: none;
-  transition: all 0.2s;
-  border-radius: 4px;
-}
-
-.back-home:hover {
-  background: #f5f5f5;
-  color: #000;
-}
-
-.admin-main {
-  flex: 1;
-  margin-left: 240px;
-  padding: 20px;
-  transition: margin-left 0.3s ease;
-}
-
-.admin-sidebar.collapsed ~ .admin-main {
-  margin-left: 60px;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .admin-sidebar {
-    width: 60px;
-  }
-
-  .admin-sidebar.collapsed {
-    width: 0;
-    border: none;
-  }
-
-  .sidebar-header h2,
-  .nav-text,
-  .back-home span:not(.nav-icon) {
-    display: none;
-  }
-
-  .admin-main {
-    margin-left: 60px;
-  }
-
-  .admin-sidebar.collapsed ~ .admin-main {
-    margin-left: 0;
-  }
-
-  .toggle-btn {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    z-index: 101;
-    background: #fff;
-  }
-}
-</style>

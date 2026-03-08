@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+﻿import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '../components/Layout.vue'
 import Home from '../views/Home.vue'
 import Content from '../views/Content.vue'
@@ -6,11 +6,13 @@ import ContentDetal from '../views/ContentDetal.vue'
 import Profile from '../views/Profile.vue'
 import AdminLayout from '../components/AdminLayout.vue'
 import Dashboard from '../views/admin/Dashboard.vue'
-import PhotoManage from '../views/admin/PhotoManage.vue'
-import ContentManage from '../views/admin/ContentManage.vue'
-import KnowledgeManage from '../views/admin/KnowledgeManage.vue'
-import MomentManage from '../views/admin/MomentManage.vue'
-import CommentManage from '../views/admin/CommentManage.vue'
+import ArticleList from '../views/admin/ArticleList.vue'
+import CategoryList from '../views/admin/CategoryList.vue'
+import TagList from '../views/admin/TagList.vue'
+import UserList from '../views/admin/UserList.vue'
+import RoleList from '../views/admin/RoleList.vue'
+import PermissionList from '../views/admin/PermissionList.vue'
+import Statistics from '../views/admin/Statistics.vue'
 
 const routes = [
   {
@@ -21,27 +23,27 @@ const routes = [
         path: '',
         name: 'Home',
         component: Home,
-        meta: { title: 'AI对话' }
+        meta: { title: 'AI对话' },
       },
       {
         path: 'content',
         name: 'Content',
         component: Content,
-        meta: { title: '内容创作' }
+        meta: { title: '内容创作' },
       },
       {
         path: 'content-detail/:type/:id',
         name: 'ContentDetail',
         component: ContentDetal,
-        meta: { title: '内容详情' }
+        meta: { title: '内容详情' },
       },
       {
         path: 'profile',
         name: 'Profile',
         component: Profile,
-        meta: { title: '个人中心' }
-      }
-    ]
+        meta: { title: '个人中心' },
+      },
+    ],
   },
   {
     path: '/admin',
@@ -49,51 +51,83 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/admin/dashboard'
+        redirect: '/admin/dashboard',
       },
       {
         path: 'dashboard',
         name: 'AdminDashboard',
         component: Dashboard,
-        meta: { title: '后台仪表盘' }
+        meta: { title: '仪表盘' },
+      },
+      {
+        path: 'articles',
+        name: 'AdminArticles',
+        component: ArticleList,
+        meta: { title: '文章管理' },
+      },
+      {
+        path: 'categories',
+        name: 'AdminCategories',
+        component: CategoryList,
+        meta: { title: '分类管理' },
+      },
+      {
+        path: 'tags',
+        name: 'AdminTags',
+        component: TagList,
+        meta: { title: '标签管理' },
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: UserList,
+        meta: { title: '用户管理' },
+      },
+      {
+        path: 'roles',
+        name: 'AdminRoles',
+        component: RoleList,
+        meta: { title: '角色管理' },
+      },
+      {
+        path: 'permissions',
+        name: 'AdminPermissions',
+        component: PermissionList,
+        meta: { title: '权限管理' },
+      },
+      {
+        path: 'statistics',
+        name: 'AdminStatistics',
+        component: Statistics,
+        meta: { title: '数据统计' },
       },
       {
         path: 'content',
-        name: 'AdminContent',
-        component: ContentManage,
-        meta: { title: '内容管理' }
+        redirect: '/admin/articles',
       },
       {
         path: 'knowledge',
-        name: 'AdminKnowledge',
-        component: KnowledgeManage,
-        meta: { title: '知识库管理' }
+        redirect: '/admin/categories',
       },
       {
         path: 'moments',
-        name: 'AdminMoments',
-        component: MomentManage,
-        meta: { title: '碎碎念管理' }
+        redirect: '/admin/statistics',
       },
       {
         path: 'comments',
-        name: 'AdminComments',
-        component: CommentManage,
-        meta: { title: '评论管理' }
+        redirect: '/admin/permissions',
       },
       {
         path: 'photos',
-        name: 'AdminPhotos',
-        component: PhotoManage,
-        meta: { title: '照片管理' }
-      }
-    ]
-  }
+        redirect: '/admin/tags',
+      },
+    ],
+  },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 })
 
 export default router
