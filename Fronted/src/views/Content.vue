@@ -332,7 +332,7 @@ onMounted(async () => {
 .rc-comment-count {
   position: absolute;
   top: 10px;
-  right: 120px;
+  right: 160px;
   display: flex;
   align-items: center;
   gap: 4px;
