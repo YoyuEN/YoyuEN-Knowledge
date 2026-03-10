@@ -166,7 +166,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             String thumbnailName = (photo.getThumbnailName() != null && !photo.getThumbnailName().isEmpty())
                     ? photo.getThumbnailName()
                     : photo.getObjectName();
-            String url = objectStoreService.getTmpFileUrl(photo.getBucketName(), thumbnailName);
+            // 使用公开URL（永久有效）而非临时签名URL
+            String url = ((com.yoyuen.backend.objectstore.service.MinIOService) objectStoreService)
+                    .getPublicUrl(photo.getBucketName(), thumbnailName);
             vo.setUrl(url);
         }
         return vo;
