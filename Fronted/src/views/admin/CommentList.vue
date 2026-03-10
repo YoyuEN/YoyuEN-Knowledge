@@ -1,13 +1,10 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">
-          <el-icon style="margin-right: 8px; vertical-align: -2px;"><ChatDotRound /></el-icon>
-          评论管理
-        </h1>
-        <p class="admin-page-desc">支持按关键字检索、推荐切换和删除评论</p>
-      </div>
+      <h1 class="admin-page-title">
+        <el-icon style="margin-right: 8px; vertical-align: -2px;"><ChatDotRound /></el-icon>
+        评论管理
+      </h1>
       <el-button @click="loadData" :icon="Refresh" :loading="loading">刷新数据</el-button>
     </div>
 

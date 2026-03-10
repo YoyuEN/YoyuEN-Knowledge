@@ -1,13 +1,10 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">
-          <el-icon style="margin-right: 8px; vertical-align: -2px;"><Document /></el-icon>
-          文章管理
-        </h1>
-        <p class="admin-page-desc">支持文章增删改查、封面上传、Markdown 内容编辑、分类与标签设置</p>
-      </div>
+      <h1 class="admin-page-title">
+        <el-icon style="margin-right: 8px; vertical-align: -2px;"><Document /></el-icon>
+        文章管理
+      </h1>
       <el-button type="primary" @click="openCreate" :icon="Plus">新增文章</el-button>
     </div>
 

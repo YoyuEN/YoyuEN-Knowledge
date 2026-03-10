@@ -1,13 +1,10 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">
-          <el-icon style="margin-right: 8px; vertical-align: -2px;"><Picture /></el-icon>
-          图片管理
-        </h1>
-        <p class="admin-page-desc">上传图片并维护图库，支持移动端操作</p>
-      </div>
+      <h1 class="admin-page-title">
+        <el-icon style="margin-right: 8px; vertical-align: -2px;"><Picture /></el-icon>
+        图片管理
+      </h1>
       <el-button type="primary" @click="loadData" :icon="Refresh" :loading="loading">刷新</el-button>
     </div>
 

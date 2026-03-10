@@ -1,10 +1,7 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">权限管理</h1>
-        <p class="admin-page-desc">页面、按钮与接口权限统一管理。</p>
-      </div>
+      <h1 class="admin-page-title">权限管理</h1>
       <el-button type="primary">新增权限</el-button>
     </div>
 

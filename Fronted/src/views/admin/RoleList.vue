@@ -1,10 +1,7 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">角色管理</h1>
-        <p class="admin-page-desc">基于角色分配权限，降低逐用户授权成本。</p>
-      </div>
+      <h1 class="admin-page-title">角色管理</h1>
       <el-button type="primary">新增角色</el-button>
     </div>
 

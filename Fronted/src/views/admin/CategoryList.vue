@@ -1,13 +1,10 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">
-          <el-icon style="margin-right: 8px; vertical-align: -2px;"><Collection /></el-icon>
-          分类管理
-        </h1>
-        <p class="admin-page-desc">支持分类的新增、重命名、标识变更和删除</p>
-      </div>
+      <h1 class="admin-page-title">
+        <el-icon style="margin-right: 8px; vertical-align: -2px;"><Collection /></el-icon>
+        分类管理
+      </h1>
       <el-button type="primary" @click="openCreate" :icon="Plus">新增分类</el-button>
     </div>
 

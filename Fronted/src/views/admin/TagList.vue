@@ -1,13 +1,10 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">
-          <el-icon style="margin-right: 8px; vertical-align: -2px;"><PriceTag /></el-icon>
-          标签管理
-        </h1>
-        <p class="admin-page-desc">维护文章标签，删除前会检查是否仍被文章使用</p>
-      </div>
+      <h1 class="admin-page-title">
+        <el-icon style="margin-right: 8px; vertical-align: -2px;"><PriceTag /></el-icon>
+        标签管理
+      </h1>
       <el-button type="primary" @click="openCreate" :icon="Plus">新增标签</el-button>
     </div>
 

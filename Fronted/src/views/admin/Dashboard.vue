@@ -1,13 +1,10 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">
-          <el-icon style="margin-right: 8px; vertical-align: -2px;"><DataAnalysis /></el-icon>
-          仪表盘
-        </h1>
-        <p class="admin-page-desc">查看内容、评论和分类的实时概览</p>
-      </div>
+      <h1 class="admin-page-title">
+        <el-icon style="margin-right: 8px; vertical-align: -2px;"><DataAnalysis /></el-icon>
+        仪表盘
+      </h1>
       <el-button @click="refreshData" :icon="Refresh" :loading="loading">刷新数据</el-button>
     </div>
 

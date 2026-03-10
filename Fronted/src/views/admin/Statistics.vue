@@ -1,10 +1,7 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">数据统计</h1>
-        <p class="admin-page-desc">展示近 30 天内容发布趋势。</p>
-      </div>
+      <h1 class="admin-page-title">数据统计</h1>
       <el-button @click="loadData">刷新</el-button>
     </div>
 

@@ -1,10 +1,7 @@
 ﻿<template>
   <section>
     <div class="admin-page-header">
-      <div>
-        <h1 class="admin-page-title">用户管理</h1>
-        <p class="admin-page-desc">管理后台账号、角色绑定与登录状态。</p>
-      </div>
+      <h1 class="admin-page-title">用户管理</h1>
       <el-button type="primary">新增用户</el-button>
     </div>
 
