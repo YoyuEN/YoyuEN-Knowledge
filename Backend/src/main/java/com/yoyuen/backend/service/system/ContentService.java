@@ -19,6 +19,8 @@ public interface ContentService {
 
     List<Content> listRecommend();
 
+    List<Content> listRecent(int limit);
+
     List<Content> listAll(String keyword, String status);
 
     boolean toggleRecommend(String id, Boolean isRecommend);

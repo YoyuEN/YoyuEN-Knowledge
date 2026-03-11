@@ -113,6 +113,12 @@ import {
 import { fetchAssistantReport, fetchStatistics, fetchQuickInfo } from '@/api/dashboard/dashboard'
 import { marked } from 'marked'
 
+// 配置 marked：保留换行符，支持 GFM 语法
+marked.use({
+  gfm: true,
+  breaks: true,
+})
+
 const router = useRouter()
 const loading = ref(false)
 const assistantLoading = ref(false)
@@ -148,22 +154,32 @@ const refreshAssistant = async () => {
     const response = await fetchAssistantReport()
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
+    let buffer = ''
 
     while (true) {
       const { done, value } = await reader.read()
       if (done) break
 
-      const chunk = decoder.decode(value, { stream: true })
+      buffer += decoder.decode(value, { stream: true })
 
-      // 处理SSE格式：data: 内容\n\n
-      const lines = chunk.split('\n')
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          const content = line.substring(5).trim() // 移除 "data:" 前缀
-          if (content) {
-            assistantReport.value += content
-          }
-        }
+      // 以 \n\n 为分隔符提取完整 SSE 事件
+      let delimiterIndex
+      while ((delimiterIndex = buffer.indexOf('\n\n')) !== -1) {
+        const event = buffer.substring(0, delimiterIndex)
+        buffer = buffer.substring(delimiterIndex + 2)
+
+        if (!event.trim()) continue
+
+        // 提取所有 data: 字段（多行 data 按 SSE 规范用 \n 拼接）
+        const dataLines = event.split('\n').filter(l => l.startsWith('data:'))
+        if (dataLines.length === 0) continue
+
+        const dataValue = dataLines
+          .map(l => l.startsWith('data: ') ? l.substring(6) : l.substring(5))
+          .join('\n')
+
+        // 空 data 值代表 AI 输出的换行符，非空则直接追加
+        assistantReport.value += dataValue === '' ? '\n' : dataValue
       }
     }
   } catch (error) {

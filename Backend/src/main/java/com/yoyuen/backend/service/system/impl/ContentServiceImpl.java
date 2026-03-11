@@ -79,6 +79,15 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
     }
 
     @Override
+    public List<Content> listRecent(int limit) {
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false)
+                .orderByDesc(Content::getCreateTime)
+                .last("LIMIT " + limit);
+        return this.list(wrapper);
+    }
+
+    @Override
     public List<Content> listAll(String keyword, String status) {
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getDeleted, false);
