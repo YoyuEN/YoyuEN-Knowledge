@@ -10,6 +10,7 @@ import com.yoyuen.backend.service.ai.LLMService;
 import com.yoyuen.backend.service.system.ContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,11 +22,18 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> implements ContentService {
 
-    private final ImageGenerationService imageGenerationService;
+    private final ImageGenerationService qwenImageService;
     private final LLMService llmService;
+
+    public ContentServiceImpl(
+            @Qualifier("imageGenerationServiceImpl") ImageGenerationService qwenImageService,
+            LLMService llmService
+    ) {
+        this.qwenImageService = qwenImageService;
+        this.llmService = llmService;
+    }
 
     @Override
     public long countAll() {
@@ -120,7 +128,7 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         if (content.getCover() == null || content.getCover().isEmpty()) {
             try {
                 log.info("Generating cover for article: {}", content.getTitle());
-                String coverUrl = imageGenerationService.generateCoverForContent(
+                String coverUrl = qwenImageService.generateCoverForContent(
                         content.getTitle(),
                         content.getContent()
                 );

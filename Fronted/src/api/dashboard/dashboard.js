@@ -18,7 +18,7 @@ export function fetchAssistantReport() {
  */
 export function fetchStatistics() {
   return request({
-    url: '/api/dashboard/statistics',
+    url: '/dashboard/statistics',
     method: 'get'
   })
 }
@@ -28,7 +28,7 @@ export function fetchStatistics() {
  */
 export function fetchQuickInfo() {
   return request({
-    url: '/api/dashboard/quick-info',
+    url: '/dashboard/quick-info',
     method: 'get'
   })
 }

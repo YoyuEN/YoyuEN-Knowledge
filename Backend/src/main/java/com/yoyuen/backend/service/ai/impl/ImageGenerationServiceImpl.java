@@ -133,11 +133,11 @@ public class ImageGenerationServiceImpl implements ImageGenerationService {
         headers.set("Authorization", "Bearer " + apiKey);
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        int maxRetries = 30;
+        int maxRetries = 60;
         int retryCount = 0;
 
         while (retryCount < maxRetries) {
-            Thread.sleep(2000); // 等待2秒
+            Thread.sleep(3000); // 等待3秒
 
             ResponseEntity<String> response = restTemplate.exchange(
                     queryUrl,

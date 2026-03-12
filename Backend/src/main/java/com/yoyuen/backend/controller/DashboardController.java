@@ -1,6 +1,10 @@
 package com.yoyuen.backend.controller;
 
+import com.yoyuen.backend.common.BaseResponse;
+import com.yoyuen.backend.common.ResultUtils;
 import com.yoyuen.backend.service.ai.DashboardAssistantService;
+import com.yoyuen.backend.service.system.CommentService;
+import com.yoyuen.backend.service.system.ContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -8,6 +12,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Author: YoyuEN
@@ -21,6 +30,8 @@ import reactor.core.publisher.Flux;
 public class DashboardController {
 
     private final DashboardAssistantService dashboardAssistantService;
+    private final CommentService commentService;
+    private final ContentService contentService;
 
     /**
      * 获取AI助手报告（SSE流式输出）
