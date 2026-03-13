@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -101,21 +104,33 @@ public class VolcengineSDKImageServiceImpl implements ImageGenerationService {
                         String resultUrl = (String) firstItem.get("url");
                         log.info("[火山引擎Ark] 动漫化成功，结果URL: {}", resultUrl);
 
+                        // 检查URL格式
+                        if (resultUrl == null || !resultUrl.startsWith("http")) {
+                            log.error("[火山引擎Ark] 返回的URL格式异常: {}", resultUrl);
+                            return null;
+                        }
+
                         // 下载结果图片并上传到 MinIO（永久保存）
                         try {
-                            log.info("[火山引擎Ark] 开始下载结果图片...");
+                            log.info("[火山引擎Ark] 开始下载结果图片，URL: {}", resultUrl);
 
-                            // 使用不带认证头的GET请求下载（URL本身已包含签名）
-                            HttpHeaders downloadHeaders = new HttpHeaders();
-                            HttpEntity<Void> downloadEntity = new HttpEntity<>(downloadHeaders);
-                            ResponseEntity<byte[]> downloadResponse = restTemplate.exchange(
-                                resultUrl,
-                                HttpMethod.GET,
-                                downloadEntity,
-                                byte[].class
-                            );
+                            // 使用 HttpURLConnection 直接下载，避免 RestTemplate 添加额外头部
+                            URL downloadUrl = new URL(resultUrl);
+                            HttpURLConnection connection = (HttpURLConnection) downloadUrl.openConnection();
+                            connection.setRequestMethod("GET");
+                            connection.setConnectTimeout(10000);
+                            connection.setReadTimeout(30000);
 
-                            byte[] resultBytes = downloadResponse.getBody();
+                            int responseCode = connection.getResponseCode();
+                            if (responseCode != HttpURLConnection.HTTP_OK) {
+                                throw new RuntimeException("下载失败，HTTP状态码: " + responseCode);
+                            }
+
+                            byte[] resultBytes;
+                            try (InputStream inputStream = connection.getInputStream()) {
+                                resultBytes = inputStream.readAllBytes();
+                            }
+                            connection.disconnect();
                             if (resultBytes == null || resultBytes.length == 0) {
                                 throw new RuntimeException("下载的图片为空");
                             }

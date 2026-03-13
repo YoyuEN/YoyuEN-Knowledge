@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -62,6 +63,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             // 动漫化处理（在上传前处理）
             String animeUrl = null;
             boolean isExternalUrl = false;
+            byte[] imageToDisplay = file.getBytes(); // 用于生成缩略图的图片数据
             try {
                 log.info("[照片上传] 开始动漫化处理...");
                 byte[] originalBytes = file.getBytes();
@@ -75,6 +77,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     } else {
                         // MinIO路径格式：photos/anime_xxx.jpg
                         objectName = animeUrl.substring(animeUrl.lastIndexOf("/") + 1);
+                        // 从MinIO下载动漫化后的图片，用于生成缩略图
+                        try (InputStream animeStream = objectStoreService.getFile("photos", objectName)) {
+                            imageToDisplay = animeStream.readAllBytes();
+                            log.info("[照片上传] 已获取动漫化图片用于生成缩略图");
+                        }
                     }
                 } else {
                     log.warn("[照片上传] 动漫化失败，使用原图");
@@ -83,16 +90,17 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 log.error("[照片上传] 动漫化异常，使用原图，error={}", e.getMessage(), e);
             }
 
-            // 如果动漫化失败或返回的是MinIO路径，上传原图
+            // 如果动漫化失败或返回的是MinIO路径，上传原图（统一使用 photos bucket）
             if (animeUrl == null || !isExternalUrl) {
-                String originalPath = objectStoreService.uploadFile(file, PHOTO_BUCKET, objectName);
+                String originalPath = objectStoreService.uploadFile(file, "photos", objectName);
                 log.info("[照片上传] 原图上传成功: {}", originalPath);
             }
 
-            // 生成并上传缩略图
+            // 生成并上传缩略图（统一使用 photos bucket）
+            String thumbnailBucket = "photos";
             try {
                 ByteArrayOutputStream thumbOutput = new ByteArrayOutputStream();
-                Thumbnails.of(file.getInputStream())
+                Thumbnails.of(new ByteArrayInputStream(imageToDisplay))  // 使用动漫化后的图片
                         .size(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT)
                         .outputQuality(0.8)
                         .toOutputStream(thumbOutput);
@@ -101,7 +109,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 objectStoreService.uploadFile(
                     new ByteArrayInputStream(thumbBytes),
                     thumbBytes.length,
-                    isExternalUrl ? "photos" : PHOTO_BUCKET,
+                    thumbnailBucket,
                     thumbnailName,
                     file.getContentType()
                 );
@@ -118,8 +126,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 photo.setObjectName(animeUrl);
                 photo.setThumbnailName(animeUrl); // 缩略图也使用外部URL
             } else {
-                // MinIO路径
-                photo.setBucketName(animeUrl != null ? "photos" : PHOTO_BUCKET);
+                // MinIO路径（统一使用 photos bucket）
+                photo.setBucketName("photos");
                 photo.setObjectName(objectName);
                 photo.setThumbnailName(thumbnailName);
             }

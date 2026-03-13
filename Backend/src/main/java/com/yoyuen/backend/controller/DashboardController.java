@@ -1,7 +1,7 @@
 package com.yoyuen.backend.controller;
 
-import com.yoyuen.backend.common.BaseResponse;
-import com.yoyuen.backend.common.ResultUtils;
+import com.yoyuen.backend.utils.BaseResponse;
+import com.yoyuen.backend.utils.ResultUtils;
 import com.yoyuen.backend.service.ai.DashboardAssistantService;
 import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
