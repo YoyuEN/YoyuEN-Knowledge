@@ -34,46 +34,6 @@
         </transition>
       </div>
 
-      <!-- 对话历史 -->
-      <div class="nav-section">
-        <div class="nav-header" @click="toggleConversationExpand">
-          <span class="nav-title">对话历史</span>
-          <svg
-            class="nav-arrow"
-            :class="{ 'expanded': isConversationExpanded }"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-        <transition name="slide-fade">
-          <div v-show="isConversationExpanded" class="nav-list">
-            <div
-              class="nav-item"
-              :class="{ 'active': selectedConversation === '' }"
-              style="transition-delay: 0ms"
-              @click="selectConversation('')"
-            >
-              新建对话
-            </div>
-            <div
-              v-for="(conv, index) in conversationList"
-              :key="conv.id"
-              class="nav-item"
-              :class="{ 'active': selectedConversation === conv.id }"
-              :style="{ transitionDelay: `${(index + 1) * 30}ms` }"
-              @click="selectConversation(conv.id)"
-            >
-              {{ conv.title || '未命名对话' }}
-            </div>
-          </div>
-        </transition>
-      </div>
     </div>
     <div class="chat-area">
       <!-- 回复区域 -->
@@ -85,12 +45,16 @@
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
           </div>
-          <h2 class="standby-title">欢迎使用 AI 助手</h2>
-          <p class="standby-subtitle">请在下方输入您的问题，我将为您提供帮助</p>
+          <h2 class="standby-title">{{ standbyConfig.title }}</h2>
+          <p class="standby-subtitle">{{ standbyConfig.subtitle }}</p>
           <div class="standby-suggestions">
-            <div class="suggestion-item">💡 支持 Markdown 格式回复</div>
-            <div class="suggestion-item">📎 可以上传文件进行分析</div>
-            <div class="suggestion-item">⚡ 快速响应您的问题</div>
+            <div
+              v-for="(suggestion, index) in standbyConfig.suggestions"
+              :key="index"
+              class="suggestion-item"
+            >
+              {{ suggestion }}
+            </div>
           </div>
         </div>
 
@@ -203,7 +167,7 @@
 <script setup>
 import { ref, nextTick, computed, onUnmounted, onMounted } from 'vue'
 import { marked } from 'marked'
-import { chatStreamRAGWithReferences, createConversation, fetchConversationList } from '@/api/chat/chat.js'
+import { chatStreamRAGWithReferences, createConversation } from '@/api/chat/chat.js'
 import { fetchKnowledgeBaseList } from '@/api/knowledge/knowledge.js'
 
 const currentQuestion = ref('')
@@ -217,11 +181,8 @@ const uploadedFiles = ref([])
 
 // 下拉框数据
 const knowledgeList = ref([])
-const conversationList = ref([])
 const selectedKnowledge = ref('')
-const selectedConversation = ref('')
 const isKnowledgeExpanded = ref(false)
-const isConversationExpanded = ref(false)
 
 // 当前知识库内容
 const currentKnowledgeItems = ref([])
@@ -229,6 +190,44 @@ const selectedKnowledgeTitle = computed(() => {
   if (!selectedKnowledge.value) return '请选择知识库'
   const kb = knowledgeList.value.find(k => k.id === selectedKnowledge.value)
   return kb ? (kb.name || kb.title) : '知识库内容'
+})
+
+// 待机画面配置 - 根据知识库动态变化
+const standbyConfig = computed(() => {
+  const kb = knowledgeList.value.find(k => k.id === selectedKnowledge.value)
+  const kbName = kb?.name || ''
+
+  if (kbName === 'YoyuEN' || kbName.includes('内容') || kbName.includes('创作')) {
+    return {
+      title: '内容创作助手',
+      subtitle: '基于网站文章和评论内容，为您提供专业的问答服务',
+      suggestions: [
+        '📝 询问网站已发布的文章内容',
+        '💬 查询用户评论和反馈',
+        '🔍 搜索特定主题的相关内容'
+      ]
+    }
+  } else if (kbName.includes('个人') || kbName.includes('知识库')) {
+    return {
+      title: '个人知识库助手',
+      subtitle: '了解个人信息、经历和专业知识',
+      suggestions: [
+        '👤 询问个人背景和经历',
+        '💼 了解专业技能和项目经验',
+        '📚 探索个人知识和见解'
+      ]
+    }
+  } else {
+    return {
+      title: '欢迎使用 AI 助手',
+      subtitle: '请在下方输入您的问题，我将为您提供帮助',
+      suggestions: [
+        '💡 支持 Markdown 格式回复',
+        '📎 可以上传文件进行分析',
+        '⚡ 快速响应您的问题'
+      ]
+    }
+  }
 })
 
 // 当前流式请求控制器，可用于中断
@@ -407,16 +406,6 @@ const loadKnowledgeList = async () => {
   }
 }
 
-// 加载对话历史列表
-const loadConversationList = async () => {
-  try {
-    const result = await fetchConversationList(selectedKnowledge.value)
-    conversationList.value = result || []
-  } catch (err) {
-    console.error('加载对话历史失败:', err)
-  }
-}
-
 // 知识库切换处理
 const toggleKnowledgeExpand = () => {
   isKnowledgeExpanded.value = !isKnowledgeExpanded.value
@@ -426,7 +415,10 @@ const selectKnowledge = (id) => {
   selectedKnowledge.value = id
   console.log('选择的知识库:', id)
   loadKnowledgeContent(id)
-  loadConversationList()
+  // 切换知识库时重置对话状态
+  conversationId.value = null
+  currentQuestion.value = ''
+  aiReplies.value = []
 }
 
 // 加载知识库内容
@@ -460,29 +452,9 @@ const formatDate = (dateStr) => {
   }
 }
 
-// 对话历史切换处理
-const toggleConversationExpand = () => {
-  isConversationExpanded.value = !isConversationExpanded.value
-}
-
-const selectConversation = (id) => {
-  selectedConversation.value = id
-  if (id) {
-    conversationId.value = id
-    console.log('切换到对话:', id)
-    // TODO: 加载该对话的历史消息
-  } else {
-    // 新建对话
-    conversationId.value = null
-    currentQuestion.value = ''
-    aiReplies.value = []
-  }
-}
-
 // 组件挂载时加载数据
 onMounted(async () => {
   await loadKnowledgeList()
-  loadConversationList()
   // 默认选择第一个知识库
   if (knowledgeList.value.length > 0) {
     selectKnowledge(knowledgeList.value[0].id)
