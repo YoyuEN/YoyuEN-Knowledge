@@ -405,7 +405,12 @@ public class ContentController {
                 log.warn("[知识库同步] no knowledge base, skip, title={}", contentVO.getTitle());
                 return;
             }
-            String knowledgeId = bases.get(0).getId();
+            // 查找网站内容知识库（通过名称或描述识别，优先使用第一个）
+            String knowledgeId = bases.stream()
+                    .filter(base -> "YoyuEN".equals(base.getName()) || "Profile".equals(base.getDescription()))
+                    .findFirst()
+                    .orElse(bases.get(0))
+                    .getId();
             String safeTitle = contentVO.getTitle().replaceAll("[\\\\/:*?\"<>|\\s]", "_");
             LocalDateTime now = LocalDateTime.now();
             String timeStr = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));

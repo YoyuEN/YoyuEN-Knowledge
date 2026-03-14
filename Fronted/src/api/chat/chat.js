@@ -136,13 +136,14 @@ export function chatStream(message, conversationId, onChunk, onDone, onError) {
  *
  * @param {string} message - 用户输入的消息
  * @param {string|null} conversationId - 当前对话 ID
+ * @param {string|null} knowledgeBaseId - 知识库 ID，用于过滤检索范围
  * @param {function} onChunk - 每收到一段文本时的回调 (text: string) => void
  * @param {function} onReferences - 收到引用信息时的回调 (references: Array) => void
  * @param {function} onDone - 流结束时的回调 () => void
  * @param {function} onError - 出错时的回调 (error: Error) => void
  * @returns {AbortController} - 可调用 .abort() 取消请求
  */
-export function chatStreamRAGWithReferences(message, conversationId, onChunk, onReferences, onDone, onError) {
+export function chatStreamRAGWithReferences(message, conversationId, knowledgeBaseId, onChunk, onReferences, onDone, onError) {
   const controller = new AbortController()
 
   const token = localStorage.getItem('token')
@@ -158,7 +159,7 @@ export function chatStreamRAGWithReferences(message, conversationId, onChunk, on
   fetch('/api/ai/chat/simpleRAGWithReferences', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ content: message, conversationId, resourceIds: [] }),
+    body: JSON.stringify({ content: message, conversationId, resourceIds: [], knowledgeBaseId }),
     signal: controller.signal,
   })
     .then((response) => {
@@ -339,9 +340,10 @@ export function chatStreamRAG(message, conversationId, onChunk, onDone, onError)
 
 /**
  * 获取对话历史列表
+ * @param {string|null} knowledgeBaseId - 知识库 ID，用于过滤对话列表
  * @returns {Promise<Array>} - 对话历史列表
  */
-export async function fetchConversationList() {
+export async function fetchConversationList(knowledgeBaseId = null) {
   const token = localStorage.getItem('token')
   const headers = {
     'Content-Type': 'application/json',
@@ -350,7 +352,12 @@ export async function fetchConversationList() {
     headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
   }
 
-  const response = await fetch('/api/conversation/list', {
+  const url = new URL('/api/conversation/list', window.location.origin)
+  if (knowledgeBaseId) {
+    url.searchParams.append('knowledgeBaseId', knowledgeBaseId)
+  }
+
+  const response = await fetch(url, {
     method: 'GET',
     headers,
   })

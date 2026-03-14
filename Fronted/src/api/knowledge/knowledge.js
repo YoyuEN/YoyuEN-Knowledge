@@ -39,3 +39,55 @@ export function updateKnowledge(data) {
 export function removeKnowledge(id) {
   return request.post('/knowledge/remove', { id })
 }
+
+/**
+ * 获取知识库管理列表
+ * @param {{ keyword?: string }} params
+ */
+export function fetchKnowledgeBaseList(params) {
+  return request.get('/knowledge/base/list', { params })
+}
+
+/**
+ * 创建知识库
+ * @param {{ name: string, description?: string, status: string }} data
+ */
+export function createKnowledgeBase(data) {
+  return request.post('/knowledge/base/create', data)
+}
+
+/**
+ * 更新知识库
+ * @param {{ id: string, name?: string, description?: string, status?: string }} data
+ */
+export function updateKnowledgeBase(data) {
+  return request.post('/knowledge/base/update', data)
+}
+
+/**
+ * 删除知识库
+ * @param {string} id
+ */
+export function removeKnowledgeBase(id) {
+  return request.post('/knowledge/base/remove', { id })
+}
+
+/**
+ * 切换知识库状态
+ * @param {{ id: string, status: string }} data
+ */
+export function toggleKnowledgeBaseStatus(data) {
+  return request.post('/knowledge/base/toggle-status', data)
+}
+
+/**
+ * 上传知识库文档
+ * @param {FormData} formData
+ */
+export function uploadKnowledgeDocument(formData) {
+  return request.post('/knowledge/base/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
+}

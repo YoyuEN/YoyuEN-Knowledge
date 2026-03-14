@@ -204,7 +204,7 @@
 import { ref, nextTick, computed, onUnmounted, onMounted } from 'vue'
 import { marked } from 'marked'
 import { chatStreamRAGWithReferences, createConversation, fetchConversationList } from '@/api/chat/chat.js'
-import { fetchKnowledgeList } from '@/api/knowledge/knowledge.js'
+import { fetchKnowledgeBaseList } from '@/api/knowledge/knowledge.js'
 
 const currentQuestion = ref('')
 const aiReplies = ref([])
@@ -346,7 +346,10 @@ const sendMessage = async () => {
   // 首次发送时创建对话
   if (!conversationId.value) {
     try {
-      const conversation = await createConversation({ title: userInput.slice(0, 50) })
+      const conversation = await createConversation({
+        title: userInput.slice(0, 50),
+        knowledgeBaseId: selectedKnowledge.value
+      })
       conversationId.value = conversation?.id ?? null
     } catch (err) {
       console.error('创建对话失败:', err)
@@ -364,6 +367,7 @@ const sendMessage = async () => {
   currentAbortController = chatStreamRAGWithReferences(
     userInput,
     conversationId.value,
+    selectedKnowledge.value, // 传递选中的知识库 ID
     // onChunk：每次收到新内容片段时追加
     (chunk) => {
       if (isThinking.value) isThinking.value = false
@@ -396,7 +400,7 @@ const sendMessage = async () => {
 // 加载知识库列表
 const loadKnowledgeList = async () => {
   try {
-    const result = await fetchKnowledgeList()
+    const result = await fetchKnowledgeBaseList()
     knowledgeList.value = result.data || []
   } catch (err) {
     console.error('加载知识库列表失败:', err)
@@ -406,7 +410,7 @@ const loadKnowledgeList = async () => {
 // 加载对话历史列表
 const loadConversationList = async () => {
   try {
-    const result = await fetchConversationList()
+    const result = await fetchConversationList(selectedKnowledge.value)
     conversationList.value = result || []
   } catch (err) {
     console.error('加载对话历史失败:', err)
@@ -422,13 +426,14 @@ const selectKnowledge = (id) => {
   selectedKnowledge.value = id
   console.log('选择的知识库:', id)
   loadKnowledgeContent(id)
+  loadConversationList()
 }
 
 // 加载知识库内容
 const loadKnowledgeContent = async (knowledgeId) => {
   try {
     const params = knowledgeId ? { category: knowledgeId } : {}
-    const result = await fetchKnowledgeList(params)
+    const result = await fetchKnowledgeBaseList(params)
     currentKnowledgeItems.value = result.data || []
   } catch (err) {
     console.error('加载知识库内容失败:', err)

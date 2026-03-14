@@ -23,7 +23,14 @@
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 
-      <el-table :data="pagedRows" stripe v-loading="loading" style="margin-top: 16px;">
+      <el-table
+        :data="pagedRows"
+        stripe
+        v-loading="loading"
+        style="margin-top: 16px;"
+        :row-class-name="() => 'table-row-longpress'"
+        @row-contextmenu="handleRowContextMenu"
+      >
         <el-table-column prop="author" label="作者" width="140">
           <template #default="{ row }">
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -44,7 +51,7 @@
         </el-table-column>
         <el-table-column prop="contentId" label="文章ID" width="200" show-overflow-tooltip />
         <el-table-column prop="createTime" label="时间" width="170" />
-        <el-table-column label="推荐" width="80" align="center">
+        <el-table-column label="推荐" width="80" align="center" class-name="hide-on-mobile">
           <template #default="{ row }">
             <el-switch
               :model-value="!!row.isRecommend"
@@ -53,7 +60,7 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" align="center">
+        <el-table-column label="操作" width="100" align="center" class-name="hide-on-mobile">
           <template #default="{ row }">
             <el-button link type="danger" @click="removeRow(row)" :icon="Delete">删除</el-button>
           </template>
@@ -70,6 +77,16 @@
         />
       </div>
     </el-card>
+
+    <ContextMenu ref="contextMenuRef" :title="contextMenuTitle" :actions="contextMenuActions">
+      <div v-if="selectedRow">
+        <div style="margin-bottom: 8px;"><strong>作者：</strong>{{ selectedRow.author || '匿名' }}</div>
+        <div style="margin-bottom: 8px;"><strong>内容：</strong>{{ selectedRow.content }}</div>
+        <div style="margin-bottom: 8px;"><strong>文章ID：</strong>{{ selectedRow.contentId }}</div>
+        <div style="margin-bottom: 8px;"><strong>创建时间：</strong>{{ selectedRow.createTime }}</div>
+        <div style="margin-bottom: 8px;"><strong>推荐状态：</strong>{{ selectedRow.isRecommend ? '已推荐' : '未推荐' }}</div>
+      </div>
+    </ContextMenu>
   </section>
 </template>
 
@@ -85,17 +102,48 @@ import {
   Delete,
 } from '@element-plus/icons-vue'
 import { fetchAllComments, removeComment, toggleCommentRecommend } from '@/api/comment/comment'
+import ContextMenu from '@/components/ContextMenu.vue'
+import { useTableLongpress } from '@/composables/useTableLongpress'
 
 const loading = ref(false)
 const rows = ref([])
 const query = ref({ keyword: '' })
+const contextMenuRef = ref(null)
+const selectedRow = ref(null)
+const contextMenuTitle = ref('')
+const contextMenuActions = ref([])
+
+const showContextMenu = (e, row) => {
+  selectedRow.value = row
+  contextMenuTitle.value = '评论详情'
+  contextMenuActions.value = [
+    {
+      label: row.isRecommend ? '取消推荐' : '设为推荐',
+      icon: Star,
+      handler: () => changeRecommend(row, !row.isRecommend)
+    },
+    {
+      label: '删除',
+      icon: Delete,
+      danger: true,
+      handler: () => removeRow(row)
+    }
+  ]
+
+  const x = e.clientX || e.touches?.[0]?.clientX || 0
+  const y = e.clientY || e.touches?.[0]?.clientY || 0
+  contextMenuRef.value?.show(x, y)
+}
+
 const currentPage = ref(1)
-const pageSize = 10
+const pageSize = ref(10)
 
 const pagedRows = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return rows.value.slice(start, start + pageSize)
+  const start = (currentPage.value - 1) * pageSize.value
+  return rows.value.slice(start, start + pageSize.value)
 })
+
+const { handleRowContextMenu } = useTableLongpress(showContextMenu, pagedRows, { pageSize: pageSize.value })
 
 const loadData = async () => {
   loading.value = true
@@ -135,3 +183,16 @@ const removeRow = async (row) => {
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+.table-row-longpress {
+  cursor: pointer;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  :deep(.hide-on-mobile) {
+    display: none !important;
+  }
+}
+</style>

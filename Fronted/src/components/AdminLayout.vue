@@ -97,6 +97,10 @@
             <el-icon><TrendCharts /></el-icon>
             <template #title>数据统计</template>
           </el-menu-item>
+          <el-menu-item index="/admin/knowledge">
+            <el-icon><Folder /></el-icon>
+            <template #title>知识库管理</template>
+          </el-menu-item>
         </el-menu>
 
         <div class="admin-footer-link">
@@ -141,6 +145,7 @@ import {
   HomeFilled,
   Menu,
   Close,
+  Folder,
 } from '@element-plus/icons-vue'
 import { useTheme } from '../composables/useTheme'
 import '../views/admin/admin-theme.css'

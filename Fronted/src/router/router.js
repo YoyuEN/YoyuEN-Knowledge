@@ -12,6 +12,7 @@ import TagList from '../views/admin/TagList.vue'
 import CommentList from '../views/admin/CommentList.vue'
 import PhotoList from '../views/admin/PhotoList.vue'
 import Statistics from '../views/admin/Statistics.vue'
+import KnowledgeList from '../views/admin/KnowledgeList.vue'
 
 const routes = [
   {
@@ -95,12 +96,14 @@ const routes = [
         meta: { title: '数据统计' },
       },
       {
-        path: 'content',
-        redirect: '/admin/articles',
+        path: 'knowledge',
+        name: 'AdminKnowledge',
+        component: KnowledgeList,
+        meta: { title: '知识库管理' },
       },
       {
-        path: 'knowledge',
-        redirect: '/admin/categories',
+        path: 'content',
+        redirect: '/admin/articles',
       },
       {
         path: 'moments',

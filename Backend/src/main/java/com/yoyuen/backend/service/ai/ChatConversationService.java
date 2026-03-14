@@ -33,6 +33,12 @@ public interface ChatConversationService extends IService<ChatConversation> {
     List<ChatConversationVO> listConversation();
 
     /*
+    * 根据知识库ID获取对话列表
+    * @Param: knowledgeBaseId 知识库ID，如果为null则返回所有对话
+    * */
+    List<ChatConversationVO> listConversationsByKnowledgeBase(String knowledgeBaseId);
+
+    /*
     * 删除对话记录
     * */
     Boolean removeConversation(String conversationId);

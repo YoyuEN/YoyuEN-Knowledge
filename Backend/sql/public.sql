@@ -443,3 +443,6 @@ UPDATE photo SET thumbnail_name = object_name WHERE thumbnail_name IS NULL;
 ALTER TABLE photo
     ALTER COLUMN object_name TYPE VARCHAR(500),
     ALTER COLUMN thumbnail_name TYPE VARCHAR(500);
+
+
+ALTER TABLE chat_conversation ADD COLUMN knowledge_base_id VARCHAR(255);

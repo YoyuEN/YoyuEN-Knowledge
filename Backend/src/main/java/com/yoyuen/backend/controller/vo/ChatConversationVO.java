@@ -15,6 +15,7 @@ import java.util.List;
 public class ChatConversationVO {
     private String id;
     private String title;
+    private String knowledgeBaseId;
     private LocalDateTime createTime;
     private List<ChatMessageVO> messages;
 }

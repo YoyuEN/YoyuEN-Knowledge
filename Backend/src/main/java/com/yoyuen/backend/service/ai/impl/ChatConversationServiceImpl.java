@@ -52,6 +52,7 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
         }
         ChatConversation chatConversation = new ChatConversation();
         chatConversation.setTitle(title);
+        chatConversation.setKnowledgeBaseId(conversation.getKnowledgeBaseId());
 //        chatConversation.setUserId(SecurityFrameworkUtil.getCurrUserId());
         chatConversation.setUserId(1L);
         this.saveOrUpdate(chatConversation);
@@ -59,6 +60,7 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
         chatConversationVO.setId(chatConversation.getId());
         chatConversationVO.setCreateTime(chatConversation.getCreateTime());
         chatConversationVO.setTitle(title);
+        chatConversationVO.setKnowledgeBaseId(chatConversation.getKnowledgeBaseId());
         chatConversationVO.setMessages(new ArrayList<>());
         return chatConversationVO;
     }
@@ -68,6 +70,19 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
         LambdaQueryWrapper<ChatConversation> qw = new LambdaQueryWrapper<>();
         qw.orderByDesc(ChatConversation::getCreateTime);
         qw.eq(ChatConversation::getUserId, SecurityFrameworkUtil.getCurrUserId());
+        qw.last(" LIMIT 30");
+        List<ChatConversation> list = this.list(qw);
+        return transferChatConversation(list);
+    }
+
+    @Override
+    public List<ChatConversationVO> listConversationsByKnowledgeBase(String knowledgeBaseId) {
+        LambdaQueryWrapper<ChatConversation> qw = new LambdaQueryWrapper<>();
+        qw.orderByDesc(ChatConversation::getCreateTime);
+        qw.eq(ChatConversation::getUserId, SecurityFrameworkUtil.getCurrUserId());
+        if (knowledgeBaseId != null && !knowledgeBaseId.isEmpty()) {
+            qw.eq(ChatConversation::getKnowledgeBaseId, knowledgeBaseId);
+        }
         qw.last(" LIMIT 30");
         List<ChatConversation> list = this.list(qw);
         return transferChatConversation(list);
@@ -90,6 +105,7 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
             ChatConversationVO chatConversationVO = new ChatConversationVO();
             chatConversationVO.setId(item.getId());
             chatConversationVO.setTitle(item.getTitle());
+            chatConversationVO.setKnowledgeBaseId(item.getKnowledgeBaseId());
             chatConversationVO.setCreateTime(item.getCreateTime());
             chatConversationVO.setMessages(chatMessageVOS);
             return chatConversationVO;

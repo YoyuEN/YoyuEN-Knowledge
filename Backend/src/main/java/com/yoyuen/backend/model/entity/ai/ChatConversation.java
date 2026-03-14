@@ -24,4 +24,8 @@ public class ChatConversation extends BaseEntity {
     * 对话人
     * */
     private Long userId;
+    /*
+    * 关联的知识库ID
+    * */
+    private String knowledgeBaseId;
 }

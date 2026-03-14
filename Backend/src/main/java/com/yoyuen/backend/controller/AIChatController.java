@@ -59,8 +59,15 @@ public class AIChatController {
 
     @PostMapping(value = "/chat/simpleRAGWithReferences", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<ChatResponseWithReferencesVO> simpleRagChatWithReferences(@RequestBody @Valid ChatRequestVO chatRequestVO) {
-        List<KnowledgeBaseVO> knowledgeBaseList = knowledgeBaseService.KnowledgeList();
-        List<String> knowledgeBaseIds = knowledgeBaseList.stream().map(KnowledgeBaseVO::getId).toList();
+        List<String> knowledgeBaseIds;
+
+        // 如果前端指定了知识库ID，只使用该知识库；否则使用所有知识库
+        if (chatRequestVO.getKnowledgeBaseId() != null && !chatRequestVO.getKnowledgeBaseId().isEmpty()) {
+            knowledgeBaseIds = List.of(chatRequestVO.getKnowledgeBaseId());
+        } else {
+            List<KnowledgeBaseVO> knowledgeBaseList = knowledgeBaseService.KnowledgeList();
+            knowledgeBaseIds = knowledgeBaseList.stream().map(KnowledgeBaseVO::getId).toList();
+        }
 
         ChatMessageVO chatMessageVO = new ChatMessageVO();
         BeanUtils.copyProperties(chatRequestVO, chatMessageVO);

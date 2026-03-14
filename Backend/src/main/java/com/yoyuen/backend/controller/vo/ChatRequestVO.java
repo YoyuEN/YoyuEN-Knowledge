@@ -24,6 +24,8 @@ public class ChatRequestVO {
 
     private List<String> knowledgeIds;
 
+    private String knowledgeBaseId;
+
     @NotNull(message = "对话类型不能为空")
     private String chatType;
 

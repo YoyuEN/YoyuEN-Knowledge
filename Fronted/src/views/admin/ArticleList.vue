@@ -26,7 +26,14 @@
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 
-      <el-table :data="pagedRows" stripe v-loading="loading" style="margin-top: 16px;">
+      <el-table
+        :data="pagedRows"
+        stripe
+        v-loading="loading"
+        style="margin-top: 16px;"
+        :row-class-name="() => 'table-row-longpress'"
+        @row-contextmenu="handleRowContextMenu"
+      >
         <el-table-column prop="title" label="标题" min-width="240" show-overflow-tooltip>
           <template #default="{ row }">
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -59,7 +66,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" width="170" />
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column label="操作" width="240" fixed="right" class-name="hide-on-mobile">
           <template #default="{ row }">
             <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
             <el-button link @click="toggleRecommend(row)" :icon="Star">
@@ -74,12 +81,27 @@
         <el-pagination
           background
           layout="total, prev, pager, next, jumper"
-          :total="rows.length"
+          :total="filteredRows.length"
           :page-size="pageSize"
           v-model:current-page="currentPage"
         />
       </div>
     </el-card>
+
+    <ContextMenu ref="contextMenuRef" :title="contextMenuTitle" :actions="contextMenuActions">
+      <div v-if="selectedRow">
+        <div style="margin-bottom: 8px;"><strong>标题：</strong>{{ selectedRow.title }}</div>
+        <div style="margin-bottom: 8px;"><strong>分类：</strong>{{ selectedRow.categoryName || selectedRow.category }}</div>
+        <div style="margin-bottom: 8px;"><strong>标签：</strong>{{ selectedRow.tags?.join(', ') || '-' }}</div>
+        <div style="margin-bottom: 8px;"><strong>评论数：</strong>{{ selectedRow.commentCount || 0 }}</div>
+        <div style="margin-bottom: 8px;"><strong>浏览数：</strong>{{ selectedRow.viewCount || 0 }}</div>
+        <div style="margin-bottom: 8px;"><strong>创建时间：</strong>{{ selectedRow.createTime }}</div>
+        <div v-if="selectedRow.summary" style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
+          <strong>摘要：</strong>
+          <div style="margin-top: 4px; color: #909399;">{{ selectedRow.summary }}</div>
+        </div>
+      </div>
+    </ContextMenu>
 
     <el-dialog
       v-model="editorVisible"
@@ -221,14 +243,45 @@ import {
   uploadContentCover,
 } from '@/api/content/content'
 import { fetchCommentCount, removeCommentsByContent } from '@/api/comment/comment'
+import ContextMenu from '@/components/ContextMenu.vue'
+import { useTableLongpress } from '@/composables/useTableLongpress'
 
 const loading = ref(false)
 const submitting = ref(false)
 const rows = ref([])
 const categories = ref([])
 const tags = ref([])
-const currentPage = ref(1)
-const pageSize = 10
+const contextMenuRef = ref(null)
+const selectedRow = ref(null)
+const contextMenuTitle = ref('')
+const contextMenuActions = ref([])
+
+const showContextMenu = (e, row) => {
+  selectedRow.value = row
+  contextMenuTitle.value = '文章详情'
+  contextMenuActions.value = [
+    {
+      label: '编辑',
+      icon: Edit,
+      handler: () => openEdit(row)
+    },
+    {
+      label: row.isRecommend ? '取消推荐' : '推荐',
+      icon: Star,
+      handler: () => toggleRecommend(row)
+    },
+    {
+      label: '删除',
+      icon: Delete,
+      danger: true,
+      handler: () => deleteArticle(row)
+    }
+  ]
+
+  const x = e.clientX || e.touches?.[0]?.clientX || 0
+  const y = e.clientY || e.touches?.[0]?.clientY || 0
+  contextMenuRef.value?.show(x, y)
+}
 
 const query = ref({ keyword: '', category: '' })
 
@@ -255,10 +308,15 @@ const filteredRows = computed(() => {
   })
 })
 
+const currentPage = ref(1)
+const pageSize = ref(10)
+
 const pagedRows = computed(() => {
-  const start = (currentPage.value - 1) * pageSize
-  return filteredRows.value.slice(start, start + pageSize)
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredRows.value.slice(start, start + pageSize.value)
 })
+
+const { handleRowContextMenu } = useTableLongpress(showContextMenu, pagedRows, { pageSize: pageSize.value })
 
 const defaultForm = () => ({
   id: '',
@@ -434,3 +492,16 @@ onMounted(async () => {
   await loadData()
 })
 </script>
+
+<style scoped>
+.table-row-longpress {
+  cursor: pointer;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  :deep(.hide-on-mobile) {
+    display: none !important;
+  }
+}
+</style>

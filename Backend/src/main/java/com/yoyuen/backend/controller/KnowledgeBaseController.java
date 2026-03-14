@@ -18,7 +18,7 @@ import java.util.List;
  */
 
 @RestController
-@RequestMapping("/knowledge")
+@RequestMapping("/knowledge/base")
 @RequiredArgsConstructor
 public class KnowledgeBaseController {
 
@@ -59,5 +59,10 @@ public class KnowledgeBaseController {
     @PostMapping("/simple")
     public BaseResponse<List<SimpleBaseVO>> simpleList() {
         return ResultUtils.success(knowledgeBaseService.simpleList());
+    }
+
+    @PostMapping("/toggle-status")
+    public BaseResponse<Boolean> toggleStatus(@RequestBody KnowledgeBaseVO knowledgeBaseVO) {
+        return ResultUtils.success(knowledgeBaseService.updateKnowledgeBase(knowledgeBaseVO));
     }
 }

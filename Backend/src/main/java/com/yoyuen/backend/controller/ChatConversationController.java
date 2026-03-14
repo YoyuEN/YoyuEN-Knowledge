@@ -26,7 +26,13 @@ public class ChatConversationController {
     }
 
     @GetMapping("/list")
-    public BaseResponse<ChatConversationVO> listChatConversation(@RequestParam(name = "id") String id) {
-        return ResultUtils.success(conversationService.getConversation(id));
+    public BaseResponse<?> listChatConversation(
+            @RequestParam(name = "id", required = false) String id,
+            @RequestParam(name = "knowledgeBaseId", required = false) String knowledgeBaseId) {
+        if (id != null) {
+            return ResultUtils.success(conversationService.getConversation(id));
+        }
+        // 如果传入了 knowledgeBaseId，按知识库过滤对话列表
+        return ResultUtils.success(conversationService.listConversationsByKnowledgeBase(knowledgeBaseId));
     }
 }
