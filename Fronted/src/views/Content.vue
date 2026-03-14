@@ -113,6 +113,19 @@
     </aside>
 
   </div>
+
+  <!-- 底部 -->
+  <footer class="page-footer fade-in">
+    <div class="footer-content">
+      <div class="footer-author">
+        <span class="author-name">YoyuEN</span>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-quote">
+        "代码如诗，技术如画，用心记录每一个值得铭记的瞬间"
+      </div>
+    </div>
+  </footer>
 </template>
 
 <script setup>
@@ -707,5 +720,46 @@ onMounted(async () => {
 .murmur-date {
   font-size: 11px;
   color: #ccc;
+}
+
+/* ---- 底部 ---- */
+.page-footer {
+  margin: 20px 20px 40px;
+  padding: 20px 24px;
+  border: 1px solid #ebebeb;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.author-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.footer-divider {
+  width: 1px;
+  height: 16px;
+  background: #ebebeb;
+}
+
+.footer-quote {
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
 }
 </style>

@@ -1,8 +1,79 @@
 <template>
   <div class="home-container">
-    <!-- 相关的文章列表 -->
     <div class="message-list">
+      <!-- 知识库选择 -->
+      <div class="nav-section">
+        <div class="nav-header" @click="toggleKnowledgeExpand">
+          <span class="nav-title">知识库</span>
+          <svg
+            class="nav-arrow"
+            :class="{ 'expanded': isKnowledgeExpanded }"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <transition name="slide-fade">
+          <div v-show="isKnowledgeExpanded" class="nav-list">
+            <div
+              v-for="(kb, index) in knowledgeList"
+              :key="kb.id"
+              class="nav-item"
+              :class="{ 'active': selectedKnowledge === kb.id }"
+              :style="{ transitionDelay: `${index * 30}ms` }"
+              @click="selectKnowledge(kb.id)"
+            >
+              {{ kb.name }}
+            </div>
+          </div>
+        </transition>
+      </div>
 
+      <!-- 对话历史 -->
+      <div class="nav-section">
+        <div class="nav-header" @click="toggleConversationExpand">
+          <span class="nav-title">对话历史</span>
+          <svg
+            class="nav-arrow"
+            :class="{ 'expanded': isConversationExpanded }"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <transition name="slide-fade">
+          <div v-show="isConversationExpanded" class="nav-list">
+            <div
+              class="nav-item"
+              :class="{ 'active': selectedConversation === '' }"
+              style="transition-delay: 0ms"
+              @click="selectConversation('')"
+            >
+              新建对话
+            </div>
+            <div
+              v-for="(conv, index) in conversationList"
+              :key="conv.id"
+              class="nav-item"
+              :class="{ 'active': selectedConversation === conv.id }"
+              :style="{ transitionDelay: `${(index + 1) * 30}ms` }"
+              @click="selectConversation(conv.id)"
+            >
+              {{ conv.title || '未命名对话' }}
+            </div>
+          </div>
+        </transition>
+      </div>
     </div>
     <div class="chat-area">
       <!-- 回复区域 -->
@@ -124,17 +195,16 @@
         </button>
       </div>
     </div>
-    <!-- 相关的文章列表 -->
     <div class="message-list">
-
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, nextTick, computed, onUnmounted } from 'vue'
+import { ref, nextTick, computed, onUnmounted, onMounted } from 'vue'
 import { marked } from 'marked'
-import { chatStreamRAGWithReferences, createConversation } from '@/api/chat/chat.js'
+import { chatStreamRAGWithReferences, createConversation, fetchConversationList } from '@/api/chat/chat.js'
+import { fetchKnowledgeList } from '@/api/knowledge/knowledge.js'
 
 const currentQuestion = ref('')
 const aiReplies = ref([])
@@ -144,6 +214,22 @@ const isThinking = ref(false)
 const repliesContainer = ref(null)
 const fileInput = ref(null)
 const uploadedFiles = ref([])
+
+// 下拉框数据
+const knowledgeList = ref([])
+const conversationList = ref([])
+const selectedKnowledge = ref('')
+const selectedConversation = ref('')
+const isKnowledgeExpanded = ref(false)
+const isConversationExpanded = ref(false)
+
+// 当前知识库内容
+const currentKnowledgeItems = ref([])
+const selectedKnowledgeTitle = computed(() => {
+  if (!selectedKnowledge.value) return '请选择知识库'
+  const kb = knowledgeList.value.find(k => k.id === selectedKnowledge.value)
+  return kb ? (kb.name || kb.title) : '知识库内容'
+})
 
 // 当前流式请求控制器，可用于中断
 let currentAbortController = null
@@ -307,6 +393,97 @@ const sendMessage = async () => {
   )
 }
 
+// 加载知识库列表
+const loadKnowledgeList = async () => {
+  try {
+    const result = await fetchKnowledgeList()
+    knowledgeList.value = result.data || []
+  } catch (err) {
+    console.error('加载知识库列表失败:', err)
+  }
+}
+
+// 加载对话历史列表
+const loadConversationList = async () => {
+  try {
+    const result = await fetchConversationList()
+    conversationList.value = result || []
+  } catch (err) {
+    console.error('加载对话历史失败:', err)
+  }
+}
+
+// 知识库切换处理
+const toggleKnowledgeExpand = () => {
+  isKnowledgeExpanded.value = !isKnowledgeExpanded.value
+}
+
+const selectKnowledge = (id) => {
+  selectedKnowledge.value = id
+  console.log('选择的知识库:', id)
+  loadKnowledgeContent(id)
+}
+
+// 加载知识库内容
+const loadKnowledgeContent = async (knowledgeId) => {
+  try {
+    const params = knowledgeId ? { category: knowledgeId } : {}
+    const result = await fetchKnowledgeList(params)
+    currentKnowledgeItems.value = result.data || []
+  } catch (err) {
+    console.error('加载知识库内容失败:', err)
+    currentKnowledgeItems.value = []
+  }
+}
+
+// 查看知识详情
+const viewKnowledgeDetail = (item) => {
+  console.log('查看知识详情:', item)
+  // TODO: 跳转到详情页或打开弹窗
+}
+
+// 格式化日期
+const formatDate = (dateStr) => {
+  if (!dateStr) return ''
+  try {
+    const date = new Date(dateStr)
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${month}-${day}`
+  } catch (e) {
+    return dateStr
+  }
+}
+
+// 对话历史切换处理
+const toggleConversationExpand = () => {
+  isConversationExpanded.value = !isConversationExpanded.value
+}
+
+const selectConversation = (id) => {
+  selectedConversation.value = id
+  if (id) {
+    conversationId.value = id
+    console.log('切换到对话:', id)
+    // TODO: 加载该对话的历史消息
+  } else {
+    // 新建对话
+    conversationId.value = null
+    currentQuestion.value = ''
+    aiReplies.value = []
+  }
+}
+
+// 组件挂载时加载数据
+onMounted(async () => {
+  await loadKnowledgeList()
+  loadConversationList()
+  // 默认选择第一个知识库
+  if (knowledgeList.value.length > 0) {
+    selectKnowledge(knowledgeList.value[0].id)
+  }
+})
+
 // 组件卸载时中断未完成的请求
 onUnmounted(() => {
   currentAbortController?.abort()
@@ -315,7 +492,7 @@ onUnmounted(() => {
 
 <style scoped>
 .home-container {
-  padding: 20px;
+  padding: 25px;
   height: calc(100vh - 80px);
   display: flex;
   gap: 20px;
@@ -323,18 +500,263 @@ onUnmounted(() => {
 }
 
 .chat-area {
-  width: 1200px;
+  flex: 1;
   display: flex;
-  margin: 0 auto;
   flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.nav-arrow {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.nav-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+/* 折叠展开动画 */
+.slide-fade-enter-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.slide-fade-enter-from {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.slide-fade-enter-to {
+  opacity: 1;
+  max-height: 500px;
+  transform: translateY(0);
+}
+
+.slide-fade-leave-from {
+  opacity: 1;
+  max-height: 500px;
+  transform: translateY(0);
+}
+
+.slide-fade-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+.nav-list {
+  overflow: hidden;
+}
+
+.nav-item {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: left center;
+}
+
+.slide-fade-enter-active .nav-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-header {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.nav-header:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+}
+
+.nav-header:active {
+  transform: scale(0.98);
 }
 
 .message-list {
-  flex: 1;
+  width: 280px;
+  flex-shrink: 0;
   border: 1px solid #e8e8e8;
-  padding-left: 20px;
+  padding: 16px;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: white;
+}
+
+/* 导航区块 */
+.nav-section {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 12px;
+}
+
+.nav-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.nav-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+  background: white;
+}
+
+.nav-header:hover {
+  background: white;
+}
+
+.nav-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.nav-arrow {
+  transition: transform 0.3s ease;
+  color: #999;
+}
+
+.nav-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+.nav-list {
+  margin-top: 4px;
+  overflow: hidden;
+}
+
+.nav-item {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: #666;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: white;
+}
+
+.nav-item:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.nav-item.active {
+  background: #f5f5f5;
+  color: #333;
+  font-weight: 500;
+}
+
+/* 展开动画 */
+.expand-enter-active {
+  transition: all 0.25s ease-out;
+  overflow: hidden;
+}
+
+.expand-leave-active {
+  transition: all 0.2s ease-in;
+  overflow: hidden;
+}
+
+.expand-enter-from {
+  max-height: 0;
+  opacity: 0;
+}
+
+.expand-enter-to {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.expand-leave-from {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* 知识库内容区域 */
+.knowledge-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.content-header {
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 8px;
+}
+
+.content-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.content-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.content-item {
+  padding: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+
+.content-item:hover {
+  background: #f8f9fa;
+}
+
+.item-title {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 6px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.item-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-date {
+  font-size: 11px;
+  color: #999;
+}
+
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
 }
 
 .reply-content {

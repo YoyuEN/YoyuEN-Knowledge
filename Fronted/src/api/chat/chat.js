@@ -335,3 +335,30 @@ export function chatStreamRAG(message, conversationId, onChunk, onDone, onError)
 
   return controller
 }
+
+
+/**
+ * 获取对话历史列表
+ * @returns {Promise<Array>} - 对话历史列表
+ */
+export async function fetchConversationList() {
+  const token = localStorage.getItem('token')
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+  if (token) {
+    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
+  }
+
+  const response = await fetch('/api/conversation/list', {
+    method: 'GET',
+    headers,
+  })
+
+  if (!response.ok) {
+    throw new Error(`获取对话历史失败: ${response.status}`)
+  }
+
+  const result = await response.json()
+  return result.data || []
+}
