@@ -79,3 +79,16 @@ export function fetchAllContent(params) {
 export function toggleContentRecommend(id, isRecommend) {
   return request.post('/content/recommend', { id, isRecommend })
 }
+
+export function uploadVideo(file, onProgress) {
+  const form = new FormData()
+  form.append('file', file)
+  return request.post('/content/upload-video', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    onUploadProgress: onProgress
+  })
+}
+
+export function extractVideoCover(videoUrl) {
+  return request.post('/content/extract-video-cover', { videoUrl })
+}

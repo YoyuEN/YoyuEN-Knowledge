@@ -105,15 +105,19 @@
 
     <el-dialog
       v-model="editorVisible"
-      :title="isEdit ? '编辑文章' : '新增文章'"
+      :title="isEdit ? '编辑内容' : '新增内容'"
       width="min(1000px, 96vw)"
       :close-on-click-modal="false"
     >
       <el-form :model="form" label-width="80px" label-position="top">
+        <el-form-item label="内容类型">
+          <ContentTypeSelector v-model="form.contentType" @change="handleContentTypeChange" />
+        </el-form-item>
+
         <el-row :gutter="16">
           <el-col :span="24">
             <el-form-item label="标题">
-              <el-input v-model="form.title" placeholder="请输入文章标题" size="large" />
+              <el-input v-model="form.title" :placeholder="form.contentType === 'video' ? '请输入视频标题' : '请输入文章标题'" size="large" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -156,24 +160,45 @@
             <div style="flex: 2;">
               <el-input v-model="form.cover" placeholder="或直接输入图片URL" />
               <div style="margin-top: 8px; font-size: 12px; color: var(--admin-text-secondary);">
-                支持拖拽上传或粘贴图片链接
+                {{ form.contentType === 'video' ? '视频封面图（可自动从视频提取）' : '支持拖拽上传或粘贴图片链接' }}
               </div>
             </div>
           </div>
         </el-form-item>
 
-        <el-form-item label="文章简介">
+        <el-form-item v-if="form.contentType === 'video'" label="视频上传方式">
+          <el-radio-group v-model="form.videoType" @change="handleVideoTypeChange">
+            <el-radio value="file">上传视频文件</el-radio>
+            <el-radio value="link">视频链接</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item v-if="form.contentType === 'video' && form.videoType === 'file'" label="视频文件">
+          <VideoUploader
+            v-model="form.videoUrl"
+            @upload-success="handleVideoUploadSuccess"
+          />
+        </el-form-item>
+
+        <el-form-item v-if="form.contentType === 'video' && form.videoType === 'link'" label="视频链接">
+          <VideoLinkInput
+            v-model="form.videoUrl"
+            @link-change="handleVideoLinkChange"
+          />
+        </el-form-item>
+
+        <el-form-item :label="form.contentType === 'video' ? '视频简介' : '文章简介'">
           <el-input
             v-model="form.description"
             type="textarea"
             :rows="3"
             maxlength="200"
             show-word-limit
-            placeholder="请输入文章简介，用于列表展示和SEO"
+            :placeholder="form.contentType === 'video' ? '请输入视频简介，用于列表展示和SEO' : '请输入文章简介，用于列表展示和SEO'"
           />
         </el-form-item>
 
-        <el-form-item label="正文内容 (Markdown)">
+        <el-form-item v-if="form.contentType === 'article'" label="正文内容 (Markdown)">
           <el-tabs v-model="editorTab" style="width: 100%;" class="editor-tabs">
             <el-tab-pane name="edit">
               <template #label>
@@ -244,6 +269,9 @@ import {
 } from '@/api/content/content'
 import { fetchCommentCount, removeCommentsByContent } from '@/api/comment/comment'
 import ContextMenu from '@/components/ContextMenu.vue'
+import ContentTypeSelector from '@/components/ContentTypeSelector.vue'
+import VideoUploader from '@/components/VideoUploader.vue'
+import VideoLinkInput from '@/components/VideoLinkInput.vue'
 import { useTableLongpress } from '@/composables/useTableLongpress'
 
 const loading = ref(false)
@@ -297,6 +325,10 @@ const form = ref({
   content: '',
   tags: [],
   isRecommend: false,
+  contentType: 'article',
+  videoType: 'file',
+  videoUrl: '',
+  videoDuration: 0,
 })
 
 const markdownPreview = computed(() => marked.parse(form.value.content || ''))
@@ -327,6 +359,10 @@ const defaultForm = () => ({
   content: '',
   tags: [],
   isRecommend: false,
+  contentType: 'article',
+  videoType: 'file',
+  videoUrl: '',
+  videoDuration: 0,
 })
 
 const loadBaseData = async () => {
@@ -374,6 +410,10 @@ const openEdit = (row) => {
     content: row.content || '',
     tags: row.tags || [],
     isRecommend: !!row.isRecommend,
+    contentType: row.contentType || 'article',
+    videoType: row.videoType || 'file',
+    videoUrl: row.videoUrl || '',
+    videoDuration: row.videoDuration || 0,
   }
   editorTab.value = 'edit'
   editorVisible.value = true
@@ -403,9 +443,46 @@ const handleCoverUpload = async ({ file }) => {
   }
 }
 
+const handleContentTypeChange = (type) => {
+  if (type === 'video') {
+    form.value.content = ''
+  } else {
+    form.value.videoUrl = ''
+    form.value.videoType = 'file'
+    form.value.videoDuration = 0
+  }
+}
+
+const handleVideoTypeChange = () => {
+  form.value.videoUrl = ''
+  form.value.videoDuration = 0
+}
+
+const handleVideoUploadSuccess = (data) => {
+  form.value.videoUrl = data.url
+  form.value.videoDuration = data.duration || 0
+  if (data.cover && !form.value.cover) {
+    form.value.cover = data.cover
+  }
+}
+
+const handleVideoLinkChange = (data) => {
+  form.value.videoUrl = data.url
+}
+
 const submitForm = async () => {
-  if (!form.value.title || !form.value.category || !form.value.content) {
-    ElMessage.warning('请补齐标题、分类和正文')
+  if (!form.value.title || !form.value.category) {
+    ElMessage.warning('请补齐标题和分类')
+    return
+  }
+
+  if (form.value.contentType === 'article' && !form.value.content) {
+    ElMessage.warning('请填写文章正文')
+    return
+  }
+
+  if (form.value.contentType === 'video' && !form.value.videoUrl) {
+    ElMessage.warning('请上传视频或填写视频链接')
     return
   }
 
@@ -419,10 +496,10 @@ const submitForm = async () => {
 
     if (isEdit.value) {
       await updateContent(payload)
-      ElMessage.success('文章更新成功')
+      ElMessage.success('内容更新成功')
     } else {
       await createContent(payload)
-      ElMessage.success('文章创建成功')
+      ElMessage.success('内容创建成功')
     }
 
     editorVisible.value = false

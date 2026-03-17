@@ -446,3 +446,8 @@ ALTER TABLE photo
 
 
 ALTER TABLE chat_conversation ADD COLUMN knowledge_base_id VARCHAR(255);
+
+ALTER TABLE content ADD COLUMN content_type VARCHAR(20) DEFAULT 'article';
+ALTER TABLE content ADD COLUMN video_type VARCHAR(10);
+ALTER TABLE content ADD COLUMN video_url VARCHAR(500);
+ALTER TABLE content ADD COLUMN video_duration INT DEFAULT 0;

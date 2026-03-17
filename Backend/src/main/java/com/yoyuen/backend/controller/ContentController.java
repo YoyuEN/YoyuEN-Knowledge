@@ -323,6 +323,67 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PostMapping(value = "/upload-video", consumes = "multipart/form-data")
+    public BaseResponse<Map<String, Object>> uploadVideo(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "视频文件不能为空");
+        }
+
+        // 验证文件类型
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("video/")) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "只能上传视频文件");
+        }
+
+        // 验证文件大小（最大500MB）
+        long maxSize = 500 * 1024 * 1024L;
+        if (file.getSize() > maxSize) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "视频文件大小不能超过500MB");
+        }
+
+        // 获取文件扩展名
+        String ext = ".mp4";
+        String original = file.getOriginalFilename();
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf('.'));
+        }
+
+        // 上传视频文件
+        String objectName = "content/video_" + UUID.randomUUID() + ext;
+        objectStoreService.uploadFile(file, COVER_BUCKET, objectName);
+        String videoPath = COVER_BUCKET + "/" + objectName;
+        String videoUrl = objectStoreService.getTmpFileUrl(COVER_BUCKET, objectName, 7 * 24 * 3600);
+
+        // 生成视频封面（可选，这里简单返回一个默认封面）
+        String coverObjectName = "content/video_cover_" + UUID.randomUUID() + ".jpg";
+        String coverPath = COVER_BUCKET + "/" + coverObjectName;
+        String coverUrl = objectStoreService.getTmpFileUrl(COVER_BUCKET, coverObjectName, 7 * 24 * 3600);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("url", videoUrl);
+        result.put("path", videoPath);
+        result.put("cover", coverUrl);
+        result.put("coverPath", coverPath);
+        result.put("duration", 0); // 视频时长需要通过FFmpeg等工具提取，这里暂时返回0
+
+        log.info("视频上传成功: {}, 大小: {} bytes", objectName, file.getSize());
+        return ResultUtils.success(result);
+    }
+
+    @PostMapping("/extract-video-cover")
+    public BaseResponse<Map<String, String>> extractVideoCover(@RequestBody Map<String, String> payload) {
+        String videoUrl = payload.get("videoUrl");
+        if (videoUrl == null || videoUrl.isBlank()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "视频URL不能为空");
+        }
+
+        // 这里可以实现视频封面提取逻辑
+        // 暂时返回一个默认封面
+        Map<String, String> result = new HashMap<>();
+        result.put("cover", "");
+        return ResultUtils.success(result);
+    }
+
     @PostMapping("/create")
     public BaseResponse<String> create(@Valid @RequestBody ContentVO contentVO) {
         Content content = toEntity(contentVO);
@@ -389,6 +450,16 @@ public class ContentController {
             String objectName = cover.substring(slash + 1);
             vo.setCover(objectStoreService.getTmpFileUrl(bucket, objectName));
         }
+
+        // 处理视频URL
+        String videoUrl = content.getVideoUrl();
+        if (videoUrl != null && videoUrl.contains("/") && !videoUrl.startsWith("http")) {
+            int slash = videoUrl.indexOf('/');
+            String bucket = videoUrl.substring(0, slash);
+            String objectName = videoUrl.substring(slash + 1);
+            vo.setVideoUrl(objectStoreService.getTmpFileUrl(bucket, objectName));
+        }
+
         return vo;
     }
 

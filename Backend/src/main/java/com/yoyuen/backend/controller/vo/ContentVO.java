@@ -34,6 +34,14 @@ public class ContentVO {
 
     private List<String> tags;
 
+    private String contentType;
+
+    private String videoType;
+
+    private String videoUrl;
+
+    private Integer videoDuration;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createTime;
 

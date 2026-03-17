@@ -69,6 +69,30 @@ public class Content extends BaseEntity {
     @TableField("is_recommend")
     private Boolean isRecommend;
 
+    /**
+     * 内容类型：article-图文, video-视频
+     */
+    @TableField("content_type")
+    private String contentType;
+
+    /**
+     * 视频类型：file-文件上传, link-视频链接
+     */
+    @TableField("video_type")
+    private String videoType;
+
+    /**
+     * 视频URL（文件上传后的URL或外部链接）
+     */
+    @TableField("video_url")
+    private String videoUrl;
+
+    /**
+     * 视频时长（秒）
+     */
+    @TableField("video_duration")
+    private Integer videoDuration;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

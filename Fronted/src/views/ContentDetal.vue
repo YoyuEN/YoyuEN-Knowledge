@@ -53,6 +53,27 @@
           <div class="ai-label">AI 总结</div>
           <p>{{ currentItem.desc }}</p>
         </div>
+
+        <!-- 视频播放器 -->
+        <div v-if="currentItem.contentType === 'video' && currentItem.videoUrl" class="video-player-container">
+          <video
+            v-if="currentItem.videoType === 'file' || isDirectVideoUrl(currentItem.videoUrl)"
+            :src="currentItem.videoUrl"
+            controls
+            class="video-player"
+            controlslist="nodownload"
+          >
+            您的浏览器不支持视频播放
+          </video>
+          <iframe
+            v-else
+            :src="currentItem.videoUrl"
+            frameborder="0"
+            allowfullscreen
+            class="video-iframe"
+          ></iframe>
+        </div>
+
         <div class="article-body markdown-body" v-html="renderMarkdown(currentItem.content)" @click="handleContentClick"></div>
       </div>
     </div>
@@ -109,6 +130,11 @@ import { transitionContent } from '@/js/contentTransition'
 
 marked.setOptions({ breaks: true, gfm: true })
 const renderMarkdown = (content) => content ? marked(content) : ''
+
+const isDirectVideoUrl = (url) => {
+  if (!url) return false
+  return /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(url)
+}
 
 const modules = [EffectFade]
 
@@ -424,6 +450,28 @@ watch(() => route.hash, (hash) => {
   margin: 28px 0 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #eee;
+}
+
+.video-player-container {
+  width: 100%;
+  margin: 24px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.video-player {
+  width: 100%;
+  max-height: 600px;
+  display: block;
+  background: #000;
+}
+
+.video-iframe {
+  width: 100%;
+  height: 500px;
+  display: block;
 }
 
 .article-body :deep(h2) {
