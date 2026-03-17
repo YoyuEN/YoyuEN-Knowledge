@@ -22,11 +22,27 @@
           :key="item.id"
           class="content-swiper-slide"
         >
-          <Card16x9 :background-image="item.cover" class="content-card-item" @click="viewImage(item.cover)">
-            <div class="card-overlay">
-              <h4 class="card-name">{{ item.title }}</h4>
-              <span class="card-badge">{{ item.category }}</span>
-            </div>
+          <!-- 视频内容显示视频播放器 -->
+          <div v-if="item.contentType === 'video' && item.videoUrl" class="swiper-video-container">
+            <video
+              v-if="item.videoType === 'file' || isDirectVideoUrl(item.videoUrl)"
+              :src="item.videoUrl"
+              controls
+              class="swiper-video-player"
+              controlslist="nodownload"
+            >
+              您的浏览器不支持视频播放
+            </video>
+            <iframe
+              v-else
+              :src="item.videoUrl"
+              frameborder="0"
+              allowfullscreen
+              class="swiper-video-iframe"
+            ></iframe>
+          </div>
+          <!-- 图文内容显示封面图 -->
+          <Card16x9 v-else :background-image="item.cover" class="content-card-item" @click="viewImage(item.cover)">
           </Card16x9>
         </swiper-slide>
         <!-- 切换提示图标 -->
@@ -52,26 +68,6 @@
         <div class="article-ai-summary">
           <div class="ai-label">AI 总结</div>
           <p>{{ currentItem.desc }}</p>
-        </div>
-
-        <!-- 视频播放器 -->
-        <div v-if="currentItem.contentType === 'video' && currentItem.videoUrl" class="video-player-container">
-          <video
-            v-if="currentItem.videoType === 'file' || isDirectVideoUrl(currentItem.videoUrl)"
-            :src="currentItem.videoUrl"
-            controls
-            class="video-player"
-            controlslist="nodownload"
-          >
-            您的浏览器不支持视频播放
-          </video>
-          <iframe
-            v-else
-            :src="currentItem.videoUrl"
-            frameborder="0"
-            allowfullscreen
-            class="video-iframe"
-          ></iframe>
         </div>
 
         <div class="article-body markdown-body" v-html="renderMarkdown(currentItem.content)" @click="handleContentClick"></div>
@@ -349,35 +345,6 @@ watch(() => route.hash, (hash) => {
   cursor: pointer;
 }
 
-.card-overlay {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 16px;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
-}
-
-.card-name {
-  margin: 0 0 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-  font-family: '快看世界体', system-ui, sans-serif;
-}
-
-.card-badge {
-  font-size: 12px;
-  color: rgba(255,255,255,0.9);
-  background: rgba(255,255,255,0.2);
-  backdrop-filter: blur(4px);
-  padding: 3px 10px;
-  border-radius: 4px;
-  width: fit-content;
-}
-
 /* 文章内容区 */
 .article-content {
   margin-top: 24px;
@@ -450,28 +417,6 @@ watch(() => route.hash, (hash) => {
   margin: 28px 0 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid #eee;
-}
-
-.video-player-container {
-  width: 100%;
-  margin: 24px 0;
-  border-radius: 12px;
-  overflow: hidden;
-  background: #000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.video-player {
-  width: 100%;
-  max-height: 600px;
-  display: block;
-  background: #000;
-}
-
-.video-iframe {
-  width: 100%;
-  height: 500px;
-  display: block;
 }
 
 .article-body :deep(h2) {
@@ -754,5 +699,41 @@ watch(() => route.hash, (hash) => {
   to {
     opacity: 1;
   }
+}
+
+/* Swiper 视频容器 */
+.swiper-video-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.swiper-video-player {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.swiper-video-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.video-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
 }
 </style>
