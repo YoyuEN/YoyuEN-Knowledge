@@ -65,10 +65,6 @@
           <span class="article-date">{{ currentItem.date }}</span>
         </div>
         <h2 class="article-title">{{ currentItem.title }}</h2>
-        <div class="article-ai-summary">
-          <div class="ai-label">AI 总结</div>
-          <p>{{ currentItem.desc }}</p>
-        </div>
 
         <div class="article-body markdown-body" v-html="renderMarkdown(currentItem.content)" @click="handleContentClick"></div>
       </div>
@@ -380,28 +376,6 @@ watch(() => route.hash, (hash) => {
   color: #1a1a1a;
   margin: 0 0 20px;
   line-height: 1.4;
-}
-
-.article-ai-summary {
-  background: #f8f8f8;
-  border-radius: 8px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-}
-
-.ai-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #888;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
-
-.article-ai-summary p {
-  margin: 0;
-  font-size: 13px;
-  color: #666;
-  line-height: 1.8;
 }
 
 .article-body {
