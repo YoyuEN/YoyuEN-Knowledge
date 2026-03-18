@@ -1,13 +1,5 @@
 ﻿<template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">
-        <el-icon style="margin-right: 8px; vertical-align: -2px;"><ChatDotRound /></el-icon>
-        评论管理
-      </h1>
-      <el-button @click="loadData" :icon="Refresh" :loading="loading">刷新数据</el-button>
-    </div>
-
     <el-card class="admin-section-card">
       <div class="admin-toolbar">
         <el-input
@@ -91,7 +83,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   ChatDotRound,
@@ -181,7 +173,18 @@ const removeRow = async (row) => {
   }
 }
 
-onMounted(loadData)
+const handleAdminRefresh = () => {
+  loadData()
+}
+
+onMounted(() => {
+  loadData()
+  window.addEventListener('admin-refresh', handleAdminRefresh)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('admin-refresh', handleAdminRefresh)
+})
 </script>
 
 <style scoped>

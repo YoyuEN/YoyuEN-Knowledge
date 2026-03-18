@@ -1,10 +1,5 @@
 ﻿<template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">用户管理</h1>
-      <el-button type="primary">新增用户</el-button>
-    </div>
-
     <el-card class="admin-section-card">
       <div class="admin-toolbar">
         <el-input placeholder="搜索用户名/邮箱" clearable />
@@ -13,6 +8,8 @@
           <el-option label="运营管理员" value="ops" />
           <el-option label="审核员" value="reviewer" />
         </el-select>
+        <div style="flex: 1;"></div>
+        <el-button type="primary">新增用户</el-button>
         <el-button type="primary">查询</el-button>
       </div>
 

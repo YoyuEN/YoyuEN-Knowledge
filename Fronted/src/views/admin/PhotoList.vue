@@ -1,13 +1,5 @@
 ﻿<template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">
-        <el-icon style="margin-right: 8px; vertical-align: -2px;"><Picture /></el-icon>
-        图片管理
-      </h1>
-      <el-button type="primary" @click="loadData" :icon="Refresh" :loading="loading">刷新</el-button>
-    </div>
-
     <el-card class="admin-section-card">
       <div style="margin-bottom: 20px;">
         <el-upload
@@ -109,7 +101,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onUnmounted } from 'vue'
 import { ElMessage, ElMessageBox, ElImageViewer } from 'element-plus'
 import {
   Picture,
@@ -233,7 +225,18 @@ const removeRow = async (row) => {
   }
 }
 
-onMounted(loadData)
+const handleAdminRefresh = () => {
+  loadData()
+}
+
+onMounted(() => {
+  loadData()
+  window.addEventListener('admin-refresh', handleAdminRefresh)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('admin-refresh', handleAdminRefresh)
+})
 </script>
 
 <style scoped>

@@ -3,11 +3,6 @@
 </template>
 
 <script setup>
-import { useTheme } from './composables/useTheme'
-
-// 立即初始化主题，避免闪烁
-const { initTheme } = useTheme()
-initTheme()
 </script>
 
 <style>
@@ -53,34 +48,6 @@ body {
   --calendar-text: #333;
   --article-title: #303133;
   --article-date: #909399;
-}
-
-/* 深色主题 CSS 变量 */
-.dark-theme {
-  --bg-primary: #1a1a1a;
-  --bg-secondary: #0d0d0d;
-  --bg-header: #000000;
-  --bg-aside: #1a1a1a;
-  --text-primary: #ffffff;
-  --text-secondary: #e4e7ed;
-  --text-tertiary: #a8abb2;
-  --text-inverse: #000000;
-  --border-color: #3a3a3a;
-  --shadow: rgba(0, 0, 0, 0.5);
-  --shadow-hover: rgba(0, 0, 0, 0.7);
-  --icon-primary: #ffffff;
-  --card-bg: #242424;
-  --hover-bg: #2d2d2d;
-  --menu-panel-bg: rgba(0, 0, 0, 0.85);
-  --diary-page-bg: #2d2d2d;
-  --diary-border-color: rgba(255, 255, 255, 0.1);
-  --diary-text-color: #ffffff;
-  --diary-content-color: #e4e7ed;
-  --panel-section-bg: rgba(45, 45, 45, 0.6);
-  --calendar-bg: #2d2d2d;
-  --calendar-text: #ffffff;
-  --article-title: #ffffff;
-  --article-date: #a8abb2;
 }
 
 /* 确保主题变量应用到整个应用 */

@@ -1,13 +1,5 @@
 ﻿<template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">
-        <el-icon style="margin-right: 8px; vertical-align: -2px;"><Document /></el-icon>
-        文章管理
-      </h1>
-      <el-button type="primary" @click="openCreate" :icon="Plus">新增文章</el-button>
-    </div>
-
     <el-card class="admin-section-card">
       <div class="admin-toolbar">
         <el-input
@@ -22,6 +14,7 @@
           <el-option v-for="item in categories" :key="item.type" :label="item.name" :value="item.type" />
         </el-select>
         <div style="flex: 1;"></div>
+        <el-button type="primary" @click="openCreate" :icon="Plus">新增文章</el-button>
         <el-button @click="resetQuery" :icon="RefreshLeft">重置</el-button>
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>

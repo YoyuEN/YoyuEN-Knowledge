@@ -1,14 +1,10 @@
 ﻿<template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">
-        <el-icon style="margin-right: 8px; vertical-align: -2px;"><PriceTag /></el-icon>
-        标签管理
-      </h1>
-      <el-button type="primary" @click="openCreate" :icon="Plus">新增标签</el-button>
-    </div>
-
     <el-card class="admin-section-card">
+      <div class="admin-toolbar">
+        <div style="flex: 1;"></div>
+        <el-button type="primary" @click="openCreate" :icon="Plus">新增标签</el-button>
+      </div>
       <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
         <el-icon style="color: var(--admin-text-secondary);"><InfoFilled /></el-icon>
         <span style="font-size: 13px; color: var(--admin-text-secondary);">

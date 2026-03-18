@@ -19,10 +19,10 @@
 
       <div class="admin-shell__actions">
         <el-button
-          :icon="currentTheme === 'dark' ? Sunny : Moon"
-          class="theme-toggle"
+          :icon="Refresh"
           circle
-          @click="toggleTheme"
+          @click="handleRefresh"
+          title="刷新当前页面"
         />
         <el-button
           class="menu-toggle-mobile"
@@ -132,8 +132,6 @@ import { useRoute } from 'vue-router'
 import {
   ArrowDown,
   House,
-  Moon,
-  Sunny,
   TrendCharts,
   Document,
   Collection,
@@ -146,14 +144,17 @@ import {
   Menu,
   Close,
   Folder,
+  Refresh,
 } from '@element-plus/icons-vue'
-import { useTheme } from '../composables/useTheme'
 import '../views/admin/admin-theme.css'
 
 const route = useRoute()
 const isAsideVisible = ref(false)
 const isMobile = ref(false)
-const { currentTheme, toggleTheme } = useTheme()
+
+const handleRefresh = () => {
+  window.dispatchEvent(new CustomEvent('admin-refresh'))
+}
 
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 768

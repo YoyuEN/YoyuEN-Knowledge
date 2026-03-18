@@ -1,13 +1,5 @@
 <template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">
-        <el-icon style="margin-right: 8px; vertical-align: -2px;"><TrendCharts /></el-icon>
-        数据统计
-      </h1>
-      <el-button @click="loadData" :icon="Refresh" :loading="loading">刷新</el-button>
-    </div>
-
     <!-- 汇总卡片 -->
     <el-row :gutter="16" style="margin-bottom: 20px;">
       <el-col :xs="12" :sm="6" v-for="card in summaryCards" :key="card.label">
@@ -75,7 +67,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { TrendCharts, Refresh, Document, ChatDotRound, View, Star } from '@element-plus/icons-vue'
 import { CalendarHeatmap } from 'vue3-calendar-heatmap'
@@ -183,7 +175,18 @@ const loadData = async () => {
   }
 }
 
-onMounted(loadData)
+const handleAdminRefresh = () => {
+  loadData()
+}
+
+onMounted(() => {
+  loadData()
+  window.addEventListener('admin-refresh', handleAdminRefresh)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('admin-refresh', handleAdminRefresh)
+})
 </script>
 
 <style scoped>

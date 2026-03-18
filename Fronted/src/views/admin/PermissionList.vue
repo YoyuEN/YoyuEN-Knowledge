@@ -1,11 +1,10 @@
 ﻿<template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">权限管理</h1>
-      <el-button type="primary">新增权限</el-button>
-    </div>
-
     <el-card class="admin-section-card">
+      <div class="admin-toolbar">
+        <div style="flex: 1;"></div>
+        <el-button type="primary">新增权限</el-button>
+      </div>
       <el-table :data="rows" row-key="id" stripe>
         <el-table-column prop="module" label="模块" min-width="160" />
         <el-table-column prop="name" label="权限名称" min-width="200" />

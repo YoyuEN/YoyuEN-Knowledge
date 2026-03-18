@@ -24,13 +24,6 @@
       </div>
       <div class="header-right">
         <el-button
-          :icon="currentTheme === 'dark' ? Sunny : Moon"
-          @click="toggleTheme"
-          circle
-          class="theme-toggle"
-          :title="currentTheme === 'dark' ? '切换到浅色主题' : '切换到深色主题'"
-        />
-        <el-button
           :icon="showDrawer ? Close : MenuIcon"
           circle
           class="menu-button"
@@ -123,14 +116,12 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Menu from './menu.vue'
-import { Menu as MenuIcon, Sunny, Moon, House, Document, Setting, User, Close, Message, Bell, Search, Calendar, Clock } from '@element-plus/icons-vue'
-import { useTheme } from '../composables/useTheme'
+import { Menu as MenuIcon, House, Document, Setting, User, Close, Message, Bell, Search, Calendar, Clock } from '@element-plus/icons-vue'
 import { fetchContentByCategory } from '../api/content/content.js'
 import { fetchRecommendComments } from '../api/comment/comment.js'
 
 const router = useRouter()
 const route = useRoute()
-const { currentTheme, toggleTheme, initTheme } = useTheme()
 const isCollapse = ref(false)
 const showDrawer = ref(false)
 const searchQuery = ref('')
@@ -160,6 +151,12 @@ const toggleCollapse = (value) => {
 
 const handleMenuItemClick = () => {
   showDrawer.value = false
+}
+
+const handleMenuToggle = () => {
+  console.log('按钮被点击，当前 showDrawer:', showDrawer.value)
+  showDrawer.value = !showDrawer.value
+  console.log('切换后 showDrawer:', showDrawer.value)
 }
 
 const goToArticle = (id) => {
@@ -229,7 +226,6 @@ const fetchDailyQuote = async () => {
 }
 
 onMounted(() => {
-  initTheme()
   timeInterval = setInterval(() => {
     currentTime.value = new Date()
   }, 1000)
@@ -501,13 +497,12 @@ html.dark .layout-header {
 
 .menu-overlay-enter-active,
 .menu-overlay-leave-active {
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 
 .menu-overlay-enter-from,
 .menu-overlay-leave-to {
   opacity: 0;
-  visibility: hidden;
 }
 
 .menu-panel {
@@ -524,12 +519,13 @@ html.dark .layout-header {
 
 .menu-panel-enter-active,
 .menu-panel-leave-active {
-  transition: transform 0.3s ease-out;
+  transition: transform 0.3s ease-out, opacity 0.3s ease;
 }
 
 .menu-panel-enter-from,
 .menu-panel-leave-to {
-  transform: translateY(-100%);
+  transform: translateY(-20px);
+  opacity: 0;
 }
 
 .menu-header {

@@ -1,13 +1,5 @@
 ﻿<template>
   <section>
-    <div class="admin-page-header">
-      <h1 class="admin-page-title">
-        <el-icon style="margin-right: 8px; vertical-align: -2px;"><DataAnalysis /></el-icon>
-        智能仪表盘
-      </h1>
-      <el-button @click="refreshAll" :icon="Refresh" :loading="loading">刷新全部</el-button>
-    </div>
-
     <!-- AI智能助手 - 独占一行 -->
     <el-row :gutter="20" style="margin-bottom: 20px;">
       <el-col :span="24">
@@ -97,7 +89,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -227,10 +219,19 @@ const refreshAll = async () => {
   loading.value = false
 }
 
+const handleAdminRefresh = () => {
+  refreshAll()
+}
+
 onMounted(() => {
   refreshAssistant()
   refreshStats()
   refreshQuick()
+  window.addEventListener('admin-refresh', handleAdminRefresh)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('admin-refresh', handleAdminRefresh)
 })
 </script>
 
