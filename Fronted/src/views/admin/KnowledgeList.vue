@@ -124,7 +124,7 @@
         drag
         :action="uploadAction"
         :headers="uploadHeaders"
-        :data="{ knowledgeId: currentKnowledgeId }"
+        name="file"
         :on-success="handleUploadSuccess"
         :on-error="handleUploadError"
         :before-upload="beforeUpload"
@@ -232,7 +232,7 @@ const form = ref({
 })
 
 const uploadAction = computed(() => {
-  return '/api/knowledge/upload'
+  return `/api/resource/knowledge/${currentKnowledgeId.value}`
 })
 
 const uploadHeaders = computed(() => {
