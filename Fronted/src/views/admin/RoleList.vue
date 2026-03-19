@@ -14,7 +14,7 @@
         <el-table-column label="操作" width="160">
           <template #default>
             <el-button link type="primary">配置权限</el-button>
-            <el-button link>编辑</el-button>
+            <el-button link type="primary">编辑</el-button>
           </template>
         </el-table-column>
       </el-table>

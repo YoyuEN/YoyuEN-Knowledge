@@ -28,7 +28,7 @@
         <el-table-column label="操作" width="180">
           <template #default>
             <el-button link type="primary">编辑</el-button>
-            <el-button link>重置密码</el-button>
+            <el-button link type="warning">重置密码</el-button>
           </template>
         </el-table-column>
       </el-table>

@@ -172,7 +172,7 @@
 
 /* 按钮样式 - 简洁风格 */
 .admin-shell .theme-toggle,
-.admin-shell .el-button:not(.el-button--primary) {
+.admin-shell .el-button:not(.el-button--primary):not(.el-button--link):not(.el-button--warning):not(.el-button--danger):not(.el-button--success) {
   background: var(--admin-btn-bg);
   border: 1px solid var(--admin-border);
   color: var(--admin-text-secondary);
@@ -180,7 +180,7 @@
 }
 
 .admin-shell .theme-toggle:hover,
-.admin-shell .el-button:not(.el-button--primary):hover {
+.admin-shell .el-button:not(.el-button--primary):not(.el-button--link):not(.el-button--warning):not(.el-button--danger):not(.el-button--success):hover {
   background: var(--admin-btn-bg-hover);
   color: var(--admin-text-primary);
   border-color: var(--admin-border-strong);
@@ -198,6 +198,64 @@
   border-color: var(--admin-btn-primary-hover);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* 语义化 link 按钮颜色 - 通过覆盖 EP CSS 变量实现 */
+
+/* 重置/清空等 warning 实心按钮 - 淡橙背景 */
+.admin-shell .el-button--warning:not(.el-button--link) {
+  --el-button-bg-color: rgba(230, 149, 42, 0.12);
+  --el-button-border-color: rgba(230, 149, 42, 0.4);
+  --el-button-text-color: #c97d1a;
+  --el-button-hover-bg-color: rgba(230, 149, 42, 0.2);
+  --el-button-hover-border-color: rgba(230, 149, 42, 0.65);
+  --el-button-hover-text-color: #a86510;
+}
+
+/* link 按钮公共基础 */
+.admin-shell .el-button--link {
+  border-radius: 6px !important;
+  padding: 4px 10px !important;
+}
+
+/* 删除 - 淡红背景 */
+.admin-shell .el-button--link.el-button--danger {
+  --el-button-bg-color: rgba(220, 80, 80, 0.1);
+  --el-button-text-color: #888;
+  --el-button-hover-bg-color: rgba(220, 80, 80, 0.18);
+  --el-button-hover-text-color: #555;
+}
+
+/* 编辑（无类型 link）- 淡蓝背景 */
+.admin-shell .el-button--link:not(.el-button--danger):not(.el-button--primary):not(.el-button--success):not(.el-button--warning) {
+  --el-button-bg-color: rgba(61, 130, 196, 0.1);
+  --el-button-text-color: #888;
+  --el-button-hover-bg-color: rgba(61, 130, 196, 0.18);
+  --el-button-hover-text-color: #555;
+}
+
+/* 配置权限/primary link - 淡蓝紫背景 */
+.admin-shell .el-button--link.el-button--primary {
+  --el-button-bg-color: rgba(102, 126, 234, 0.1);
+  --el-button-text-color: #888;
+  --el-button-hover-bg-color: rgba(102, 126, 234, 0.18);
+  --el-button-hover-text-color: #555;
+}
+
+/* 推荐/启用 - 淡绿背景 */
+.admin-shell .el-button--link.el-button--success {
+  --el-button-bg-color: rgba(61, 158, 106, 0.1);
+  --el-button-text-color: #888;
+  --el-button-hover-bg-color: rgba(61, 158, 106, 0.18);
+  --el-button-hover-text-color: #555;
+}
+
+/* 上传数据 - 淡橙背景 */
+.admin-shell .el-button--link.el-button--warning {
+  --el-button-bg-color: rgba(230, 149, 42, 0.1);
+  --el-button-text-color: #888;
+  --el-button-hover-bg-color: rgba(230, 149, 42, 0.18);
+  --el-button-hover-text-color: #555;
 }
 
 /* 用户下拉菜单 */

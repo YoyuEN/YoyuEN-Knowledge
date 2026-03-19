@@ -11,7 +11,7 @@
           style="max-width: 300px;"
         />
         <div style="flex: 1;"></div>
-        <el-button @click="query.keyword = ''; loadData()" :icon="RefreshLeft">清空</el-button>
+        <el-button type="warning" @click="query.keyword = ''; loadData()" :icon="RefreshLeft">清空</el-button>
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 

@@ -15,7 +15,7 @@
         </el-select>
         <div style="flex: 1;"></div>
         <el-button type="primary" @click="openCreate" :icon="Plus">新增文章</el-button>
-        <el-button @click="resetQuery" :icon="RefreshLeft">重置</el-button>
+        <el-button type="warning" @click="resetQuery" :icon="RefreshLeft">重置</el-button>
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 
@@ -62,7 +62,7 @@
         <el-table-column label="操作" width="240" fixed="right" class-name="hide-on-mobile">
           <template #default="{ row }">
             <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
-            <el-button link @click="toggleRecommend(row)" :icon="Star">
+            <el-button link type="success" @click="toggleRecommend(row)" :icon="Star">
               {{ row.isRecommend ? '取消推荐' : '推荐' }}
             </el-button>
             <el-button link type="danger" @click="deleteArticle(row)" :icon="Delete">删除</el-button>

@@ -1,18 +1,20 @@
 package com.yoyuen.backend.service.ai;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import reactor.netty.http.client.HttpClient;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 /**
  * @Author: YoyuEN
  * @Date: 2026/3/19
@@ -22,15 +24,18 @@ import java.util.List;
 @Slf4j
 public class NewsService {
 
-    // 按优先级排列，逐个尝试直到成功
+    // 国内可直接访问的科技类 RSS 源，按优先级排列
     private static final List<String> RSS_SOURCES = List.of(
-            "https://rsshub.app/36kr/news/technology",   // 36kr 科技
-            "https://rsshub.app/sspai/matrix",            // 少数派
-            "https://rss.sina.com.cn/news/tech/index.xml" // 新浪科技
+            "https://www.ithome.com/rss/",          // IT之家 - 科技资讯
+            "https://sspai.com/feed",                // 少数派 - 科技/效率
+            "https://www.huxiu.com/rss/0.xml"        // 虎嗅 - 科技商业
     );
     private static final int MAX_NEWS = 5;
 
     private final WebClient webClient = WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(
+                    HttpClient.create().responseTimeout(Duration.ofSeconds(8))
+            ))
             .codecs(c -> c.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
             .build();
 

@@ -12,7 +12,7 @@
         />
         <div style="flex: 1;"></div>
         <el-button type="primary" @click="openCreate" :icon="Plus">新增知识库</el-button>
-        <el-button @click="resetQuery" :icon="RefreshLeft">重置</el-button>
+        <el-button type="warning" @click="resetQuery" :icon="RefreshLeft">重置</el-button>
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 
@@ -45,9 +45,9 @@
         <el-table-column prop="createTime" label="创建时间" width="170" />
         <el-table-column label="操作" width="320" fixed="right" class-name="hide-on-mobile">
           <template #default="{ row }">
-            <el-button link @click="openUpload(row)" :icon="Upload">上传数据</el-button>
+            <el-button link type="warning" @click="openUpload(row)" :icon="Upload">上传数据</el-button>
             <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
-            <el-button link @click="toggleStatus(row)" :icon="Switch">
+            <el-button link type="success" @click="toggleStatus(row)" :icon="Switch">
               {{ row.status === 'active' ? '禁用' : '启用' }}
             </el-button>
             <el-button link type="danger" @click="deleteKnowledge(row)" :icon="Delete">删除</el-button>
