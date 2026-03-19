@@ -22,6 +22,9 @@ public class CommentVO {
     @NotBlank(message = "内容ID不能为空")
     private String contentId;
 
+    /** 关联文章标题（非数据库字段，由 contentId 查询填充） */
+    private String contentTitle;
+
     @NotBlank(message = "内容类型不能为空")
     private String contentType;
 

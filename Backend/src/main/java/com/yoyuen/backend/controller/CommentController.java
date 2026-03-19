@@ -179,6 +179,13 @@ public class CommentController {
             }
         }
 
+        if (comment.getContentId() != null) {
+            Content content = contentService.getById(comment.getContentId());
+            if (content != null) {
+                vo.setContentTitle(content.getTitle());
+            }
+        }
+
         if (parent != null) {
             vo.setReplyTo(parent.getAuthor());
         }

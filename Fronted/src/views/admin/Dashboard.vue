@@ -134,8 +134,11 @@ const quickInfo = ref({
 // 渲染Markdown：先补全标题前的空格，再渲染
 const renderedMarkdown = computed(() => {
   if (!assistantReport.value) return ''
-  // 修复 ##标题 缺少空格的情况（如 ##问候 → ## 问候）
-  const fixed = assistantReport.value.replace(/^(#{1,6})([^\s#])/gm, '$1 $2')
+  // 修复 ##标题 缺少空格（如 ##问候 → ## 问候）
+  const fixed = assistantReport.value
+    .replace(/^(#{1,6})([^\s#])/gm, '$1 $2')
+    // 修复 -列表项 缺少空格（如 -读者关注 → - 读者关注）
+    .replace(/^(-|\*|\+)([^\s])/gm, '$1 $2')
   return marked(fixed)
 })
 
@@ -273,7 +276,6 @@ onUnmounted(() => {
 }
 
 .markdown-body :deep(h1) {
-  margin-top: 20px;
   margin-bottom: 16px;
   font-weight: 700;
   font-size: 24px;
@@ -283,7 +285,6 @@ onUnmounted(() => {
 }
 
 .markdown-body :deep(h2) {
-  margin-top: 24px;
   margin-bottom: 16px;
   font-weight: 600;
   font-size: 20px;
@@ -291,7 +292,6 @@ onUnmounted(() => {
 }
 
 .markdown-body :deep(h3) {
-  margin-top: 16px;
   margin-bottom: 12px;
   font-weight: 600;
   font-size: 18px;

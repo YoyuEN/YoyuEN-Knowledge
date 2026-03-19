@@ -4,6 +4,7 @@ import com.yoyuen.backend.entity.Comment;
 import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.service.ai.DashboardAssistantService;
 import com.yoyuen.backend.service.ai.LLMService;
+import com.yoyuen.backend.service.ai.NewsService;
 import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,7 @@ public class DashboardAssistantServiceImpl implements DashboardAssistantService 
     private final LLMService llmService;
     private final CommentService commentService;
     private final ContentService contentService;
+    private final NewsService newsService;
 
     @Override
     public Flux<String> generateDashboardReport() {
@@ -42,8 +44,9 @@ public class DashboardAssistantServiceImpl implements DashboardAssistantService 
             List<Content> recentArticles = contentService.listRecent(5);
             long contentCount = contentService.countAll();
             long commentCount = commentService.countAll();
+            List<String> hotNews = newsService.fetchHotNews();
 
-            String prompt = buildPrompt(recentComments, recentArticles, contentCount, commentCount);
+            String prompt = buildPrompt(recentComments, recentArticles, contentCount, commentCount, hotNews);
             ChatModel chatModel = llmService.getChatModel();
 
             return chatModel.stream(new Prompt(prompt))
@@ -66,7 +69,7 @@ public class DashboardAssistantServiceImpl implements DashboardAssistantService 
     }
 
     private String buildPrompt(List<Comment> comments, List<Content> articles,
-                               long contentCount, long commentCount) throws IOException {
+                               long contentCount, long commentCount, List<String> hotNews) throws IOException {
         // 从资源文件读取提示词模板
         ClassPathResource resource = new ClassPathResource("prompt/dashboard-assistant.md");
         String template = resource.getContentAsString(StandardCharsets.UTF_8);
@@ -93,11 +96,16 @@ public class DashboardAssistantServiceImpl implements DashboardAssistantService 
             articlesText = "暂无文章数据";
         }
 
+        // 格式化热点新闻
+        String newsText = hotNews.isEmpty() ? "暂无热点新闻数据" :
+                hotNews.stream().collect(Collectors.joining("\n- ", "- ", ""));
+
         return template
                 .replace("{date}", today)
                 .replace("{content_count}", String.valueOf(contentCount))
                 .replace("{comment_count}", String.valueOf(commentCount))
                 .replace("{comments}", commentsText)
-                .replace("{articles}", articlesText);
+                .replace("{articles}", articlesText)
+                .replace("{news}", newsText);
     }
 }

@@ -26,7 +26,7 @@
         <el-table-column prop="author" label="作者" width="140">
           <template #default="{ row }">
             <div style="display: flex; align-items: center; gap: 8px;">
-              <el-avatar :size="32" style="background: var(--admin-btn-primary);">
+              <el-avatar :size="32" :src="row.avatar" style="background: var(--admin-btn-primary);">
                 {{ row.author?.charAt(0) || 'U' }}
               </el-avatar>
               <span>{{ row.author || '匿名' }}</span>
@@ -41,7 +41,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="contentId" label="文章ID" width="200" show-overflow-tooltip />
+        <el-table-column prop="contentTitle" label="文章" width="200" show-overflow-tooltip />
         <el-table-column prop="createTime" label="时间" width="170" />
         <el-table-column label="推荐" width="80" align="center" class-name="hide-on-mobile">
           <template #default="{ row }">
