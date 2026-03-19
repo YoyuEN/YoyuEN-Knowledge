@@ -2,7 +2,9 @@
   <el-container class="admin-shell">
     <el-header class="admin-shell__header">
       <div class="admin-shell__brand">
-        <div class="brand-mark">Y</div>
+        <div class="brand-avatar">
+          <img src="/src/assets/picture/YoyuEN.png" alt="YoyuEN" />
+        </div>
         <div class="brand-text">
           <strong>YoyuEN Console</strong>
           <span>Personal Studio</span>
@@ -52,7 +54,7 @@
       </div>
     </el-header>
 
-    <el-container>
+    <el-container class="admin-shell__body">
       <el-aside
         width="230px"
         class="admin-shell__aside"

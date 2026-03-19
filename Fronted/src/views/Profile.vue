@@ -54,42 +54,8 @@
     </div>
     <div class="profile-content">
       <div class="profile-row">
-        <div class="profile-item profile-item--data">
-          <h3>网站数据</h3>
-          <!-- 网站数据 -->
-          <div class="website-data">
-            <!-- 文章数 -->
-            <div class="data-item">
-              <div class="data-number">
-                <n-number-animation :from="0" :to="100"/>
-              </div>
-              <div class="data-label">文章</div>
-            </div>
-            <!-- 动态数 -->
-            <div class="data-item">
-              <div class="data-number">
-                <n-number-animation :from="0" :to="1000" />
-              </div>
-              <div class="data-label">动态</div>
-            </div>
-            <!-- 评论数 -->
-            <div class="data-item">
-              <div class="data-number">
-                <n-number-animation :from="0" :to="10000" />
-              </div>
-              <div class="data-label">评论</div>
-            </div>
-          </div>
-        </div>
-        <!-- 活跃度 -->
-        <div class="profile-item profile-item--heatmap">
-          <h3>活跃度</h3>
-          <div class="heatmap-container">
-            <Heatmap />
-          </div>
-        </div>
       </div>
-      
+
       <!-- 照片墙 -->
       <div class="profile-item">
         <h3>照片墙</h3>
@@ -116,7 +82,6 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import Heatmap from "../components/Heatmap.vue";
 import { fetchPhotoList } from "../api/photo/photo.js";
 
 const photos = ref([]);

@@ -202,9 +202,9 @@ const standbyConfig = computed(() => {
       title: '内容创作助手',
       subtitle: '基于网站文章和评论内容，为您提供专业的问答服务',
       suggestions: [
-        '📝 询问网站已发布的文章内容',
-        '💬 查询用户评论和反馈',
-        '🔍 搜索特定主题的相关内容'
+        '询问网站已发布的文章内容',
+        '查询用户评论和反馈',
+        '搜索特定主题的相关内容'
       ]
     }
   } else if (kbName.includes('个人') || kbName.includes('知识库')) {
@@ -212,9 +212,9 @@ const standbyConfig = computed(() => {
       title: '个人知识库助手',
       subtitle: '了解个人信息、经历和专业知识',
       suggestions: [
-        '👤 询问个人背景和经历',
-        '💼 了解专业技能和项目经验',
-        '📚 探索个人知识和见解'
+        '询问个人背景和经历',
+        '了解专业技能和项目经验',
+        '探索个人知识和见解'
       ]
     }
   } else {
@@ -222,9 +222,9 @@ const standbyConfig = computed(() => {
       title: '欢迎使用 AI 助手',
       subtitle: '请在下方输入您的问题，我将为您提供帮助',
       suggestions: [
-        '💡 支持 Markdown 格式回复',
-        '📎 可以上传文件进行分析',
-        '⚡ 快速响应您的问题'
+        '支持 Markdown 格式回复',
+        '可以上传文件进行分析',
+        '快速响应您的问题'
       ]
     }
   }

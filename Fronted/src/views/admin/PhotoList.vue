@@ -51,7 +51,6 @@
               </div>
             </div>
             <div class="photo-info">
-              <div class="photo-desc">{{ item.description || '无描述' }}</div>
               <div class="photo-actions hide-on-mobile">
                 <el-button link size="small" @click="openEdit(item)" :icon="Edit">编辑</el-button>
                 <el-button link size="small" type="danger" @click="removeRow(item)" :icon="Delete">删除</el-button>
@@ -303,15 +302,6 @@ onUnmounted(() => {
 
 .photo-info {
   padding: 12px;
-}
-
-.photo-desc {
-  font-size: 13px;
-  color: var(--admin-text-secondary);
-  margin-bottom: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .photo-actions {

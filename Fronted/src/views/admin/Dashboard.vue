@@ -20,7 +20,7 @@
     </el-row>
 
     <!-- 访问统计和快捷信息 - 第二行 -->
-    <el-row :gutter="20">
+    <!-- <el-row :gutter="20">
       <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="stats-card">
           <div v-loading="statsLoading">
@@ -84,7 +84,7 @@
           </div>
         </el-card>
       </el-col>
-    </el-row>
+    </el-row> -->
   </section>
 </template>
 
@@ -131,10 +131,12 @@ const quickInfo = ref({
   notifications: []
 })
 
-// 渲染Markdown
+// 渲染Markdown：先补全标题前的空格，再渲染
 const renderedMarkdown = computed(() => {
   if (!assistantReport.value) return ''
-  return marked(assistantReport.value)
+  // 修复 ##标题 缺少空格的情况（如 ##问候 → ## 问候）
+  const fixed = assistantReport.value.replace(/^(#{1,6})([^\s#])/gm, '$1 $2')
+  return marked(fixed)
 })
 
 // 刷新AI助手报告（SSE流式）
@@ -252,13 +254,21 @@ onUnmounted(() => {
   height: 100%;
   overflow-y: auto;
   padding: 24px;
-  background: linear-gradient(135deg, #667eea08 0%, #764ba208 100%);
+  scrollbar-width: none;
+}
+
+.assistant-content::-webkit-scrollbar {
+  display: none;
+}
+
+.assistant-content {
+  background: transparent;
   font-size: 15px;
 }
 
 .markdown-body {
   line-height: 1.9;
-  color: #2c3e50;
+  color: #1a1a1a;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -268,7 +278,7 @@ onUnmounted(() => {
   font-weight: 700;
   font-size: 24px;
   color: #1a1a1a;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 1px solid #ebebeb;
   padding-bottom: 8px;
 }
 
@@ -277,7 +287,7 @@ onUnmounted(() => {
   margin-bottom: 16px;
   font-weight: 600;
   font-size: 20px;
-  color: #2c3e50;
+  color: #1a1a1a;
 }
 
 .markdown-body :deep(h3) {
@@ -285,7 +295,7 @@ onUnmounted(() => {
   margin-bottom: 12px;
   font-weight: 600;
   font-size: 18px;
-  color: #34495e;
+  color: #1a1a1a;
 }
 
 .markdown-body :deep(p) {
@@ -305,16 +315,16 @@ onUnmounted(() => {
 }
 
 .markdown-body :deep(strong) {
-  color: #667eea;
+  color: #1a1a1a;
   font-weight: 600;
 }
 
 .markdown-body :deep(code) {
-  background: #f5f7fa;
+  background: #f5f5f5;
   padding: 2px 6px;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
-  color: #e83e8c;
+  color: #333;
 }
 
 .empty-state {
