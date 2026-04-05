@@ -30,6 +30,8 @@
               controls
               class="swiper-video-player"
               controlslist="nodownload"
+              playsinline
+              :poster="item.cover"
             >
               您的浏览器不支持视频播放
             </video>

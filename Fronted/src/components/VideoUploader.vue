@@ -30,7 +30,22 @@
       </div>
 
       <div v-if="videoUrl && !uploading" class="video-preview">
-        <video :src="videoUrl" controls class="preview-video"></video>
+        <!-- 视频加载状态 -->
+        <div v-if="videoLoading" class="video-loading-overlay">
+          <div class="loading-spinner"></div>
+          <p>视频加载中...</p>
+        </div>
+
+        <video
+          ref="previewVideoRef"
+          :src="videoUrl"
+          :controls="!videoLoading"
+          class="preview-video"
+          :class="{ 'video-loading': videoLoading }"
+          @loadstart="handleVideoLoadStart"
+          @canplay="handleVideoCanPlay"
+          @error="handleVideoError"
+        ></video>
         <div class="preview-actions">
           <el-button size="small" @click.stop="handleReupload" :icon="RefreshRight">重新上传</el-button>
           <el-button size="small" type="danger" @click.stop="handleRemove" :icon="Delete">删除</el-button>
@@ -66,11 +81,13 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'upload-success'])
 
 const uploadRef = ref(null)
+const previewVideoRef = ref(null)
 const uploading = ref(false)
 const uploadPercent = ref(0)
 const videoUrl = ref(props.modelValue)
 const duration = ref(0)
 const fileSize = ref(0)
+const videoLoading = ref(false)
 
 const uploadAction = computed(() => {
   return '/api/content/upload-video'
@@ -123,14 +140,19 @@ const handleProgress = (event) => {
 const handleSuccess = (response) => {
   uploading.value = false
   if (response.code === 200) {
+    // 使用临时URL用于预览
     videoUrl.value = response.data.url
     duration.value = response.data.duration || duration.value
-    emit('update:modelValue', videoUrl.value)
+    videoLoading.value = true // 开始加载视频
+
+    // 但保存到数据库的应该是永久路径，这样后端可以重新生成临时URL
+    const pathToSave = response.data.path || response.data.url
+    emit('update:modelValue', pathToSave)
     emit('upload-success', {
-      url: videoUrl.value,
+      url: pathToSave,  // 保存永久路径而不是临时URL
       duration: duration.value,
       size: fileSize.value,
-      cover: response.data.cover
+      cover: response.data.coverPath || response.data.cover  // 同样保存封面的永久路径
     })
     ElMessage.success('视频上传成功')
   } else {
@@ -148,11 +170,26 @@ const handleReupload = () => {
   videoUrl.value = ''
   duration.value = 0
   fileSize.value = 0
+  videoLoading.value = false
   emit('update:modelValue', '')
 }
 
 const handleRemove = () => {
   handleReupload()
+}
+
+// 视频加载事件处理
+const handleVideoLoadStart = () => {
+  videoLoading.value = true
+}
+
+const handleVideoCanPlay = () => {
+  videoLoading.value = false
+}
+
+const handleVideoError = () => {
+  videoLoading.value = false
+  ElMessage.error('视频加载失败')
 }
 
 const formatDuration = (seconds) => {
@@ -242,6 +279,7 @@ const formatSize = (bytes) => {
 .video-preview {
   width: 100%;
   padding: 20px;
+  position: relative;
 }
 
 .preview-video {
@@ -249,6 +287,49 @@ const formatSize = (bytes) => {
   max-height: 400px;
   border-radius: 8px;
   background: #000;
+}
+
+.preview-video.video-loading {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.video-loading-overlay {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  right: 20px;
+  bottom: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 8px;
+  z-index: 10;
+  color: #fff;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.video-loading-overlay p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
 }
 
 .preview-actions {

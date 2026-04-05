@@ -306,7 +306,7 @@
   background: var(--admin-bg-panel);
   display: flex;
   flex-direction: column;
-  margin: 20px 0 20px 20px;
+  margin: 20px;
   border-radius: 10px;
   overflow: hidden;
   flex-shrink: 0;
@@ -400,7 +400,7 @@
 }
 
 .admin-content {
-  max-width: 1400px;
+  /* max-width: 1400px; */
   margin: 0 auto;
 }
 

@@ -451,13 +451,18 @@ public class ContentController {
             vo.setCover(objectStoreService.getTmpFileUrl(bucket, objectName));
         }
 
-        // 处理视频URL
+        // 处理视频URL - 使用公开URL以支持更好的缓存和Range请求
         String videoUrl = content.getVideoUrl();
         if (videoUrl != null && videoUrl.contains("/") && !videoUrl.startsWith("http")) {
             int slash = videoUrl.indexOf('/');
             String bucket = videoUrl.substring(0, slash);
             String objectName = videoUrl.substring(slash + 1);
-            vo.setVideoUrl(objectStoreService.getTmpFileUrl(bucket, objectName));
+            // 对于视频文件，使用公开URL而不是临时签名URL，以支持浏览器缓存和断点续传
+            if (objectStoreService instanceof com.yoyuen.backend.objectstore.service.MinIOService minioService) {
+                vo.setVideoUrl(minioService.getPublicUrl(bucket, objectName));
+            } else {
+                vo.setVideoUrl(objectStoreService.getTmpFileUrl(bucket, objectName));
+            }
         }
 
         return vo;

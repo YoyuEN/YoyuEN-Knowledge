@@ -4,6 +4,17 @@
     <el-row :gutter="20" style="margin-bottom: 20px;">
       <el-col :span="24">
         <el-card class="ai-assistant-card">
+          <template #header>
+            <div class="card-header">
+              <el-button
+                :icon="Refresh"
+                :loading="assistantLoading"
+                @click="handleManualRefresh"
+                size="small"
+                circle
+              />
+            </div>
+          </template>
           <div class="assistant-content">
             <div v-if="assistantReport" class="markdown-body" v-html="renderedMarkdown"></div>
             <div v-else-if="assistantLoading" class="loading-state">
@@ -18,73 +29,6 @@
         </el-card>
       </el-col>
     </el-row>
-
-    <!-- 访问统计和快捷信息 - 第二行 -->
-    <!-- <el-row :gutter="20">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="stats-card">
-          <div v-loading="statsLoading">
-            <div class="stats-metrics">
-              <div class="stat-item">
-                <div class="stat-label">今日访问</div>
-                <div class="stat-value">{{ statistics.todayVisits || 0 }}</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">本周访问</div>
-                <div class="stat-value">{{ statistics.weekVisits || 0 }}</div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">本月访问</div>
-                <div class="stat-value">{{ statistics.monthVisits || 0 }}</div>
-              </div>
-            </div>
-            <div class="top-pages">
-              <div class="section-title">热门页面</div>
-              <div v-for="(page, index) in statistics.topPages" :key="index" class="page-item">
-                <span class="page-rank">{{ index + 1 }}</span>
-                <span class="page-path">{{ page.path }}</span>
-                <span class="page-views">{{ page.views }}</span>
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
-        <el-card class="quick-info-card">
-          <div v-loading="quickLoading">
-            <div class="quick-metrics">
-              <div class="quick-item" @click="$router.push('/admin/comments')">
-                <el-badge :value="quickInfo.pendingComments" :hidden="quickInfo.pendingComments === 0">
-                  <el-icon :size="24" color="#409EFF"><ChatDotRound /></el-icon>
-                </el-badge>
-                <span>待审核评论</span>
-              </div>
-              <div class="quick-item" @click="$router.push('/admin/content')">
-                <el-badge :value="quickInfo.draftArticles" :hidden="quickInfo.draftArticles === 0">
-                  <el-icon :size="24" color="#E6A23C"><Document /></el-icon>
-                </el-badge>
-                <span>草稿箱</span>
-              </div>
-              <div class="quick-item">
-                <el-icon :size="24" color="#67C23A"><ChatLineRound /></el-icon>
-                <span>今日评论 {{ quickInfo.todayComments }}</span>
-              </div>
-            </div>
-            <div class="notifications" v-if="quickInfo.notifications && quickInfo.notifications.length > 0">
-              <div class="section-title">系统通知</div>
-              <div v-for="(notif, index) in quickInfo.notifications" :key="index" class="notif-item">
-                <el-icon :color="notif.type === 'comment' ? '#409EFF' : '#909399'">
-                  <Bell v-if="notif.type === 'system'" />
-                  <ChatDotRound v-else />
-                </el-icon>
-                <span>{{ notif.message }}</span>
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row> -->
   </section>
 </template>
 
@@ -142,8 +86,45 @@ const renderedMarkdown = computed(() => {
   return marked(fixed)
 })
 
+// 缓存键名
+const CACHE_KEY = 'dashboard_assistant_report'
+const CACHE_TIMESTAMP_KEY = 'dashboard_assistant_timestamp'
+
+// 检查缓存是否有效（24小时内）
+const isCacheValid = () => {
+  const timestamp = localStorage.getItem(CACHE_TIMESTAMP_KEY)
+  if (!timestamp) return false
+
+  const cacheTime = parseInt(timestamp)
+  const now = Date.now()
+  const oneDayInMs = 24 * 60 * 60 * 1000
+
+  return (now - cacheTime) < oneDayInMs
+}
+
+// 从缓存加载数据
+const loadFromCache = () => {
+  const cached = localStorage.getItem(CACHE_KEY)
+  if (cached) {
+    assistantReport.value = cached
+    return true
+  }
+  return false
+}
+
+// 保存到缓存
+const saveToCache = (data) => {
+  localStorage.setItem(CACHE_KEY, data)
+  localStorage.setItem(CACHE_TIMESTAMP_KEY, Date.now().toString())
+}
+
 // 刷新AI助手报告（SSE流式）
-const refreshAssistant = async () => {
+const refreshAssistant = async (forceRefresh = false) => {
+  // 如果不是强制刷新，且缓存有效，则使用缓存
+  if (!forceRefresh && isCacheValid() && loadFromCache()) {
+    return
+  }
+
   assistantLoading.value = true
   assistantReport.value = ''
 
@@ -179,12 +160,20 @@ const refreshAssistant = async () => {
         assistantReport.value += dataValue === '' ? '\n' : dataValue
       }
     }
+
+    // 保存到缓存
+    saveToCache(assistantReport.value)
   } catch (error) {
     console.error('获取AI报告失败', error)
     ElMessage.error('获取AI报告失败，请稍后重试')
   } finally {
     assistantLoading.value = false
   }
+}
+
+// 手动刷新按钮处理
+const handleManualRefresh = () => {
+  refreshAssistant(true)
 }
 
 // 刷新访问统计
@@ -214,10 +203,10 @@ const refreshQuick = async () => {
 }
 
 // 刷新全部
-const refreshAll = async () => {
+const refreshAll = async (forceRefresh = false) => {
   loading.value = true
   await Promise.all([
-    refreshAssistant(),
+    refreshAssistant(forceRefresh),
     refreshStats(),
     refreshQuick()
   ])
@@ -225,7 +214,7 @@ const refreshAll = async () => {
 }
 
 const handleAdminRefresh = () => {
-  refreshAll()
+  refreshAll(true)
 }
 
 onMounted(() => {
@@ -241,8 +230,15 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #303133;
+}
+
 .ai-assistant-card {
-  height: 500px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   overflow: hidden;

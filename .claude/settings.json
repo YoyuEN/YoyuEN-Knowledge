@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 add_table_numbers.py)",
+      "Read(//^## 第三章/,/**)"
+    ]
+  }
+}

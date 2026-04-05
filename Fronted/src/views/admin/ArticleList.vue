@@ -101,6 +101,9 @@
       :title="isEdit ? '编辑内容' : '新增内容'"
       width="min(1000px, 96vw)"
       :close-on-click-modal="false"
+      :lock-scroll="true"
+      class="custom-dialog"
+      top="5vh"
     >
       <el-form :model="form" label-width="80px" label-position="top">
         <el-form-item label="内容类型">
@@ -569,9 +572,135 @@ onMounted(async () => {
   user-select: none;
 }
 
+/* 自定义对话框样式 */
+.custom-dialog :deep(.el-dialog) {
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+}
+
+.custom-dialog :deep(.el-dialog__header) {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fff;
+  border-radius: 12px 12px 0 0;
+  margin: 0;
+}
+
+.custom-dialog :deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Q版关闭按钮 */
+.custom-dialog :deep(.el-dialog__headerbtn) {
+  top: 20px;
+  right: 20px;
+  width: 32px;
+  height: 32px;
+  background: #f5f5f5;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.custom-dialog :deep(.el-dialog__headerbtn:hover) {
+  background: #e8e8e8;
+  transform: rotate(90deg);
+}
+
+.custom-dialog :deep(.el-dialog__close) {
+  font-size: 18px;
+  color: #606266;
+  font-weight: bold;
+}
+
+.custom-dialog :deep(.el-dialog__headerbtn:hover .el-dialog__close) {
+  color: #303133;
+}
+
+/* 内容区域可滚动 */
+.custom-dialog :deep(.el-dialog__body) {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: calc(90vh - 140px);
+  background: #fff;
+}
+
+.custom-dialog :deep(.el-dialog__body)::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-dialog :deep(.el-dialog__body)::-webkit-scrollbar-thumb {
+  background: #dcdcdc;
+  border-radius: 3px;
+}
+
+.custom-dialog :deep(.el-dialog__body)::-webkit-scrollbar-thumb:hover {
+  background: #c0c0c0;
+}
+
+.custom-dialog :deep(.el-dialog__footer) {
+  padding: 16px 24px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 0 0 12px 12px;
+}
+
+/* 表单样式优化 */
+.custom-dialog :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #303133;
+  font-size: 14px;
+}
+
+.custom-dialog :deep(.el-input__wrapper) {
+  border-radius: 6px;
+}
+
+.custom-dialog :deep(.el-textarea__inner) {
+  border-radius: 6px;
+}
+
+.custom-dialog :deep(.el-select) {
+  border-radius: 6px;
+}
+
+/* 上传组件优化 */
+.custom-dialog :deep(.el-upload-dragger) {
+  border-radius: 8px;
+  border: 2px dashed #dcdfe6;
+  background: #fafafa;
+  transition: all 0.3s;
+}
+
+.custom-dialog :deep(.el-upload-dragger:hover) {
+  border-color: #409eff;
+  background: #f5f7fa;
+}
+
+/* 按钮样式 */
+.custom-dialog :deep(.el-button) {
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   :deep(.hide-on-mobile) {
     display: none !important;
+  }
+
+  .custom-dialog :deep(.el-dialog) {
+    width: 95vw !important;
+    max-height: 95vh;
+  }
+
+  .custom-dialog :deep(.el-dialog__body) {
+    max-height: calc(95vh - 140px);
   }
 }
 </style>
