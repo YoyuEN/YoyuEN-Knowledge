@@ -5,10 +5,12 @@ import com.yoyuen.backend.controller.vo.ContentTagVO;
 import com.yoyuen.backend.controller.vo.ContentVO;
 import com.yoyuen.backend.controller.vo.KnowledgeBaseVO;
 import com.yoyuen.backend.entity.Content;
+import com.yoyuen.backend.entity.ContentTag;
 import com.yoyuen.backend.service.ai.KnowledgeBaseService;
 import com.yoyuen.backend.service.ai.OriginFileResourceService;
 import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
+import com.yoyuen.backend.service.system.ContentTagService;
 import com.yoyuen.backend.service.system.ObjectStoreService;
 import com.yoyuen.backend.service.system.RedisService;
 import com.yoyuen.backend.utils.BaseResponse;
@@ -41,11 +43,9 @@ public class ContentController {
     private final OriginFileResourceService originFileResourceService;
     private final ObjectStoreService objectStoreService;
     private final RedisService redisService;
+    private final ContentTagService contentTagService;
 
     private static final String CATEGORY_META_KEY = "content:category:meta";
-    private static final String TAG_ALL_KEY = "content:tag:all";
-    private static final String CONTENT_TAG_PREFIX = "content:tags:";
-
     private static final String COVER_BUCKET = "default";
 
     private static final Map<String, String> DEFAULT_CATEGORY_NAME_MAP = new LinkedHashMap<>() {{
@@ -117,7 +117,8 @@ public class ContentController {
             for (Content c : contentList) {
                 c.setCategory(newType);
                 contentService.updateContent(c);
-                redisService.delete(CONTENT_TAG_PREFIX + c.getId());
+                // 清除内容详情缓存
+                redisService.delete("content:detail:" + c.getId());
             }
         }
 
@@ -144,11 +145,9 @@ public class ContentController {
 
     @GetMapping("/tags")
     public BaseResponse<List<ContentTagVO>> listTags() {
-        List<String> tags = getAllTags();
-        Map<String, Long> counts = countTagUsage();
+        List<ContentTag> tags = contentTagService.listAll();
         List<ContentTagVO> result = tags.stream()
-                .map(tag -> new ContentTagVO(tag, counts.getOrDefault(tag, 0L)))
-                .sorted(Comparator.comparing(ContentTagVO::getCount).reversed())
+                .map(tag -> new ContentTagVO(tag.getName(), tag.getUsageCount()))
                 .toList();
         return ResultUtils.success(result);
     }
@@ -159,14 +158,12 @@ public class ContentController {
         if (name == null || name.isBlank()) {
             return ResultUtils.error(CoreCode.PARAMS_ERROR, "标签名不能为空");
         }
-        List<String> tags = getAllTags();
-        if (tags.contains(name)) {
-            return ResultUtils.error(CoreCode.OPERATION_ERROR, "标签已存在");
+        try {
+            contentTagService.create(name);
+            return ResultUtils.success(true);
+        } catch (IllegalArgumentException e) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, e.getMessage());
         }
-        tags.add(name);
-        tags.sort(String::compareTo);
-        redisService.set(TAG_ALL_KEY, tags);
-        return ResultUtils.success(true);
     }
 
     @PostMapping("/tag/update")
@@ -177,32 +174,16 @@ public class ContentController {
             return ResultUtils.error(CoreCode.PARAMS_ERROR, "标签参数不完整");
         }
 
-        List<String> tags = getAllTags();
-        if (!tags.contains(oldName)) {
-            return ResultUtils.error(CoreCode.NOT_FOUND_ERROR, "标签不存在");
-        }
-        if (!oldName.equals(newName) && tags.contains(newName)) {
-            return ResultUtils.error(CoreCode.OPERATION_ERROR, "新的标签名已存在");
-        }
-
-        tags.remove(oldName);
-        tags.add(newName);
-        tags.sort(String::compareTo);
-        redisService.set(TAG_ALL_KEY, tags);
-
-        List<Content> contents = contentService.listAll(null, null);
-        for (Content content : contents) {
-            List<String> contentTags = getContentTags(content.getId());
-            if (contentTags.contains(oldName)) {
-                List<String> replaced = contentTags.stream()
-                        .map(tag -> oldName.equals(tag) ? newName : tag)
-                        .distinct()
-                        .toList();
-                redisService.set(CONTENT_TAG_PREFIX + content.getId(), replaced);
+        try {
+            ContentTag tag = contentTagService.getByName(oldName);
+            if (tag == null) {
+                return ResultUtils.error(CoreCode.NOT_FOUND_ERROR, "标签不存在");
             }
+            contentTagService.update(tag.getId(), newName);
+            return ResultUtils.success(true);
+        } catch (IllegalArgumentException e) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, e.getMessage());
         }
-
-        return ResultUtils.success(true);
     }
 
     @PostMapping("/tag/remove")
@@ -212,15 +193,16 @@ public class ContentController {
             return ResultUtils.error(CoreCode.PARAMS_ERROR, "标签名不能为空");
         }
 
-        Map<String, Long> usage = countTagUsage();
-        if (usage.getOrDefault(name, 0L) > 0) {
-            return ResultUtils.error(CoreCode.OPERATION_ERROR, "标签仍被文章使用，无法删除");
+        try {
+            ContentTag tag = contentTagService.getByName(name);
+            if (tag == null) {
+                return ResultUtils.error(CoreCode.NOT_FOUND_ERROR, "标签不存在");
+            }
+            contentTagService.remove(tag.getId());
+            return ResultUtils.success(true);
+        } catch (IllegalArgumentException e) {
+            return ResultUtils.error(CoreCode.OPERATION_ERROR, e.getMessage());
         }
-
-        List<String> tags = getAllTags();
-        tags.remove(name);
-        redisService.set(TAG_ALL_KEY, tags);
-        return ResultUtils.success(true);
     }
 
     @GetMapping("/{id}")
@@ -389,7 +371,8 @@ public class ContentController {
         Content content = toEntity(contentVO);
         String id = contentService.addContent(content);
         contentVO.setId(id);
-        saveContentTags(id, contentVO.getTags());
+        // 使用数据库存储标签
+        contentTagService.setContentTags(id, contentVO.getTags());
         syncToKnowledgeBase(contentVO, "新增");
 
         clearContentCache(contentVO.getCategory());
@@ -400,7 +383,8 @@ public class ContentController {
     public BaseResponse<Boolean> update(@Valid @RequestBody ContentVO contentVO) {
         Content content = toEntity(contentVO);
         boolean result = contentService.updateContent(content);
-        saveContentTags(contentVO.getId(), contentVO.getTags());
+        // 使用数据库存储标签
+        contentTagService.setContentTags(contentVO.getId(), contentVO.getTags());
         syncToKnowledgeBase(contentVO, "更新");
 
         redisService.delete("content:detail:" + contentVO.getId());
@@ -423,8 +407,9 @@ public class ContentController {
         boolean result = contentService.removeContent(contentVO.getId());
         if (existing != null) {
             syncToKnowledgeBase(toVO(existing), "删除");
+            // 删除标签关联
+            contentTagService.removeContentTags(contentVO.getId());
             redisService.delete("content:detail:" + contentVO.getId());
-            redisService.delete(CONTENT_TAG_PREFIX + contentVO.getId());
             clearContentCache(existing.getCategory());
         }
         return ResultUtils.success(result);
@@ -441,7 +426,9 @@ public class ContentController {
         Map<String, String> categoryMeta = getCategoryMeta();
         vo.setCategoryName(categoryMeta.getOrDefault(content.getCategory(), content.getCategory()));
 
-        vo.setTags(getContentTags(content.getId()));
+        // 从数据库获取标签
+        List<ContentTag> tags = contentTagService.listByContentId(content.getId());
+        vo.setTags(tags.stream().map(ContentTag::getName).toList());
 
         String cover = content.getCover();
         if (cover != null && cover.contains("/") && !cover.startsWith("http")) {
@@ -559,51 +546,5 @@ public class ContentController {
         return all.stream()
                 .map(type -> new ContentCategoryVO(type, meta.getOrDefault(type, type), contentService.countByCategory(type)))
                 .toList();
-    }
-
-    private List<String> getAllTags() {
-        Object cached = redisService.get(TAG_ALL_KEY);
-        if (cached instanceof List<?> list) {
-            return list.stream().map(String::valueOf).distinct().collect(Collectors.toCollection(ArrayList::new));
-        }
-        return new ArrayList<>();
-    }
-
-    private List<String> getContentTags(String contentId) {
-        Object cached = redisService.get(CONTENT_TAG_PREFIX + contentId);
-        if (cached instanceof List<?> list) {
-            return list.stream().map(String::valueOf).distinct().toList();
-        }
-        return List.of();
-    }
-
-    private void saveContentTags(String contentId, List<String> tags) {
-        if (contentId == null || contentId.isBlank()) {
-            return;
-        }
-        List<String> cleaned = tags == null ? List.of() : tags.stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .distinct()
-                .toList();
-
-        redisService.set(CONTENT_TAG_PREFIX + contentId, cleaned);
-
-        List<String> all = getAllTags();
-        Set<String> merged = new LinkedHashSet<>(all);
-        merged.addAll(cleaned);
-        redisService.set(TAG_ALL_KEY, new ArrayList<>(merged));
-    }
-
-    private Map<String, Long> countTagUsage() {
-        Map<String, Long> usage = new HashMap<>();
-        List<Content> contents = contentService.listAll(null, null);
-        for (Content content : contents) {
-            for (String tag : getContentTags(content.getId())) {
-                usage.put(tag, usage.getOrDefault(tag, 0L) + 1);
-            }
-        }
-        return usage;
     }
 }

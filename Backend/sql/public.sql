@@ -451,3 +451,41 @@ ALTER TABLE content ADD COLUMN content_type VARCHAR(20) DEFAULT 'article';
 ALTER TABLE content ADD COLUMN video_type VARCHAR(10);
 ALTER TABLE content ADD COLUMN video_url VARCHAR(500);
 ALTER TABLE content ADD COLUMN video_duration INT DEFAULT 0;
+
+-- 1. 创建标签表
+CREATE TABLE content_tag (
+                             id BIGSERIAL PRIMARY KEY,
+                             name VARCHAR(50) NOT NULL UNIQUE,
+                             usage_count BIGINT DEFAULT 0,
+                             create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                             update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                             creator VARCHAR(50),
+                             updater VARCHAR(50),
+                             deleted BOOLEAN DEFAULT FALSE
+);
+
+-- 2. 创建标签关联表
+CREATE TABLE content_tag_relation (
+                                      id BIGSERIAL PRIMARY KEY,
+                                      content_id VARCHAR(50) NOT NULL,
+                                      tag_id BIGINT NOT NULL,
+                                      create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                                      CONSTRAINT fk_content FOREIGN KEY (content_id) REFERENCES content(id) ON DELETE CASCADE,
+                                      CONSTRAINT fk_tag FOREIGN KEY (tag_id) REFERENCES content_tag(id) ON DELETE CASCADE,
+                                      CONSTRAINT uk_content_tag UNIQUE (content_id, tag_id)
+);
+
+-- 3. 创建索引
+CREATE INDEX idx_content_tag_name ON content_tag(name);
+CREATE INDEX idx_content_tag_usage_count ON content_tag(usage_count DESC);
+CREATE INDEX idx_content_tag_relation_content_id ON content_tag_relation(content_id);
+CREATE INDEX idx_content_tag_relation_tag_id ON content_tag_relation(tag_id);
+
+-- 4. 插入示例标签（可选）
+INSERT INTO content_tag (name, usage_count) VALUES
+                                                ('Vue3', 0),
+                                                ('TypeScript', 0),
+                                                ('Java', 0),
+                                                ('Spring Boot', 0),
+                                                ('PostgreSQL', 0);
+

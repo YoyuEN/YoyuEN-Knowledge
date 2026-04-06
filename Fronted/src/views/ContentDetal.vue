@@ -62,12 +62,6 @@
 
       <!-- 文章内容区 -->
       <div v-if="currentItem" class="article-content">
-        <div class="article-meta">
-          <span class="article-tag">{{ currentItem.category }}</span>
-          <span class="article-date">{{ currentItem.date }}</span>
-        </div>
-        <h2 class="article-title">{{ currentItem.title }}</h2>
-
         <div class="article-body markdown-body" v-html="renderMarkdown(currentItem.content)" @click="handleContentClick"></div>
       </div>
     </div>

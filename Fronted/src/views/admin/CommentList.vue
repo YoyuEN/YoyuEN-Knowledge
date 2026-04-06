@@ -1,5 +1,5 @@
 ﻿<template>
-  <section>
+  <section class="list-page-container">
     <el-card class="admin-section-card">
       <div class="admin-toolbar">
         <el-input
@@ -15,51 +15,52 @@
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 
-      <el-table
-        :data="pagedRows"
-        stripe
-        v-loading="loading"
-        style="margin-top: 16px;"
-        :row-class-name="() => 'table-row-longpress'"
-        @row-contextmenu="handleRowContextMenu"
-      >
-        <el-table-column prop="author" label="作者" width="140">
-          <template #default="{ row }">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <el-avatar :size="32" :src="row.avatar" style="background: var(--admin-btn-primary);">
-                {{ row.author?.charAt(0) || 'U' }}
-              </el-avatar>
-              <span>{{ row.author || '匿名' }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="content" label="评论内容" min-width="320" show-overflow-tooltip>
-          <template #default="{ row }">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <el-tag v-if="row.isRecommend" type="warning" size="small" effect="plain">推荐</el-tag>
-              <span>{{ row.content }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="contentTitle" label="文章" width="200" show-overflow-tooltip />
-        <el-table-column prop="createTime" label="时间" width="170" />
-        <el-table-column label="推荐" width="80" align="center" class-name="hide-on-mobile">
-          <template #default="{ row }">
-            <el-switch
-              :model-value="!!row.isRecommend"
-              @change="(val) => changeRecommend(row, val)"
-              :active-icon="Star"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="100" align="center" class-name="hide-on-mobile">
-          <template #default="{ row }">
-            <el-button link type="danger" @click="removeRow(row)" :icon="Delete">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="table-container">
+        <el-table
+          :data="pagedRows"
+          stripe
+          v-loading="loading"
+          :row-class-name="() => 'table-row-longpress'"
+          @row-contextmenu="handleRowContextMenu"
+        >
+          <el-table-column prop="author" label="作者" width="140">
+            <template #default="{ row }">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <el-avatar :size="32" :src="row.avatar" style="background: var(--admin-btn-primary);">
+                  {{ row.author?.charAt(0) || 'U' }}
+                </el-avatar>
+                <span>{{ row.author || '匿名' }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="content" label="评论内容" min-width="320" show-overflow-tooltip>
+            <template #default="{ row }">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <el-tag v-if="row.isRecommend" type="warning" size="small" effect="plain">推荐</el-tag>
+                <span>{{ row.content }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="contentTitle" label="文章" width="200" show-overflow-tooltip />
+          <el-table-column prop="createTime" label="时间" width="170" />
+          <el-table-column label="推荐" width="80" align="center" class-name="hide-on-mobile">
+            <template #default="{ row }">
+              <el-switch
+                :model-value="!!row.isRecommend"
+                @change="(val) => changeRecommend(row, val)"
+                :active-icon="Star"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="100" align="center" class-name="hide-on-mobile">
+            <template #default="{ row }">
+              <el-button link type="danger" @click="removeRow(row)" :icon="Delete">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
-      <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+      <div class="pagination-container">
         <el-pagination
           background
           layout="total, prev, pager, next, jumper"
@@ -188,6 +189,26 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.list-page-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.pagination-container {
+  padding: 16px 0;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--admin-border);
+  flex-shrink: 0;
+}
+
 .table-row-longpress {
   cursor: pointer;
   user-select: none;
