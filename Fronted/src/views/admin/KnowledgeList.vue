@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section class="list-page-container">
     <el-card class="admin-section-card">
       <div class="admin-toolbar">
         <el-input
@@ -16,46 +16,47 @@
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 
-      <el-table
-        :data="pagedRows"
-        stripe
-        v-loading="loading"
-        style="margin-top: 16px;"
-        :row-class-name="() => 'table-row-longpress'"
-        @row-contextmenu="handleRowContextMenu"
-      >
-        <el-table-column prop="name" label="知识库名称" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="description" label="描述" min-width="240" show-overflow-tooltip>
-          <template #default="{ row }">
-            <span style="color: var(--admin-text-secondary);">{{ row.description || '-' }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="文档数量" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag size="small" effect="plain">{{ row.documentCount || 0 }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
-              {{ row.status === 'active' ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="170" />
-        <el-table-column label="操作" width="320" fixed="right" class-name="hide-on-mobile">
-          <template #default="{ row }">
-            <el-button link type="warning" @click="openUpload(row)" :icon="Upload">上传数据</el-button>
-            <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
-            <el-button link type="success" @click="toggleStatus(row)" :icon="Switch">
-              {{ row.status === 'active' ? '禁用' : '启用' }}
-            </el-button>
-            <el-button link type="danger" @click="deleteKnowledge(row)" :icon="Delete">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="table-container">
+        <el-table
+          :data="pagedRows"
+          stripe
+          v-loading="loading"
+          :row-class-name="() => 'table-row-longpress'"
+          @row-contextmenu="handleRowContextMenu"
+        >
+          <el-table-column prop="name" label="知识库名称" min-width="200" show-overflow-tooltip />
+          <el-table-column prop="description" label="描述" min-width="240" show-overflow-tooltip>
+            <template #default="{ row }">
+              <span style="color: var(--admin-text-secondary);">{{ row.description || '-' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="文档数量" width="120" align="center">
+            <template #default="{ row }">
+              <el-tag size="small" effect="plain">{{ row.documentCount || 0 }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.status === 'active' ? 'success' : 'info'" size="small">
+                {{ row.status === 'active' ? '启用' : '禁用' }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" width="170" />
+          <el-table-column label="操作" width="320" fixed="right" class-name="hide-on-mobile">
+            <template #default="{ row }">
+              <el-button link type="warning" @click="openUpload(row)" :icon="Upload">上传数据</el-button>
+              <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
+              <el-button link type="success" @click="toggleStatus(row)" :icon="Switch">
+                {{ row.status === 'active' ? '禁用' : '启用' }}
+              </el-button>
+              <el-button link type="danger" @click="deleteKnowledge(row)" :icon="Delete">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
-      <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+      <div class="pagination-container">
         <el-pagination
           background
           layout="total, prev, pager, next, jumper"
@@ -82,6 +83,8 @@
       :title="isEdit ? '编辑知识库' : '新增知识库'"
       width="600px"
       :close-on-click-modal="false"
+      :lock-scroll="true"
+      class="custom-dialog"
     >
       <el-form :model="form" label-width="100px">
         <el-form-item label="知识库名称" required>
@@ -109,6 +112,8 @@
       title="上传知识库数据"
       width="700px"
       :close-on-click-modal="false"
+      :lock-scroll="true"
+      class="custom-dialog"
     >
       <div style="margin-bottom: 16px;">
         <el-alert type="info" :closable="false" show-icon>
@@ -369,6 +374,28 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@import '@/styles/admin-dialog.css';
+
+.list-page-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.pagination-container {
+  padding: 16px 0;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--admin-border);
+  flex-shrink: 0;
+}
+
 .table-row-longpress {
   cursor: pointer;
   user-select: none;

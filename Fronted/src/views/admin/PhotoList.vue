@@ -1,7 +1,7 @@
 ﻿<template>
-  <section>
+  <section class="list-page-container">
     <el-card class="admin-section-card">
-      <div style="margin-bottom: 20px;">
+      <div style="margin-bottom: 20px; flex-shrink: 0;">
         <el-upload
           class="photo-uploader"
           drag
@@ -22,43 +22,55 @@
         </el-upload>
       </div>
 
-      <el-divider />
+      <el-divider style="flex-shrink: 0;" />
 
-      <div v-if="rows.length === 0 && !loading" style="text-align: center; padding: 60px 0; color: var(--admin-text-secondary);">
-        <el-icon style="font-size: 64px; margin-bottom: 16px;"><Picture /></el-icon>
-        <div>暂无图片，请上传</div>
+      <div class="photo-grid-container">
+        <div v-if="rows.length === 0 && !loading" style="text-align: center; padding: 60px 0; color: var(--admin-text-secondary);">
+          <el-icon style="font-size: 64px; margin-bottom: 16px;"><Picture /></el-icon>
+          <div>暂无图片，请上传</div>
+        </div>
+
+        <el-row :gutter="16" v-loading="loading">
+          <el-col
+            :xs="12"
+            :sm="8"
+            :md="6"
+            :lg="4"
+            v-for="item in pagedRows"
+            :key="item.id"
+            style="margin-bottom: 16px;"
+          >
+            <div class="photo-card">
+              <div
+                v-longpress="(e) => showContextMenu(e, item)"
+                class="photo-preview"
+                @click="previewImage(item.url)"
+              >
+                <img :src="item.url" alt="photo" />
+                <div class="photo-overlay">
+                  <el-icon><ZoomIn /></el-icon>
+                </div>
+              </div>
+              <div class="photo-info">
+                <div class="photo-actions hide-on-mobile">
+                  <el-button link size="small" @click="openEdit(item)" :icon="Edit">编辑</el-button>
+                  <el-button link size="small" type="danger" @click="removeRow(item)" :icon="Delete">删除</el-button>
+                </div>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
       </div>
 
-      <el-row :gutter="16" v-loading="loading">
-        <el-col
-          :xs="12"
-          :sm="8"
-          :md="6"
-          :lg="4"
-          v-for="item in rows"
-          :key="item.id"
-          style="margin-bottom: 16px;"
-        >
-          <div class="photo-card">
-            <div
-              v-longpress="(e) => showContextMenu(e, item)"
-              class="photo-preview"
-              @click="previewImage(item.url)"
-            >
-              <img :src="item.url" alt="photo" />
-              <div class="photo-overlay">
-                <el-icon><ZoomIn /></el-icon>
-              </div>
-            </div>
-            <div class="photo-info">
-              <div class="photo-actions hide-on-mobile">
-                <el-button link size="small" @click="openEdit(item)" :icon="Edit">编辑</el-button>
-                <el-button link size="small" type="danger" @click="removeRow(item)" :icon="Delete">删除</el-button>
-              </div>
-            </div>
-          </div>
-        </el-col>
-      </el-row>
+      <div class="pagination-container">
+        <el-pagination
+          background
+          layout="total, prev, pager, next, jumper"
+          :total="rows.length"
+          :page-size="pageSize"
+          v-model:current-page="currentPage"
+        />
+      </div>
     </el-card>
 
     <ContextMenu ref="contextMenuRef" :title="contextMenuTitle" :actions="contextMenuActions">
@@ -71,7 +83,14 @@
       </div>
     </ContextMenu>
 
-    <el-dialog v-model="editVisible" title="编辑图片信息" width="480px" :close-on-click-modal="false">
+    <el-dialog
+      v-model="editVisible"
+      title="编辑图片信息"
+      width="480px"
+      :close-on-click-modal="false"
+      :lock-scroll="true"
+      class="custom-dialog"
+    >
       <el-form :model="editForm" label-position="top">
         <el-form-item label="图片预览">
           <img :src="editForm.url" style="max-width: 100%; border-radius: 8px;" />
@@ -100,11 +119,10 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onUnmounted } from 'vue'
+import { onMounted, ref, onUnmounted, computed } from 'vue'
 import { ElMessage, ElMessageBox, ElImageViewer } from 'element-plus'
 import {
   Picture,
-  Refresh,
   Plus,
   ZoomIn,
   Edit,
@@ -125,6 +143,14 @@ const editVisible = ref(false)
 const editForm = ref({ id: '', url: '', description: '' })
 const previewVisible = ref(false)
 const previewUrl = ref('')
+
+const currentPage = ref(1)
+const pageSize = ref(12)
+
+const pagedRows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return rows.value.slice(start, start + pageSize.value)
+})
 
 const loadData = async () => {
   loading.value = true
@@ -237,6 +263,30 @@ onUnmounted(() => {
   window.removeEventListener('admin-refresh', handleAdminRefresh)
 })
 </script>
+
+<style scoped>
+@import '@/styles/admin-dialog.css';
+
+.list-page-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.photo-grid-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.pagination-container {
+  padding: 16px 0;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--admin-border);
+  flex-shrink: 0;
+}
+</style>
 
 <style scoped>
 .photo-uploader {

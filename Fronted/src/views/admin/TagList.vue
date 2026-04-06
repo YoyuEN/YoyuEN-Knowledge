@@ -1,37 +1,50 @@
 ﻿<template>
-  <section>
+  <section class="list-page-container">
     <el-card class="admin-section-card">
       <div class="admin-toolbar">
         <div style="flex: 1;"></div>
         <el-button type="primary" @click="openCreate" :icon="Plus">新增标签</el-button>
       </div>
-      <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+      <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0;">
         <el-icon style="color: var(--admin-text-secondary);"><InfoFilled /></el-icon>
         <span style="font-size: 13px; color: var(--admin-text-secondary);">
           共 {{ rows.length }} 个标签
         </span>
       </div>
-      <el-table :data="rows" stripe v-loading="loading">
-        <el-table-column prop="name" label="标签名" min-width="240">
-          <template #default="{ row }">
-            <el-tag effect="plain" size="large">{{ row.name }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="count" label="使用文章数" width="140" align="center">
-          <template #default="{ row }">
-            <el-tag type="info" effect="plain" size="small">
-              <el-icon style="vertical-align: -2px; margin-right: 4px;"><Document /></el-icon>
-              {{ row.count || 0 }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="180" align="center">
-          <template #default="{ row }">
-            <el-button link @click="openEdit(row)" :icon="Edit">重命名</el-button>
-            <el-button link type="danger" @click="removeRow(row)" :icon="Delete">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+
+      <div class="table-container">
+        <el-table :data="pagedRows" stripe v-loading="loading">
+          <el-table-column prop="name" label="标签名" min-width="240">
+            <template #default="{ row }">
+              <el-tag effect="plain" size="large">{{ row.name }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="count" label="使用文章数" width="140" align="center">
+            <template #default="{ row }">
+              <el-tag type="info" effect="plain" size="small">
+                <el-icon style="vertical-align: -2px; margin-right: 4px;"><Document /></el-icon>
+                {{ row.count || 0 }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="180" align="center">
+            <template #default="{ row }">
+              <el-button link @click="openEdit(row)" :icon="Edit">重命名</el-button>
+              <el-button link type="danger" @click="removeRow(row)" :icon="Delete">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <div class="pagination-container">
+        <el-pagination
+          background
+          layout="total, prev, pager, next, jumper"
+          :total="rows.length"
+          :page-size="pageSize"
+          v-model:current-page="currentPage"
+        />
+      </div>
     </el-card>
 
     <el-dialog
@@ -39,6 +52,8 @@
       :title="editing ? '重命名标签' : '新增标签'"
       width="480px"
       :close-on-click-modal="false"
+      :lock-scroll="true"
+      class="custom-dialog"
     >
       <el-form :model="form" label-width="80px" label-position="top">
         <el-form-item label="标签名">
@@ -59,7 +74,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus,
@@ -84,6 +99,14 @@ const dialogVisible = ref(false)
 const editing = ref(false)
 const oldName = ref('')
 const form = ref({ name: '' })
+
+const currentPage = ref(1)
+const pageSize = ref(10)
+
+const pagedRows = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return rows.value.slice(start, start + pageSize.value)
+})
 
 const loadData = async () => {
   loading.value = true
@@ -149,3 +172,27 @@ const removeRow = async (row) => {
 
 onMounted(loadData)
 </script>
+
+<style scoped>
+@import '@/styles/admin-dialog.css';
+
+.list-page-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.pagination-container {
+  padding: 16px 0;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--admin-border);
+  flex-shrink: 0;
+}
+</style>

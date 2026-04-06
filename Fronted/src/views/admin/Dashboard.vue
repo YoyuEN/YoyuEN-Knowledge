@@ -1,21 +1,18 @@
 ﻿<template>
-  <section>
+  <section class="dashboard-container">
     <!-- AI智能助手 - 独占一行 -->
-    <el-row :gutter="20" style="margin-bottom: 20px;">
-      <el-col :span="24">
+    <el-row :gutter="20" style="flex: 1; min-height: 0;">
+      <el-col :span="24" style="height: 100%;">
         <el-card class="ai-assistant-card">
-          <template #header>
-            <div class="card-header">
-              <el-button
-                :icon="Refresh"
-                :loading="assistantLoading"
-                @click="handleManualRefresh"
-                size="small"
-                circle
-              />
-            </div>
-          </template>
           <div class="assistant-content">
+            <el-button
+              class="refresh-button"
+              :icon="Refresh"
+              :loading="assistantLoading"
+              @click="handleManualRefresh"
+              size="small"
+              circle
+            />
             <div v-if="assistantReport" class="markdown-body" v-html="renderedMarkdown"></div>
             <div v-else-if="assistantLoading" class="loading-state">
               <el-icon class="rotating" :size="32" color="#667eea"><Loading /></el-icon>
@@ -230,6 +227,12 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.dashboard-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -242,18 +245,34 @@ onUnmounted(() => {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   border-radius: 12px;
   overflow: hidden;
+  border-bottom: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .ai-assistant-card :deep(.el-card__body) {
   padding: 0;
-  height: 100%;
+  flex: 1;
+  border-bottom: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .assistant-content {
-  height: 100%;
+  position: relative;
+  flex: 1;
   overflow-y: auto;
   padding: 24px;
   scrollbar-width: none;
+}
+
+.refresh-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
 }
 
 .assistant-content::-webkit-scrollbar {

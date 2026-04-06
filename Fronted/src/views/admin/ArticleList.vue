@@ -1,5 +1,5 @@
 ﻿<template>
-  <section>
+  <section class="list-page-container">
     <el-card class="admin-section-card">
       <div class="admin-toolbar">
         <el-input
@@ -19,58 +19,59 @@
         <el-button type="primary" @click="loadData" :icon="Search">查询</el-button>
       </div>
 
-      <el-table
-        :data="pagedRows"
-        stripe
-        v-loading="loading"
-        style="margin-top: 16px;"
-        :row-class-name="() => 'table-row-longpress'"
-        @row-contextmenu="handleRowContextMenu"
-      >
-        <el-table-column prop="title" label="标题" min-width="240" show-overflow-tooltip>
-          <template #default="{ row }">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <el-tag v-if="row.isRecommend" type="warning" size="small" effect="plain">推荐</el-tag>
-              <span>{{ row.title }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="分类" width="120">
-          <template #default="{ row }">
-            <el-tag size="small" effect="light">{{ row.categoryName || row.category }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="标签" min-width="180">
-          <template #default="{ row }">
-            <el-tag v-for="tag in row.tags || []" :key="tag" size="small" effect="plain" style="margin-right: 6px;">{{ tag }}</el-tag>
-            <span v-if="!row.tags || row.tags.length === 0" style="color: var(--admin-text-secondary);">-</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="统计" width="140" align="center">
-          <template #default="{ row }">
-            <div style="display: flex; gap: 12px; justify-content: center; font-size: 13px;">
-              <span style="color: var(--admin-text-secondary);">
-                <el-icon style="vertical-align: -2px;"><ChatDotRound /></el-icon> {{ row.commentCount || 0 }}
-              </span>
-              <span style="color: var(--admin-text-secondary);">
-                <el-icon style="vertical-align: -2px;"><View /></el-icon> {{ row.viewCount || 0 }}
-              </span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="170" />
-        <el-table-column label="操作" width="240" fixed="right" class-name="hide-on-mobile">
-          <template #default="{ row }">
-            <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
-            <el-button link type="success" @click="toggleRecommend(row)" :icon="Star">
-              {{ row.isRecommend ? '取消推荐' : '推荐' }}
-            </el-button>
-            <el-button link type="danger" @click="deleteArticle(row)" :icon="Delete">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div class="table-container">
+        <el-table
+          :data="pagedRows"
+          stripe
+          v-loading="loading"
+          :row-class-name="() => 'table-row-longpress'"
+          @row-contextmenu="handleRowContextMenu"
+        >
+          <el-table-column prop="title" label="标题" min-width="240" show-overflow-tooltip>
+            <template #default="{ row }">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <el-tag v-if="row.isRecommend" type="warning" size="small" effect="plain">推荐</el-tag>
+                <span>{{ row.title }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="分类" width="120">
+            <template #default="{ row }">
+              <el-tag size="small" effect="light">{{ row.categoryName || row.category }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="标签" min-width="180">
+            <template #default="{ row }">
+              <el-tag v-for="tag in row.tags || []" :key="tag" size="small" effect="plain" style="margin-right: 6px;">{{ tag }}</el-tag>
+              <span v-if="!row.tags || row.tags.length === 0" style="color: var(--admin-text-secondary);">-</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="统计" width="140" align="center">
+            <template #default="{ row }">
+              <div style="display: flex; gap: 12px; justify-content: center; font-size: 13px;">
+                <span style="color: var(--admin-text-secondary);">
+                  <el-icon style="vertical-align: -2px;"><ChatDotRound /></el-icon> {{ row.commentCount || 0 }}
+                </span>
+                <span style="color: var(--admin-text-secondary);">
+                  <el-icon style="vertical-align: -2px;"><View /></el-icon> {{ row.viewCount || 0 }}
+                </span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column prop="createTime" label="创建时间" width="170" />
+          <el-table-column label="操作" width="240" fixed="right" class-name="hide-on-mobile">
+            <template #default="{ row }">
+              <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
+              <el-button link type="success" @click="toggleRecommend(row)" :icon="Star">
+                {{ row.isRecommend ? '取消推荐' : '推荐' }}
+              </el-button>
+              <el-button link type="danger" @click="deleteArticle(row)" :icon="Delete">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
 
-      <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+      <div class="pagination-container">
         <el-pagination
           background
           layout="total, prev, pager, next, jumper"
@@ -103,7 +104,6 @@
       :close-on-click-modal="false"
       :lock-scroll="true"
       class="custom-dialog"
-      top="5vh"
     >
       <el-form :model="form" label-width="80px" label-position="top">
         <el-form-item label="内容类型">
@@ -567,22 +567,44 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.list-page-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.pagination-container {
+  padding: 16px 0;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid var(--admin-border);
+  flex-shrink: 0;
+}
+
 .table-row-longpress {
   cursor: pointer;
   user-select: none;
 }
+</style>
 
-/* 自定义对话框样式 */
-.custom-dialog :deep(.el-dialog) {
+<style>
+/* 自定义对话框样式 - 使用全局样式确保生效 */
+.custom-dialog.el-dialog {
   border-radius: 12px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  margin: 0 auto;
+  margin: 40px auto;
 }
 
-.custom-dialog :deep(.el-dialog__header) {
+.custom-dialog .el-dialog__header {
   padding: 20px 24px;
   border-bottom: 1px solid #f0f0f0;
   background: #fff;
@@ -590,14 +612,14 @@ onMounted(async () => {
   margin: 0;
 }
 
-.custom-dialog :deep(.el-dialog__title) {
+.custom-dialog .el-dialog__title {
   font-size: 18px;
   font-weight: 600;
   color: #1a1a1a;
 }
 
 /* Q版关闭按钮 */
-.custom-dialog :deep(.el-dialog__headerbtn) {
+.custom-dialog .el-dialog__headerbtn {
   top: 20px;
   right: 20px;
   width: 32px;
@@ -607,43 +629,44 @@ onMounted(async () => {
   transition: all 0.3s ease;
 }
 
-.custom-dialog :deep(.el-dialog__headerbtn:hover) {
+.custom-dialog .el-dialog__headerbtn:hover {
   background: #e8e8e8;
   transform: rotate(90deg);
 }
 
-.custom-dialog :deep(.el-dialog__close) {
+.custom-dialog .el-dialog__close {
   font-size: 18px;
   color: #606266;
   font-weight: bold;
 }
 
-.custom-dialog :deep(.el-dialog__headerbtn:hover .el-dialog__close) {
+.custom-dialog .el-dialog__headerbtn:hover .el-dialog__close {
   color: #303133;
 }
 
 /* 内容区域可滚动 */
-.custom-dialog :deep(.el-dialog__body) {
+.custom-dialog .el-dialog__body {
   padding: 24px;
   overflow-y: auto;
   max-height: calc(90vh - 140px);
   background: #fff;
+  flex: 1;
 }
 
-.custom-dialog :deep(.el-dialog__body)::-webkit-scrollbar {
+.custom-dialog .el-dialog__body::-webkit-scrollbar {
   width: 6px;
 }
 
-.custom-dialog :deep(.el-dialog__body)::-webkit-scrollbar-thumb {
+.custom-dialog .el-dialog__body::-webkit-scrollbar-thumb {
   background: #dcdcdc;
   border-radius: 3px;
 }
 
-.custom-dialog :deep(.el-dialog__body)::-webkit-scrollbar-thumb:hover {
+.custom-dialog .el-dialog__body::-webkit-scrollbar-thumb:hover {
   background: #c0c0c0;
 }
 
-.custom-dialog :deep(.el-dialog__footer) {
+.custom-dialog .el-dialog__footer {
   padding: 16px 24px;
   border-top: 1px solid #f0f0f0;
   background: #fafafa;
@@ -651,55 +674,55 @@ onMounted(async () => {
 }
 
 /* 表单样式优化 */
-.custom-dialog :deep(.el-form-item__label) {
+.custom-dialog .el-form-item__label {
   font-weight: 500;
   color: #303133;
   font-size: 14px;
 }
 
-.custom-dialog :deep(.el-input__wrapper) {
+.custom-dialog .el-input__wrapper {
   border-radius: 6px;
 }
 
-.custom-dialog :deep(.el-textarea__inner) {
+.custom-dialog .el-textarea__inner {
   border-radius: 6px;
 }
 
-.custom-dialog :deep(.el-select) {
+.custom-dialog .el-select {
   border-radius: 6px;
 }
 
 /* 上传组件优化 */
-.custom-dialog :deep(.el-upload-dragger) {
+.custom-dialog .el-upload-dragger {
   border-radius: 8px;
   border: 2px dashed #dcdfe6;
   background: #fafafa;
   transition: all 0.3s;
 }
 
-.custom-dialog :deep(.el-upload-dragger:hover) {
+.custom-dialog .el-upload-dragger:hover {
   border-color: #409eff;
   background: #f5f7fa;
 }
 
 /* 按钮样式 */
-.custom-dialog :deep(.el-button) {
+.custom-dialog .el-button {
   border-radius: 6px;
   padding: 10px 20px;
   font-weight: 500;
 }
 
 @media (max-width: 768px) {
-  :deep(.hide-on-mobile) {
+  .hide-on-mobile {
     display: none !important;
   }
 
-  .custom-dialog :deep(.el-dialog) {
+  .custom-dialog.el-dialog {
     width: 95vw !important;
     max-height: 95vh;
   }
 
-  .custom-dialog :deep(.el-dialog__body) {
+  .custom-dialog .el-dialog__body {
     max-height: calc(95vh - 140px);
   }
 }
