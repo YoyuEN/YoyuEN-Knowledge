@@ -276,7 +276,14 @@ onUnmounted(() => {
 .photo-grid-container {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   min-height: 0;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.photo-grid-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 
 .pagination-container {
