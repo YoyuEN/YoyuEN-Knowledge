@@ -200,7 +200,9 @@
               <template #label>
                 <span><el-icon style="vertical-align: -2px; margin-right: 4px;"><Edit /></el-icon>编辑</span>
               </template>
+              <MarkdownImageUploader @insert-image="handleInsertImage" />
               <el-input
+                ref="contentTextarea"
                 v-model="form.content"
                 type="textarea"
                 :rows="16"
@@ -268,6 +270,7 @@ import ContextMenu from '@/components/ContextMenu.vue'
 import ContentTypeSelector from '@/components/ContentTypeSelector.vue'
 import VideoUploader from '@/components/VideoUploader.vue'
 import VideoLinkInput from '@/components/VideoLinkInput.vue'
+import MarkdownImageUploader from '@/components/MarkdownImageUploader.vue'
 import { useTableLongpress } from '@/composables/useTableLongpress'
 
 const loading = ref(false)
@@ -279,6 +282,7 @@ const contextMenuRef = ref(null)
 const selectedRow = ref(null)
 const contextMenuTitle = ref('')
 const contextMenuActions = ref([])
+const contentTextarea = ref(null)
 
 const showContextMenu = (e, row) => {
   selectedRow.value = row
@@ -464,6 +468,27 @@ const handleVideoUploadSuccess = (data) => {
 
 const handleVideoLinkChange = (data) => {
   form.value.videoUrl = data.url
+}
+
+const handleInsertImage = (markdown) => {
+  // 在光标位置插入图片 Markdown 语法
+  const textarea = contentTextarea.value?.$el?.querySelector('textarea')
+  if (textarea) {
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const text = form.value.content || ''
+    form.value.content = text.substring(0, start) + '\n' + markdown + '\n' + text.substring(end)
+
+    // 设置光标位置到插入内容之后
+    setTimeout(() => {
+      textarea.focus()
+      const newPos = start + markdown.length + 2
+      textarea.setSelectionRange(newPos, newPos)
+    }, 0)
+  } else {
+    // 如果无法获取 textarea，直接追加到末尾
+    form.value.content = (form.value.content || '') + '\n' + markdown + '\n'
+  }
 }
 
 const submitForm = async () => {

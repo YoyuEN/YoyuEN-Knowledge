@@ -305,6 +305,45 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PostMapping(value = "/upload-content-image", consumes = "multipart/form-data")
+    public BaseResponse<Map<String, String>> uploadContentImage(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "图片文件不能为空");
+        }
+
+        // 验证文件类型
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "只能上传图片文件");
+        }
+
+        // 验证文件大小（最大10MB）
+        long maxSize = 10 * 1024 * 1024L;
+        if (file.getSize() > maxSize) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "图片大小不能超过10MB");
+        }
+
+        // 获取文件扩展名
+        String ext = ".jpg";
+        String original = file.getOriginalFilename();
+        if (original != null && original.contains(".")) {
+            ext = original.substring(original.lastIndexOf('.'));
+        }
+
+        // 上传图片文件，使用 content/image_ 前缀区分内容图片
+        String objectName = "content/image_" + UUID.randomUUID() + ext;
+        objectStoreService.uploadFile(file, COVER_BUCKET, objectName);
+        String imagePath = COVER_BUCKET + "/" + objectName;
+        String imageUrl = objectStoreService.getTmpFileUrl(COVER_BUCKET, objectName, 7 * 24 * 3600);
+
+        Map<String, String> result = new HashMap<>();
+        result.put("path", imagePath);
+        result.put("url", imageUrl);
+
+        log.info("文章内容图片上传成功: {}, 大小: {} bytes", objectName, file.getSize());
+        return ResultUtils.success(result);
+    }
+
     @PostMapping(value = "/upload-video", consumes = "multipart/form-data")
     public BaseResponse<Map<String, Object>> uploadVideo(@RequestParam("file") MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {

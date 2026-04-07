@@ -24,6 +24,7 @@
         >
           <!-- 视频内容显示视频播放器 -->
           <div v-if="item.contentType === 'video' && item.videoUrl" class="swiper-video-container">
+            <!-- 直接视频文件使用 video 标签 -->
             <video
               v-if="item.videoType === 'file' || isDirectVideoUrl(item.videoUrl)"
               :src="item.videoUrl"
@@ -32,14 +33,17 @@
               controlslist="nodownload"
               playsinline
               :poster="item.cover"
+              @error="handleVideoError"
             >
               您的浏览器不支持视频播放
             </video>
+            <!-- 第三方视频链接使用 iframe，自动转换为嵌入式播放器链接 -->
             <iframe
-              v-else
-              :src="item.videoUrl"
+              v-else-if="item.videoType === 'link' && !isDirectVideoUrl(item.videoUrl)"
+              :src="convertToEmbedUrl(item.videoUrl)"
               frameborder="0"
               allowfullscreen
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               class="swiper-video-iframe"
             ></iframe>
           </div>
@@ -62,7 +66,7 @@
 
       <!-- 文章内容区 -->
       <div v-if="currentItem" class="article-content">
-        <div class="article-body markdown-body" v-html="renderMarkdown(currentItem.content)" @click="handleContentClick"></div>
+        <div class="article-body markdown-body" v-html="renderMarkdown(currentItem.content)" @click="handleContentClick" ref="articleBodyRef"></div>
       </div>
     </div>
 
@@ -92,8 +96,25 @@
     <!-- 图片预览模态框 -->
     <div v-if="showImagePreview" class="image-preview-modal" @click="closeImagePreview">
       <div class="image-preview-content" @click.stop>
-        <img :src="previewImageUrl" alt="预览图片" />
+        <img :src="previewImages[currentImageIndex]" alt="预览图片" />
         <button class="close-btn" @click="closeImagePreview">✕</button>
+
+        <!-- 左右切换按钮 -->
+        <button v-if="previewImages.length > 1" class="nav-btn nav-btn-prev" @click="prevImage">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button v-if="previewImages.length > 1" class="nav-btn nav-btn-next" @click="nextImage">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- 图片计数 -->
+        <div v-if="previewImages.length > 1" class="image-counter">
+          {{ currentImageIndex + 1 }} / {{ previewImages.length }}
+        </div>
       </div>
     </div>
 
@@ -121,7 +142,42 @@ const renderMarkdown = (content) => content ? marked(content) : ''
 
 const isDirectVideoUrl = (url) => {
   if (!url) return false
-  return /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(url)
+  // 移除查询参数后再检查文件扩展名
+  const urlWithoutParams = url.split('?')[0]
+  return /\.(mp4|avi|mov|wmv|flv|webm)$/i.test(urlWithoutParams)
+}
+
+// 转换第三方视频链接为嵌入式播放器链接
+const convertToEmbedUrl = (url) => {
+  if (!url) return url
+
+  // Bilibili 视频链接转换
+  // 从 https://www.bilibili.com/video/BV... 转换为 https://player.bilibili.com/player.html?bvid=BV...
+  if (url.includes('bilibili.com/video/')) {
+    const bvMatch = url.match(/\/video\/(BV[\w]+)/)
+    if (bvMatch) {
+      return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&danmaku=0`
+    }
+  }
+
+  // YouTube 视频链接转换
+  // 从 https://www.youtube.com/watch?v=... 转换为 https://www.youtube.com/embed/...
+  if (url.includes('youtube.com/watch')) {
+    const videoId = new URL(url).searchParams.get('v')
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`
+    }
+  }
+
+  // YouTube 短链接转换
+  if (url.includes('youtu.be/')) {
+    const videoId = url.split('youtu.be/')[1]?.split('?')[0]
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`
+    }
+  }
+
+  return url
 }
 
 const modules = [EffectFade]
@@ -148,7 +204,9 @@ const currentItem = ref(null)
 const itemComments = ref([])
 const loaded = ref(false)
 const showImagePreview = ref(false)
-const previewImageUrl = ref('')
+const previewImages = ref([])
+const currentImageIndex = ref(0)
+const articleBodyRef = ref(null)
 
 let swiperInstance = null
 
@@ -225,14 +283,74 @@ async function loadData() {
   }
 }
 
-// 拦截文章正文中的链接点击，内部链接走 Vue Router 避免整页刷新
+// 拦截文章正文中的链接和图片点击
 function handleContentClick(e) {
+  // 处理图片点击
+  const img = e.target.closest('img')
+  if (img && img.src) {
+    e.preventDefault()
+    openImagePreview(img.src)
+    return
+  }
+
+  // 处理链接点击
   const link = e.target.closest('a')
   if (!link) return
   const href = link.getAttribute('href')
   if (!href || href.startsWith('http') || href.startsWith('//') || href.startsWith('mailto:')) return
   e.preventDefault()
   router.push(href)
+}
+
+// 提取文章中所有图片
+function extractImagesFromContent() {
+  if (!articleBodyRef.value) return []
+  const images = articleBodyRef.value.querySelectorAll('img')
+  return Array.from(images).map(img => img.src).filter(Boolean)
+}
+
+// 打开图片预览
+function openImagePreview(imageSrc) {
+  previewImages.value = extractImagesFromContent()
+  currentImageIndex.value = previewImages.value.indexOf(imageSrc)
+  if (currentImageIndex.value === -1) {
+    currentImageIndex.value = 0
+    previewImages.value = [imageSrc]
+  }
+  showImagePreview.value = true
+}
+
+// 上一张图片
+function prevImage() {
+  if (currentImageIndex.value > 0) {
+    currentImageIndex.value--
+  } else {
+    currentImageIndex.value = previewImages.value.length - 1
+  }
+}
+
+// 下一张图片
+function nextImage() {
+  if (currentImageIndex.value < previewImages.value.length - 1) {
+    currentImageIndex.value++
+  } else {
+    currentImageIndex.value = 0
+  }
+}
+
+function viewImage(coverPath) {
+  if (!coverPath) return
+  // 构建完整图片URL
+  const imageUrl = coverPath.startsWith('http')
+    ? coverPath
+    : `${import.meta.env.VITE_API_BASE_URL || ''}/api/file/view/${coverPath}`
+  openImagePreview(imageUrl)
+}
+
+function closeImagePreview() {
+  showImagePreview.value = false
+  previewImages.value = []
+  currentImageIndex.value = 0
 }
 
 function scrollToHash() {
@@ -260,19 +378,8 @@ function handleSwipeHintClickPrev() {
   }
 }
 
-function viewImage(coverPath) {
-  if (!coverPath) return
-  // 构建完整图片URL
-  const imageUrl = coverPath.startsWith('http')
-    ? coverPath
-    : `${import.meta.env.VITE_API_BASE_URL || ''}/api/file/view/${coverPath}`
-  previewImageUrl.value = imageUrl
-  showImagePreview.value = true
-}
-
-function closeImagePreview() {
-  showImagePreview.value = false
-  previewImageUrl.value = ''
+function handleVideoError(e) {
+  console.error('视频加载失败:', e.target.src)
 }
 
 onMounted(loadData)
@@ -464,8 +571,32 @@ watch(() => route.hash, (hash) => {
 
 .article-body :deep(img) {
   max-width: 100%;
-  border-radius: 6px;
-  margin: 8px 0;
+  height: auto;
+  border-radius: 8px;
+  margin: 16px auto;
+  display: block;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.article-body :deep(img:hover) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 小图片居中显示 */
+.article-body :deep(p img) {
+  max-width: 80%;
+  margin: 20px auto;
+}
+
+/* 大图片占满宽度 */
+.article-body :deep(img[src*="large"]),
+.article-body :deep(img[width]),
+.article-body :deep(img[height]) {
+  max-width: 100%;
+  margin: 24px 0;
 }
 
 .article-body :deep(hr) {
@@ -660,6 +791,55 @@ watch(() => route.hash, (hash) => {
 .close-btn:hover {
   background: #fff;
   transform: scale(1.1);
+}
+
+/* 图片预览导航按钮 */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.nav-btn:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.nav-btn-prev {
+  left: 20px;
+}
+
+.nav-btn-next {
+  right: 20px;
+}
+
+.nav-btn svg {
+  color: #333;
+}
+
+/* 图片计数器 */
+.image-counter {
+  position: absolute;
+  bottom: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 @keyframes fadeIn {
