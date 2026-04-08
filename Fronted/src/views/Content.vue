@@ -8,7 +8,6 @@
       <section class="module fade-in">
         <div class="module-header">
           <h2 class="module-title">推荐内容</h2>
-          <span class="module-more">查看更多</span>
         </div>
         <div class="recommend-grid">
           <div v-for="item in recommendList" :key="item.id" class="recommend-card fade-in" @click="goToDetail(item, item.category)">
@@ -247,12 +246,6 @@ onMounted(async () => {
   font-weight: 600;
   color: #1a1a1a;
   margin: 0;
-}
-
-.module-more {
-  font-size: 13px;
-  color: #999;
-  transition: color 0.2s;
 }
 
 .module-count {

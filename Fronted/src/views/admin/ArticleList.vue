@@ -270,7 +270,6 @@ import ContextMenu from '@/components/ContextMenu.vue'
 import ContentTypeSelector from '@/components/ContentTypeSelector.vue'
 import VideoUploader from '@/components/VideoUploader.vue'
 import VideoLinkInput from '@/components/VideoLinkInput.vue'
-import MarkdownImageUploader from '@/components/MarkdownImageUploader.vue'
 import { useTableLongpress } from '@/composables/useTableLongpress'
 
 const loading = ref(false)
