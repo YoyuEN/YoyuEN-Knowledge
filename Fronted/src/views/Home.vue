@@ -3,35 +3,20 @@
     <div class="message-list">
       <!-- 知识库选择 -->
       <div class="nav-section">
-        <div class="nav-header" @click="toggleKnowledgeExpand">
+        <div class="nav-header">
           <span class="nav-title">知识库</span>
-          <svg
-            class="nav-arrow"
-            :class="{ 'expanded': isKnowledgeExpanded }"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
         </div>
-        <transition name="slide-fade">
-          <div v-show="isKnowledgeExpanded" class="nav-list">
-            <div
-              v-for="(kb, index) in knowledgeList"
-              :key="kb.id"
-              class="nav-item"
-              :class="{ 'active': selectedKnowledge === kb.id }"
-              :style="{ transitionDelay: `${index * 30}ms` }"
-              @click="selectKnowledge(kb.id)"
-            >
-              {{ kb.name }}
-            </div>
+        <div class="nav-list">
+          <div
+            v-for="kb in knowledgeList"
+            :key="kb.id"
+            class="nav-item"
+            :class="{ 'active': selectedKnowledge === kb.id }"
+            @click="selectKnowledge(kb.id)"
+          >
+            {{ kb.name }}
           </div>
-        </transition>
+        </div>
       </div>
 
     </div>
@@ -179,10 +164,9 @@ const repliesContainer = ref(null)
 const fileInput = ref(null)
 const uploadedFiles = ref([])
 
-// 下拉框数据
+// 知识库数据
 const knowledgeList = ref([])
 const selectedKnowledge = ref('')
-const isKnowledgeExpanded = ref(false)
 
 // 当前知识库内容
 const currentKnowledgeItems = ref([])
@@ -407,10 +391,6 @@ const loadKnowledgeList = async () => {
 }
 
 // 知识库切换处理
-const toggleKnowledgeExpand = () => {
-  isKnowledgeExpanded.value = !isKnowledgeExpanded.value
-}
-
 const selectKnowledge = (id) => {
   selectedKnowledge.value = id
   console.log('选择的知识库:', id)
@@ -484,77 +464,6 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-.nav-arrow {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: center;
-}
-
-.nav-arrow.expanded {
-  transform: rotate(180deg);
-}
-
-/* 折叠展开动画 */
-.slide-fade-enter-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-.slide-fade-leave-active {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-}
-
-.slide-fade-enter-from {
-  opacity: 0;
-  max-height: 0;
-  transform: translateY(-10px);
-}
-
-.slide-fade-enter-to {
-  opacity: 1;
-  max-height: 500px;
-  transform: translateY(0);
-}
-
-.slide-fade-leave-from {
-  opacity: 1;
-  max-height: 500px;
-  transform: translateY(0);
-}
-
-.slide-fade-leave-to {
-  opacity: 0;
-  max-height: 0;
-  transform: translateY(-10px);
-}
-
-.nav-list {
-  overflow: hidden;
-}
-
-.nav-item {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  transform-origin: left center;
-}
-
-.slide-fade-enter-active .nav-item {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-header {
-  cursor: pointer;
-  user-select: none;
-  transition: background-color 0.2s ease;
-}
-
-.nav-header:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-  border-radius: 8px;
-}
-
-.nav-header:active {
-  transform: scale(0.98);
-}
 
 .message-list {
   width: 280px;
@@ -585,15 +494,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  user-select: none;
-  background: white;
-}
-
-.nav-header:hover {
-  background: white;
+  margin-bottom: 8px;
 }
 
 .nav-title {
@@ -602,18 +503,10 @@ onUnmounted(() => {
   color: #333;
 }
 
-.nav-arrow {
-  transition: transform 0.3s ease;
-  color: #999;
-}
-
-.nav-arrow.expanded {
-  transform: rotate(180deg);
-}
-
 .nav-list {
-  margin-top: 4px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .nav-item {
