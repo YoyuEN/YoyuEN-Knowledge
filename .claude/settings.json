@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python3 add_table_numbers.py)",
-      "Read(//^## 第三章/,/**)"
+      "Read(//^## 第三章/,/**)",
+      "Bash(psql -h localhost -U postgres -d know-ai -c \"\\\\d system_user\")"
     ]
   }
 }

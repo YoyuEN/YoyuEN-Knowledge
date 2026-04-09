@@ -1,9 +1,11 @@
 ﻿import { createRouter, createWebHistory } from 'vue-router'
+import { isAuthenticated } from '../utils/auth'
 import Layout from '../components/Layout.vue'
 import Home from '../views/Home.vue'
 import Content from '../views/Content.vue'
 import ContentDetal from '../views/ContentDetal.vue'
 import Profile from '../views/Profile.vue'
+import Login from '../views/Login.vue'
 import AdminLayout from '../components/AdminLayout.vue'
 import Dashboard from '../views/admin/Dashboard.vue'
 import ArticleList from '../views/admin/ArticleList.vue'
@@ -15,6 +17,12 @@ import Statistics from '../views/admin/Statistics.vue'
 import KnowledgeList from '../views/admin/KnowledgeList.vue'
 
 const routes = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: Login,
+    meta: { title: '登录' },
+  },
   {
     path: '/',
     component: Layout,
@@ -48,6 +56,7 @@ const routes = [
   {
     path: '/admin',
     component: AdminLayout,
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -128,6 +137,27 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+// 路由守卫：保护需要认证的路由
+router.beforeEach((to, from, next) => {
+  // 检查路由是否需要认证
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    // 检查是否已登录
+    if (!isAuthenticated()) {
+      // 未登录，跳转到登录页
+      next({
+        path: '/login',
+        query: { redirect: to.fullPath } // 保存目标路由，登录后跳转
+      })
+    } else {
+      // 已登录，允许访问
+      next()
+    }
+  } else {
+    // 不需要认证的路由，直接放行
+    next()
+  }
 })
 
 export default router
