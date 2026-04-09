@@ -9,15 +9,23 @@
     >
       <el-menu-item index="/">
         <el-icon><ChatDotRound /></el-icon>
-        <template #title>AI对话</template>
+        <template #title>问道阁</template>
       </el-menu-item>
       <el-menu-item index="/content">
         <el-icon><Briefcase /></el-icon>
-        <template #title>内容创作</template>
+        <template #title>墨香苑</template>
+      </el-menu-item>
+      <el-menu-item index="/diary">
+        <el-icon><Reading /></el-icon>
+        <template #title>时光手札</template>
       </el-menu-item>
       <el-menu-item index="/profile">
         <el-icon><User /></el-icon>
-        <template #title>个人中心</template>
+        <template #title>归心居</template>
+      </el-menu-item>
+      <el-menu-item index="/admin">
+        <el-icon><Grid /></el-icon>
+        <template #title>匠心坊</template>
       </el-menu-item>
     </el-menu>
   </div>
@@ -27,15 +35,11 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import {
-  Document,
   ChatDotRound,
-  VideoPlay,
   Reading,
   Briefcase,
   User,
   Grid,
-  Headset,
-  VideoCamera,
 } from '@element-plus/icons-vue'
 
 const props = defineProps({

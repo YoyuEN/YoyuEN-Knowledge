@@ -5,6 +5,7 @@ import Home from '../views/Home.vue'
 import Content from '../views/Content.vue'
 import ContentDetal from '../views/ContentDetal.vue'
 import Profile from '../views/Profile.vue'
+import Diary from '../views/Diary.vue'
 import Login from '../views/Login.vue'
 import AdminLayout from '../components/AdminLayout.vue'
 import Dashboard from '../views/admin/Dashboard.vue'
@@ -44,6 +45,12 @@ const routes = [
         name: 'ContentDetail',
         component: ContentDetal,
         meta: { title: '内容详情' },
+      },
+      {
+        path: 'diary',
+        name: 'Diary',
+        component: Diary,
+        meta: { title: '时光手札' },
       },
       {
         path: 'profile',

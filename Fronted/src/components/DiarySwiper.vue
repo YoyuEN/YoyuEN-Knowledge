@@ -26,6 +26,8 @@
               </div>
               <div class="entry-content">{{ entry.content }}</div>
             </div>
+            <!-- 页码 -->
+            <div class="page-number">{{ index + 1 }}</div>
           </div>
         </div>
       </SwiperSlide>
@@ -37,20 +39,12 @@
             <div class="empty-entry">
               <el-empty description="这一页还没有日记" :image-size="60" />
             </div>
+            <!-- 页码 -->
+            <div class="page-number">{{ diaryEntries.length + 1 }}</div>
           </div>
         </div>
       </SwiperSlide>
     </Swiper>
-  </div>
-
-  <!-- 左下角页码指示器 -->
-  <div class="page-nav-indicator page-nav-left">
-    <span class="page-indicator">{{ currentPage + 1 }}</span>
-  </div>
-  
-  <!-- 右下角页码指示器 -->
-  <div class="page-nav-indicator page-nav-right">
-    <span class="page-indicator">{{ currentPage + 2 }}</span>
   </div>
 </template>
 
@@ -252,42 +246,15 @@ const onSlideChange = () => {
   gap: 20px;
 }
 
-/* 页码指示器 */
-.page-nav-indicator {
-  position: fixed;
-  bottom: 40px;
-  z-index: 10;
-  animation: fadeInUp 0.5s ease-out;
-}
-
-.page-nav-left {
-  left: 40px;
-}
-
-.page-nav-right {
-  right: 40px;
-}
-
-.page-indicator {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 14px;
-  color: #555;
-  box-shadow: 
-    0 3px 12px rgba(0, 0, 0, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+/* 页码 */
+.page-number {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #999;
   font-weight: 500;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.page-indicator:hover {
-  background: rgba(255, 255, 255, 1);
-  box-shadow: 
-    0 4px 16px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  transform: translateY(-2px);
 }
 
 /* 动画效果 */
@@ -308,34 +275,24 @@ const onSlideChange = () => {
     height: 550px;
     padding: 8px;
   }
-  
+
   .page-content {
     padding: 25px;
   }
 
-  .page-nav-left {
-    left: 20px;
-    bottom: 30px;
-  }
-  
-  .page-nav-right {
-    right: 20px;
-    bottom: 30px;
-  }
-  
   .diary-page-slide:nth-child(odd) .diary-page {
     border-top-left-radius: 6px;
     border-bottom-left-radius: 6px;
   }
-  
+
   .diary-page-slide:nth-child(even) .diary-page {
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
   }
-  
-  .page-indicator {
-    padding: 10px 20px;
-    font-size: 14px;
+
+  .page-number {
+    bottom: 15px;
+    font-size: 11px;
   }
 }
 
@@ -344,15 +301,20 @@ const onSlideChange = () => {
     height: 450px;
     padding: 5px;
   }
-  
+
   .page-content {
     padding: 15px;
   }
-  
+
   .entry-header {
     margin-bottom: 15px;
     padding-bottom: 10px;
     gap: 15px;
+  }
+
+  .page-number {
+    bottom: 12px;
+    font-size: 10px;
   }
 }
 </style>

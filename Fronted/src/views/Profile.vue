@@ -163,9 +163,12 @@ const tags = ref([
 
 .profile-container {
   width: 100%;
+  position: relative;
 }
 
 .profile-header {
+  position: sticky;
+  top: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,6 +177,7 @@ const tags = ref([
   background: url("/src/assets/picture/image.png") no-repeat center center;
   background-size: cover;
   padding: 80px;
+  z-index: 1;
 }
 
 .user-info-container {
@@ -383,11 +387,14 @@ const tags = ref([
 }
 
 .profile-content {
+  position: relative;
   margin-top: -50px;
   background-color: white;
   border-radius: 25px;
   padding: 20px 80px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  z-index: 2;
+  min-height: 100vh;
 }
 
 .profile-row {
