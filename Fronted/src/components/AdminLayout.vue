@@ -34,8 +34,12 @@
         />
         <el-dropdown trigger="click" @command="handleCommand">
           <button class="user-trigger" type="button">
-            <el-avatar :size="26">A</el-avatar>
-            <span class="user-name">管理员</span>
+            <img
+              :src="userInfo.avatar || '/src/assets/picture/YoyuEN.png'"
+              alt="avatar"
+              class="user-avatar"
+            />
+            <span class="user-name">{{ userInfo.username || '管理员' }}</span>
             <el-icon><ArrowDown /></el-icon>
           </button>
           <template #dropdown>
@@ -128,7 +132,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { removeToken } from '@/utils/auth.js'
+import { removeToken, isAuthenticated } from '@/utils/auth.js'
+import { getCurrentUser } from '@/api/auth.js'
 import {
   ArrowDown,
   House,
@@ -151,6 +156,44 @@ const route = useRoute()
 const router = useRouter()
 const isAsideVisible = ref(false)
 const isMobile = ref(false)
+const userInfo = ref({
+  username: '',
+  avatar: '/src/assets/picture/YoyuEN.png'
+})
+
+// 获取当前用户信息
+const fetchUserInfo = async () => {
+  // 检查是否已登录
+  if (!isAuthenticated()) {
+    console.warn('未登录，跳转到登录页')
+    router.push('/login')
+    return
+  }
+
+  try {
+    const response = await getCurrentUser()
+    console.log('获取用户信息响应:', response)
+    if (response.code === 200 && response.data) {
+      console.log('用户数据:', response.data)
+      console.log('头像 URL:', response.data.avatar)
+      userInfo.value = {
+        username: response.data.username || 'Admin',
+        avatar: response.data.avatar || '/src/assets/picture/YoyuEN.png'
+      }
+      console.log('设置后的 userInfo:', userInfo.value)
+    }
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+    // 如果是认证错误，响应拦截器会自动跳转到登录页
+    // 这里只需要设置默认值以防万一
+    if (error.message && !error.message.includes('未登录')) {
+      userInfo.value = {
+        username: 'Admin',
+        avatar: '/src/assets/picture/YoyuEN.png'
+      }
+    }
+  }
+}
 
 const handleRefresh = () => {
   // 强制刷新当前路由组件
@@ -209,6 +252,8 @@ const handleCommand = (command) => {
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
+  // 获取用户信息
+  fetchUserInfo()
 })
 
 onUnmounted(() => {

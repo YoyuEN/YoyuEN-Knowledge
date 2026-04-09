@@ -56,10 +56,17 @@ public class AuthController {
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             String token = jwtService.generateToken(userDetails.getUsername());
 
-            // 4. 返回 token 和用户信息
+            // 4. 获取用户头像
+            String avatar = null;
+            if (userDetails instanceof com.yoyuen.backend.model.entity.user.SystemUser) {
+                avatar = ((com.yoyuen.backend.model.entity.user.SystemUser) userDetails).getAvatar();
+            }
+
+            // 5. 返回 token 和用户信息
             LoginResponse response = LoginResponse.builder()
                     .token(token)
                     .username(userDetails.getUsername())
+                    .avatar(avatar)
                     .build();
 
             log.info("用户 {} 登录成功", request.getUsername());
@@ -96,11 +103,24 @@ public class AuthController {
 
     @GetMapping("/info")
     @Operation(summary = "获取当前用户信息", description = "根据token获取当前登录用户信息")
-    public BaseResponse<UserDetails> getCurrentUser(Authentication authentication) {
+    public BaseResponse<LoginResponse> getCurrentUser(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            return ResultUtils.error(401, "未登录或登录已过期");
+            return (BaseResponse<LoginResponse>) (BaseResponse<?>) ResultUtils.error(401, "未登录或登录已过期");
         }
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return ResultUtils.success(userDetails);
+
+        // 获取用户头像
+        String avatar = null;
+        if (userDetails instanceof com.yoyuen.backend.model.entity.user.SystemUser) {
+            avatar = ((com.yoyuen.backend.model.entity.user.SystemUser) userDetails).getAvatar();
+        }
+
+        // 构建响应对象
+        LoginResponse response = LoginResponse.builder()
+                .username(userDetails.getUsername())
+                .avatar(avatar)
+                .build();
+
+        return ResultUtils.success(response);
     }
 }

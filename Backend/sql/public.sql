@@ -489,3 +489,12 @@ INSERT INTO content_tag (name, usage_count) VALUES
                                                 ('Spring Boot', 0),
                                                 ('PostgreSQL', 0);
 
+-- 添加头像字段
+ALTER TABLE "system_user" ADD COLUMN avatar VARCHAR(500);
+
+-- 为现有用户设置头像
+UPDATE system_user
+SET avatar = 'http://118.89.135.164:9000/default/avatars/YoyuEN.png'
+WHERE username = 'YoyuEN';
+
+

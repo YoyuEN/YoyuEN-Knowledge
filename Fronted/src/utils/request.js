@@ -13,6 +13,9 @@ service.interceptors.request.use(
     const token = getToken()
     if (token) {
       config.headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`
+      console.log('请求携带 token:', config.headers.Authorization.substring(0, 20) + '...')
+    } else {
+      console.warn('请求未携带 token')
     }
     return config
   },

@@ -51,6 +51,12 @@ public abstract class SystemUser extends BaseEntity implements UserDetails {
     private String password;
 
     /**
+     * 头像URL
+     */
+    @TableField(value = "avatar")
+    private String avatar;
+
+    /**
      * 角色
      */
     @TableField(exist = false)

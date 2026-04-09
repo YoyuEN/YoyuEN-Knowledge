@@ -7,6 +7,7 @@
         <id property="id" column="user_id"/>
         <result property="username" column="username"/>
         <result property="password" column="password"/>
+        <result property="avatar" column="avatar"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="deleted" column="deleted"/>
@@ -32,6 +33,7 @@
             u."id" as user_id,
             u."username",
             u."password",
+            u."avatar",
             u."create_time",
             u."update_time",
             u."deleted",
