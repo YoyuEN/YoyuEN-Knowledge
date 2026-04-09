@@ -46,12 +46,13 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login } from '@/api/auth.js'
 import { setToken } from '@/utils/auth.js'
 
 const router = useRouter()
+const route = useRoute()
 
 const loginForm = ref({
   username: '',
@@ -83,9 +84,10 @@ const handleLogin = async () => {
       // 显示成功提示
       ElMessage.success('登录成功')
 
-      // 跳转到后台首页
+      // 跳转到原目标页面或后台首页
+      const redirect = route.query.redirect || '/admin'
       setTimeout(() => {
-        router.push('/admin')
+        router.push(redirect)
       }, 500)
     } else {
       ElMessage.error(response.message || '登录失败')

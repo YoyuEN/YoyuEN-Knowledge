@@ -70,6 +70,10 @@ const routes = [
         redirect: '/admin/dashboard',
       },
       {
+        path: 'refresh',
+        component: { render: () => null },
+      },
+      {
         path: 'dashboard',
         name: 'AdminDashboard',
         component: Dashboard,

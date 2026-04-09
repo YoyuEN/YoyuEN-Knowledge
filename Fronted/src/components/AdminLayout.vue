@@ -40,11 +40,7 @@
           </button>
           <template #dropdown>
             <el-dropdown-menu class="user-dropdown">
-              <el-dropdown-item command="profile">
-                <el-icon><User /></el-icon>
-                个人中心
-              </el-dropdown-item>
-              <el-dropdown-item command="logout" divided>
+              <el-dropdown-item command="logout">
                 <el-icon><SwitchButton /></el-icon>
                 退出登录
               </el-dropdown-item>
@@ -130,7 +126,9 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { removeToken } from '@/utils/auth.js'
 import {
   ArrowDown,
   House,
@@ -140,7 +138,6 @@ import {
   PriceTag,
   ChatDotRound,
   Picture,
-  User,
   SwitchButton,
   HomeFilled,
   Menu,
@@ -151,11 +148,16 @@ import {
 import '../views/admin/admin-theme.css'
 
 const route = useRoute()
+const router = useRouter()
 const isAsideVisible = ref(false)
 const isMobile = ref(false)
 
 const handleRefresh = () => {
-  window.dispatchEvent(new CustomEvent('admin-refresh'))
+  // 强制刷新当前路由组件
+  const currentPath = route.path
+  router.replace({ path: '/admin/refresh' }).then(() => {
+    router.replace({ path: currentPath })
+  })
 }
 
 const checkMobile = () => {
@@ -183,9 +185,24 @@ const handleLinkClick = () => {
 
 const handleCommand = (command) => {
   if (command === 'logout') {
-    console.log('退出登录')
-  } else if (command === 'profile') {
-    console.log('个人中心')
+    ElMessageBox.confirm(
+      '确定要退出登录吗？',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    ).then(() => {
+      // 清除 token
+      removeToken()
+      // 显示提示
+      ElMessage.success('已退出登录')
+      // 跳转到登录页
+      router.push('/login')
+    }).catch(() => {
+      // 用户取消退出
+    })
   }
 }
 
