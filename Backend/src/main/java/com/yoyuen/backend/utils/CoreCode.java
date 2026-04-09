@@ -47,13 +47,21 @@ public interface CoreCode {
 
     ErrorCode USER_LOCKED = new ErrorCode(1000_000_103, "账户已锁定");
 
-    ErrorCode CAPTCHA_ERROR = new ErrorCode(1000_000_104, "验证码错误");
+    ErrorCode USER_DISABLED = new ErrorCode(1000_000_104, "账号已被禁用，请联系管理员");
 
-    ErrorCode NOT_LOGIN_ERROR = new ErrorCode(1000_000_105, "未登录");
+    ErrorCode CAPTCHA_ERROR = new ErrorCode(1000_000_105, "验证码错误");
 
-    ErrorCode TOKEN_EXPIRED = new ErrorCode(1000_000_106, "令牌已过期");
+    ErrorCode NOT_LOGIN_ERROR = new ErrorCode(1000_000_106, "未登录");
 
-    ErrorCode TOKEN_INVALID = new ErrorCode(1000_000_107, "无效令牌");
+    ErrorCode TOKEN_EXPIRED = new ErrorCode(1000_000_107, "令牌已过期");
+
+    ErrorCode TOKEN_INVALID = new ErrorCode(1000_000_108, "无效令牌");
+
+    ErrorCode USERNAME_EMPTY = new ErrorCode(1000_000_109, "用户名不能为空");
+
+    ErrorCode PASSWORD_EMPTY = new ErrorCode(1000_000_110, "密码不能为空");
+
+    ErrorCode LOGIN_FAILED = new ErrorCode(1000_000_111, "登录失败");
 
     /// 文件业务
     ErrorCode FILE_UPLOAD_ERROR = new ErrorCode(1000_000_204, "文件上传失败");
