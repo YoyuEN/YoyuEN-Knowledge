@@ -19,6 +19,10 @@
         <el-icon><Reading /></el-icon>
         <template #title>时光手札</template>
       </el-menu-item>
+      <el-menu-item index="/life-experience">
+        <el-icon><Compass /></el-icon>
+        <template #title>生活经历</template>
+      </el-menu-item>
       <el-menu-item index="/profile">
         <el-icon><User /></el-icon>
         <template #title>归心居</template>
@@ -40,6 +44,7 @@ import {
   Briefcase,
   User,
   Grid,
+  Compass,
 } from '@element-plus/icons-vue'
 
 const props = defineProps({

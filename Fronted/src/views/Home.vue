@@ -144,8 +144,6 @@
         </button>
       </div>
     </div>
-    <div class="message-list">
-    </div>
   </div>
 </template>
 

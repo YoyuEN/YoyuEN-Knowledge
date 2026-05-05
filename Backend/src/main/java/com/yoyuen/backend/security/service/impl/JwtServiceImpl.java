@@ -29,6 +29,9 @@ public class JwtServiceImpl implements JwtService {
 
     private final SecurityProperties securityProperties;
 
+    /** 缓存派生后的密钥，避免每次调用 PBKDF2 */
+    private volatile SecretKey cachedSecretKey;
+
     @Override
     public String generateToken(Map<String, Object> claims, String subject) {
         return buildToken(subject, claims, securityProperties.getExpiration());
@@ -105,8 +108,17 @@ public class JwtServiceImpl implements JwtService {
 
     @Override
     public String refreshToken(String token) {
-        Claims claims = parseToken(token);
-        return buildToken(claims.getSubject(), new HashMap<>(claims), securityProperties.getExpiration());
+        Claims oldClaims = parseToken(token);
+        // 创建新的 claims，排除系统 claims（iat, exp, sub, iss 等），确保新 Token 有全新的签发时间和过期时间
+        Map<String, Object> newClaims = new HashMap<>(oldClaims);
+        newClaims.remove(Claims.ISSUED_AT);
+        newClaims.remove(Claims.EXPIRATION);
+        newClaims.remove(Claims.SUBJECT);
+        newClaims.remove(Claims.ISSUER);
+        newClaims.remove(Claims.AUDIENCE);
+        newClaims.remove(Claims.NOT_BEFORE);
+        newClaims.remove(Claims.ID);
+        return buildToken(oldClaims.getSubject(), newClaims, securityProperties.getExpiration());
     }
 
     @Override
@@ -120,20 +132,29 @@ public class JwtServiceImpl implements JwtService {
     }
 
     /**
-     * 使用 PBKDF2 派生安全密钥（256位）
+     * 使用 PBKDF2 派生安全密钥（256位），结果缓存避免重复计算
      */
     public SecretKey getSecretKey() {
-        try {
-            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-            KeySpec spec = new PBEKeySpec(securityProperties.getSecret().toCharArray(),
-                    securityProperties.getSalt().getBytes(StandardCharsets.UTF_8), 10000, // 迭代次数
-                    256 // 密钥长度（256位 = 32字节）
-            );
-            byte[] derivedKey = factory.generateSecret(spec).getEncoded();
-            return new SecretKeySpec(derivedKey, "HmacSHA256");
+        if (cachedSecretKey != null) {
+            return cachedSecretKey;
         }
-        catch (Exception e) {
-            throw new RuntimeException("Failed to derive JWT key", e);
+        synchronized (this) {
+            if (cachedSecretKey != null) {
+                return cachedSecretKey;
+            }
+            try {
+                SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+                KeySpec spec = new PBEKeySpec(securityProperties.getSecret().toCharArray(),
+                        securityProperties.getSalt().getBytes(StandardCharsets.UTF_8), 10000, // 迭代次数
+                        256 // 密钥长度（256位 = 32字节）
+                );
+                byte[] derivedKey = factory.generateSecret(spec).getEncoded();
+                cachedSecretKey = new SecretKeySpec(derivedKey, "HmacSHA256");
+                return cachedSecretKey;
+            }
+            catch (Exception e) {
+                throw new RuntimeException("Failed to derive JWT key", e);
+            }
         }
     }
 

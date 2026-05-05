@@ -7,6 +7,7 @@ import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -47,6 +48,7 @@ public class PhotoController {
     /**
      * 上传照片
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/upload")
     public BaseResponse<PhotoVO> upload(
             @RequestParam("file") MultipartFile file,
@@ -60,6 +62,7 @@ public class PhotoController {
     /**
      * 删除照片
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/remove")
     public BaseResponse<Boolean> remove(@RequestParam String id) {
         boolean result = photoService.remove(id);

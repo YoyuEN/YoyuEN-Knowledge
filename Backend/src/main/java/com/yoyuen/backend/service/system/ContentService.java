@@ -13,6 +13,10 @@ public interface ContentService {
 
     long countAll();
 
+    long countToday();
+
+    long countRecentDays(int days);
+
     Content getById(String id);
 
     List<Content> listByCategory(String category);
@@ -20,6 +24,8 @@ public interface ContentService {
     List<Content> listRecommend();
 
     List<Content> listRecent(int limit);
+
+    List<Content> listTopByViews(int limit);
 
     List<Content> listAll(String keyword, String status);
 

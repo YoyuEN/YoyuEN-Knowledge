@@ -132,8 +132,9 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { removeToken, isAuthenticated } from '@/utils/auth.js'
-import { getCurrentUser } from '@/api/auth.js'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
+import { isAuthenticated } from '@/utils/auth.js'
 import {
   ArrowDown,
   House,
@@ -154,44 +155,29 @@ import '../views/admin/admin-theme.css'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
+const { userInfo, isLoggedIn } = storeToRefs(userStore)
+
 const isAsideVisible = ref(false)
 const isMobile = ref(false)
-const userInfo = ref({
-  username: '',
-  avatar: '/src/assets/picture/YoyuEN.png'
-})
 
-// 获取当前用户信息
+// 获取当前用户信息（优先使用 store 缓存，无缓存则请求）
 const fetchUserInfo = async () => {
   // 检查是否已登录
   if (!isAuthenticated()) {
-    console.warn('未登录，跳转到登录页')
     router.push('/login')
     return
   }
 
+  // 若 store 中已有用户信息，不再重复请求
+  if (userInfo.value.username) {
+    return
+  }
+
   try {
-    const response = await getCurrentUser()
-    console.log('获取用户信息响应:', response)
-    if (response.code === 200 && response.data) {
-      console.log('用户数据:', response.data)
-      console.log('头像 URL:', response.data.avatar)
-      userInfo.value = {
-        username: response.data.username || 'Admin',
-        avatar: response.data.avatar || '/src/assets/picture/YoyuEN.png'
-      }
-      console.log('设置后的 userInfo:', userInfo.value)
-    }
+    await userStore.fetchUserInfo()
   } catch (error) {
     console.error('获取用户信息失败:', error)
-    // 如果是认证错误，响应拦截器会自动跳转到登录页
-    // 这里只需要设置默认值以防万一
-    if (error.message && !error.message.includes('未登录')) {
-      userInfo.value = {
-        username: 'Admin',
-        avatar: '/src/assets/picture/YoyuEN.png'
-      }
-    }
   }
 }
 
@@ -237,8 +223,8 @@ const handleCommand = (command) => {
         type: 'warning',
       }
     ).then(() => {
-      // 清除 token
-      removeToken()
+      // 通过 Pinia store 清除登录状态
+      userStore.logout()
       // 显示提示
       ElMessage.success('已退出登录')
       // 跳转到登录页

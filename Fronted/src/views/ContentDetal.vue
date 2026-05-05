@@ -18,7 +18,7 @@
         class="content-swiper"
       >
         <swiper-slide
-          v-for="item in swiperItems"
+          v-for="(item, index) in swiperItems"
           :key="item.id"
           class="content-swiper-slide"
         >
@@ -37,15 +37,23 @@
             >
               您的浏览器不支持视频播放
             </video>
-            <!-- 第三方视频链接使用 iframe，自动转换为嵌入式播放器链接 -->
+            <!-- 第三方视频链接使用 iframe，只在当前活动幻灯片中加载 -->
             <iframe
-              v-else-if="item.videoType === 'link' && !isDirectVideoUrl(item.videoUrl)"
+              v-else-if="item.videoType === 'link' && !isDirectVideoUrl(item.videoUrl) && activeSlideIndex === index"
               :src="convertToEmbedUrl(item.videoUrl)"
               frameborder="0"
               allowfullscreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               class="swiper-video-iframe"
             ></iframe>
+            <!-- 非活动幻灯片显示封面 -->
+            <div
+              v-else-if="item.videoType === 'link' && !isDirectVideoUrl(item.videoUrl) && activeSlideIndex !== index"
+              class="video-placeholder"
+              :style="{ backgroundImage: `url(${item.cover})` }"
+            >
+              <div class="play-icon">▶</div>
+            </div>
           </div>
           <!-- 图文内容显示封面图 -->
           <Card16x9 v-else :background-image="item.cover" class="content-card-item" @click="viewImage(item.cover)">
@@ -122,7 +130,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { EffectFade } from 'swiper/modules'
@@ -156,7 +164,7 @@ const convertToEmbedUrl = (url) => {
   if (url.includes('bilibili.com/video/')) {
     const bvMatch = url.match(/\/video\/(BV[\w]+)/)
     if (bvMatch) {
-      return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&danmaku=0`
+      return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&high_quality=1&danmaku=0&autoplay=0`
     }
   }
 
@@ -165,7 +173,7 @@ const convertToEmbedUrl = (url) => {
   if (url.includes('youtube.com/watch')) {
     const videoId = new URL(url).searchParams.get('v')
     if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`
+      return `https://www.youtube.com/embed/${videoId}?autoplay=0` 
     }
   }
 
@@ -173,7 +181,7 @@ const convertToEmbedUrl = (url) => {
   if (url.includes('youtu.be/')) {
     const videoId = url.split('youtu.be/')[1]?.split('?')[0]
     if (videoId) {
-      return `https://www.youtube.com/embed/${videoId}`
+      return `https://www.youtube.com/embed/${videoId}?autoplay=0`
     }
   }
 
@@ -207,6 +215,7 @@ const showImagePreview = ref(false)
 const previewImages = ref([])
 const currentImageIndex = ref(0)
 const articleBodyRef = ref(null)
+const activeSlideIndex = ref(0)
 
 let swiperInstance = null
 
@@ -214,8 +223,25 @@ const onSwiper = (swiper) => {
   swiperInstance = swiper
 }
 
+// 暂停所有视频
+const pauseAllVideos = () => {
+  // 暂停所有 video 标签
+  const videos = document.querySelectorAll('.swiper-video-player')
+  videos.forEach(video => {
+    if (!video.paused) {
+      video.pause()
+    }
+  })
+}
+
 const onSlideChange = async () => {
   if (swiperInstance) {
+    // 切换前先暂停所有视频
+    pauseAllVideos()
+
+    // 更新当前活动幻灯片索引
+    activeSlideIndex.value = swiperInstance.activeIndex
+
     await transitionContent(async () => {
       currentItem.value = swiperItems.value[swiperInstance.activeIndex] || null
       if (currentItem.value) {
@@ -384,9 +410,18 @@ function handleVideoError(e) {
 
 onMounted(loadData)
 
+// 组件卸载时暂停所有视频
+onBeforeUnmount(() => {
+  pauseAllVideos()
+})
+
 // 监听路由参数变化（直接监听 computed ref，比 getter 更可靠）
 watch([type, itemId], ([newType, newId]) => {
-  if (newType && newId) loadData()
+  if (newType && newId) {
+    // 切换文章前先暂停所有视频
+    pauseAllVideos()
+    loadData()
+  }
 })
 
 // hash 单独变化时（同文章不同评论锚点）只滚动，不重新请求数据
@@ -872,6 +907,43 @@ watch(() => route.hash, (hash) => {
   width: 100%;
   height: 100%;
   border: none;
+}
+
+/* 视频占位符 */
+.video-placeholder {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.video-placeholder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.play-icon {
+  position: relative;
+  z-index: 1;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #333;
+  padding-left: 6px;
 }
 
 .video-overlay {

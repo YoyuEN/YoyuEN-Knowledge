@@ -155,7 +155,6 @@ public class OriginFileResourceServiceImpl extends ServiceImpl<OriginFileResourc
 
     private OriginFileResource upload(MultipartFile file, String bucketName) {
         String originalFilename = file.getOriginalFilename();
-//        String objectName = objectNameWithUserId(originalFilename);
         //不使用用户验证
         String objectName = originalFilename;
         String newObjectName = objectName;

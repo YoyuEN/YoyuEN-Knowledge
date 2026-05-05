@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
@@ -55,6 +56,7 @@ public class MurmurController {
     /**
      * 添加碎碎念
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public BaseResponse<String> create(@Valid @RequestBody MurmurVO murmurVO) {
         Murmur murmur = toEntity(murmurVO);
@@ -67,6 +69,7 @@ public class MurmurController {
     /**
      * 更新碎碎念
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/update")
     public BaseResponse<Boolean> update(@Valid @RequestBody MurmurVO murmurVO) {
         Murmur murmur = toEntity(murmurVO);
@@ -78,6 +81,7 @@ public class MurmurController {
     /**
      * 删除碎碎念（先查询再删除，保留完整信息写入知识库）
      */
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/remove")
     public BaseResponse<Boolean> remove(@RequestBody MurmurVO murmurVO) {
         Murmur existing = murmurService.getById(murmurVO.getId());

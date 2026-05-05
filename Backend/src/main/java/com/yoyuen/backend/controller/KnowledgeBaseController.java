@@ -6,6 +6,7 @@ import com.yoyuen.backend.service.ai.KnowledgeBaseService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,16 +25,19 @@ public class KnowledgeBaseController {
 
     private final KnowledgeBaseService knowledgeBaseService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public BaseResponse<String> createKnowledgeBase(@RequestBody KnowledgeBaseVO knowledgeBaseVO) {
         return ResultUtils.success(knowledgeBaseService.addKnowledgeBase(knowledgeBaseVO));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/update")
     public BaseResponse<Boolean> updateKnowledgeBase(@RequestBody KnowledgeBaseVO knowledgeBaseVO) {
         return ResultUtils.success(knowledgeBaseService.updateKnowledgeBase(knowledgeBaseVO));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/remove")
     public BaseResponse<Integer> removeKnowledgeBase(@RequestBody KnowledgeBaseVO knowledgeBaseVO) {
         return ResultUtils.success(knowledgeBaseService.removeKnowledgeBase(knowledgeBaseVO));
@@ -61,6 +65,7 @@ public class KnowledgeBaseController {
         return ResultUtils.success(knowledgeBaseService.simpleList());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/toggle-status")
     public BaseResponse<Boolean> toggleStatus(@RequestBody KnowledgeBaseVO knowledgeBaseVO) {
         return ResultUtils.success(knowledgeBaseService.updateKnowledgeBase(knowledgeBaseVO));

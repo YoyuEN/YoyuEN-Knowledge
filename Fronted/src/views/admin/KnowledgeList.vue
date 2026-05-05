@@ -240,10 +240,12 @@ const uploadAction = computed(() => {
   return `/api/resource/knowledge/${currentKnowledgeId.value}`
 })
 
+import { getToken } from '@/utils/auth'
+
 const uploadHeaders = computed(() => {
-  const token = localStorage.getItem('token')
+  const token = getToken()
   return {
-    'Authorization': `Bearer ${token}`
+    'Authorization': `Bearer ${token || ''}`
   }
 })
 

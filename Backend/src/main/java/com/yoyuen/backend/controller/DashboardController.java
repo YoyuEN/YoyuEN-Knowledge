@@ -1,21 +1,26 @@
 package com.yoyuen.backend.controller;
 
-import com.yoyuen.backend.utils.BaseResponse;
-import com.yoyuen.backend.utils.ResultUtils;
+import com.yoyuen.backend.entity.Comment;
+import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.service.ai.DashboardAssistantService;
 import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
+import com.yoyuen.backend.utils.BaseResponse;
+import com.yoyuen.backend.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.HashMap;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +32,7 @@ import java.util.Map;
 @RequestMapping("/dashboard")
 @RequiredArgsConstructor
 @Slf4j
+@PreAuthorize("hasRole('ADMIN')")
 public class DashboardController {
 
     private final DashboardAssistantService dashboardAssistantService;
@@ -44,47 +50,80 @@ public class DashboardController {
 
     /**
      * 获取网站访问统计
-     * 这里先返回模拟数据，后续对接第三方统计服务
      */
     @GetMapping("/statistics")
-    public Object getStatistics() {
-        return new Object() {
-            public final long todayVisits = 1234;
-            public final long weekVisits = 8567;
-            public final long monthVisits = 35678;
-            public final Object[] trendData = new Object[]{
-                new Object() { public final String date = "03-04"; public final int visits = 1200; },
-                new Object() { public final String date = "03-05"; public final int visits = 1350; },
-                new Object() { public final String date = "03-06"; public final int visits = 980; },
-                new Object() { public final String date = "03-07"; public final int visits = 1450; },
-                new Object() { public final String date = "03-08"; public final int visits = 1680; },
-                new Object() { public final String date = "03-09"; public final int visits = 1520; },
-                new Object() { public final String date = "03-10"; public final int visits = 1234; }
-            };
-            public final Object[] topPages = new Object[]{
-                new Object() { public final String path = "/article/vue3-tutorial"; public final int views = 456; },
-                new Object() { public final String path = "/article/spring-boot-guide"; public final int views = 389; },
-                new Object() { public final String path = "/article/react-hooks"; public final int views = 312; },
-                new Object() { public final String path = "/"; public final int views = 278; },
-                new Object() { public final String path = "/about"; public final int views = 156; }
-            };
-        };
+    public BaseResponse<Map<String, Object>> getStatistics() {
+        long todayContent = contentService.countToday();
+        long todayComment = commentService.countToday();
+        long weekContent = contentService.countRecentDays(7);
+        long weekComment = commentService.countRecentDays(7);
+        long monthContent = contentService.countRecentDays(30);
+        long monthComment = commentService.countRecentDays(30);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("todayVisits", todayContent + todayComment);
+        result.put("weekVisits", weekContent + weekComment);
+        result.put("monthVisits", monthContent + monthComment);
+
+        // 近7天内容发布趋势
+        Map<String, Integer> contentStats = contentService.getActivityStats(7);
+        List<Map<String, Object>> trendData = new ArrayList<>();
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("MM-dd");
+        for (int i = 6; i >= 0; i--) {
+            String date = LocalDate.now().minusDays(i).format(fmt);
+            int count = contentStats.getOrDefault(date, 0);
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("date", date);
+            item.put("visits", count);
+            trendData.add(item);
+        }
+        result.put("trendData", trendData);
+
+        // 浏览量最高的内容
+        List<Content> topContents = contentService.listTopByViews(5);
+        List<Map<String, Object>> topPages = new ArrayList<>();
+        for (Content content : topContents) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("path", "/article/" + content.getId());
+            item.put("views", content.getViewCount() != null ? content.getViewCount() : 0);
+            topPages.add(item);
+        }
+        result.put("topPages", topPages);
+
+        return ResultUtils.success(result);
     }
 
     /**
      * 获取快捷信息
      */
     @GetMapping("/quick-info")
-    public Object getQuickInfo() {
-        // 这里可以调用其他服务获取真实数据
-        return new Object() {
-            public final int pendingComments = 3;
-            public final int draftArticles = 5;
-            public final int todayComments = 12;
-            public final Object[] notifications = new Object[]{
-                new Object() { public final String type = "comment"; public final String message = "文章《Vue3实战》收到新评论"; },
-                new Object() { public final String type = "system"; public final String message = "系统将于今晚23:00进行维护"; }
-            };
-        };
+    public BaseResponse<Map<String, Object>> getQuickInfo() {
+        List<Comment> pendingList = commentService.listAll(null, "pending");
+        long pendingComments = pendingList.size();
+        long todayComments = commentService.countToday();
+
+        List<Map<String, Object>> notifications = new ArrayList<>();
+        for (Comment comment : pendingList.stream().limit(2).toList()) {
+            Map<String, Object> notification = new LinkedHashMap<>();
+            notification.put("type", "comment");
+            notification.put("message", String.format("%s 评论了《%s》待审核",
+                    comment.getAuthor() != null ? comment.getAuthor() : "匿名",
+                    comment.getContentId() != null ? comment.getContentId() : "未知内容"));
+            notifications.add(notification);
+        }
+        if (notifications.isEmpty()) {
+            Map<String, Object> notification = new LinkedHashMap<>();
+            notification.put("type", "system");
+            notification.put("message", "暂无待处理事项");
+            notifications.add(notification);
+        }
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("pendingComments", pendingComments);
+        result.put("draftArticles", 0);
+        result.put("todayComments", todayComments);
+        result.put("notifications", notifications);
+
+        return ResultUtils.success(result);
     }
 }

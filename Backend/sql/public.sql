@@ -498,3 +498,55 @@ SET avatar = 'http://118.89.135.164:9000/default/avatars/YoyuEN.png'
 WHERE username = 'YoyuEN';
 
 
+-- ==================== 日记 / 生活经历表 ====================
+CREATE TABLE diary (
+    id VARCHAR(64) PRIMARY KEY,
+    type VARCHAR(32) NOT NULL DEFAULT 'diary',
+    diary_date VARCHAR(64),
+    weather VARCHAR(64),
+    mood VARCHAR(64),
+    avatar VARCHAR(512),
+    content TEXT,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN DEFAULT FALSE,
+    creator VARCHAR(64),
+    updater VARCHAR(64)
+);
+
+-- 插入示例数据（ Diary ）
+INSERT INTO diary (id, type, diary_date, weather, mood, avatar, content) VALUES
+('1', 'diary', '2026年4月9日', '☀️ 晴', '心情愉悦', '/src/assets/picture/YoyuEN.png', '今天完成了登录认证功能的开发...'),
+('2', 'diary', '2026年4月8日', '🌤️ 多云', '专注思考', '/src/assets/picture/YoyuEN.png', '开始设计登录界面...');
+
+-- 插入示例数据（ LifeExperience ）
+INSERT INTO diary (id, type, diary_date, weather, mood, avatar, content) VALUES
+('3', 'life_experience', '2025-01-01', '☀️ 晴天', '😊 开心', '/src/assets/picture/YoyuEN.png', '新的一年开始了！...');
+
+
+-- ==================== 个人资料表 ====================
+CREATE TABLE user_profile (
+    id VARCHAR(64) PRIMARY KEY,
+    nickname VARCHAR(128),
+    avatar VARCHAR(512),
+    signature VARCHAR(512),
+    welcome_text TEXT,
+    school VARCHAR(256),
+    email VARCHAR(128),
+    location VARCHAR(128),
+    tech_stack TEXT,   -- JSON 数组字符串，如 ["Vue.js","React"]
+    tags TEXT,         -- JSON 数组字符串
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN DEFAULT FALSE,
+    creator VARCHAR(64),
+    updater VARCHAR(64)
+);
+
+-- 插入默认个人资料
+INSERT INTO user_profile (id, nickname, avatar, signature, welcome_text, school, email, location, tech_stack, tags) VALUES
+('1', 'YoyuEN', '/src/assets/picture/YoyuEN.png', '宁鸣而死，不默而生！',
+ '欢迎来到我的知识空间！这里记录着我的学习历程、技术探索和生活感悟。希望我的分享能给你带来一些启发和帮助。',
+ '北方民族大学 · 软件工程', '15839393171@163.com', '北京 · 昌平',
+ '["Vue.js","React","TypeScript","Node.js","Python","Java","MySQL","Git"]',
+ '["玄不救非,氪不改命","男神","手工","天然呆","篮球","Running","Gym"]');

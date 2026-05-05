@@ -5,35 +5,36 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-
-// 导入本地头像图片
-import avatarImage from '../assets/picture/YoyuEN.png'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import DiarySwiper from '../components/DiarySwiper.vue'
+import { fetchDiaryList } from '@/api/diary/diary.js'
 
-const diaryEntries = ref([
-  { 
-    date: '2025-01-01',
-    weather: '☀️ 晴天',
-    mood: '😊 开心',
-    avatar: avatarImage,
-    content: '新的一年开始了！今天和家人一起度过了美好的时光，感觉很幸福。希望新的一年能够充满希望和机遇。'
-  },
-  { 
-    date: '2025-01-02',
-    weather: '⛅ 多云',
-    mood: '🤔 思考',
-    avatar: avatarImage,
-    content: '今天思考了很多关于未来的事情。生活就像一本书，每一天都是新的一页。我需要更加珍惜当下的时光。'
-  },
-  { 
-    date: '2025-01-02',
-    weather: '⛅ 多云',
-    mood: '🤔 思考',
-    avatar: avatarImage,
-    content: '今天思考了很多关于未来的事情。生活就像一本书，每一天都是新的一页。我需要更加珍惜当下的时光。'
+const diaryEntries = ref([])
+const loading = ref(false)
+
+const loadLifeExperienceData = async () => {
+  loading.value = true
+  try {
+    const res = await fetchDiaryList('life_experience')
+    diaryEntries.value = (res.data || []).map(item => ({
+      date: item.diaryDate || '',
+      weather: item.weather || '',
+      mood: item.mood || '',
+      avatar: item.avatar || '/src/assets/picture/YoyuEN.png',
+      content: item.content || ''
+    }))
+  } catch (e) {
+    console.error('获取生活经历数据失败', e)
+    ElMessage.error('获取生活经历数据失败')
+  } finally {
+    loading.value = false
   }
-])
+}
+
+onMounted(() => {
+  loadLifeExperienceData()
+})
 </script>
 
 <style scoped>
@@ -47,6 +48,4 @@ const diaryEntries = ref([
   overflow: hidden;
   margin-top: 60px;
 }
-
-
 </style>

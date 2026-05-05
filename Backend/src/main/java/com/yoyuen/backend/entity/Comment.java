@@ -72,6 +72,12 @@ public class Comment extends BaseEntity {
     private Boolean isRecommend;
 
     /**
+     * 审核状态：pending-待审核，approved-已通过，rejected-已拒绝
+     */
+    @TableField("status")
+    private String status;
+
+    /**
      * 子评论列表（非数据库字段）
      */
     @TableField(exist = false)

@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { getToken } from '@/utils/auth'
 
 /**
  * 获取AI助手报告（SSE流式）
@@ -8,7 +9,7 @@ export function fetchAssistantReport() {
     method: 'GET',
     headers: {
       'Accept': 'text/event-stream',
-      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+      'Authorization': `Bearer ${getToken() || ''}`
     }
   })
 }

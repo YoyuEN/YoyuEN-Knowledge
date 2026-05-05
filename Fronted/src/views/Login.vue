@@ -49,10 +49,11 @@ import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { login } from '@/api/auth.js'
-import { setToken } from '@/utils/auth.js'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 
 const loginForm = ref({
   username: '',
@@ -78,8 +79,8 @@ const handleLogin = async () => {
     const response = await login(loginForm.value)
 
     if (response.code === 200 && response.data.token) {
-      // 保存 token
-      setToken(response.data.token)
+      // 通过 Pinia store 保存登录状态并获取用户信息
+      await userStore.login(response.data.token)
 
       // 显示成功提示
       ElMessage.success('登录成功')

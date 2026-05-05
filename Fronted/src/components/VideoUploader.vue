@@ -93,8 +93,10 @@ const uploadAction = computed(() => {
   return '/api/content/upload-video'
 })
 
+import { getToken } from '@/utils/auth'
+
 const uploadHeaders = computed(() => {
-  const token = localStorage.getItem('token')
+  const token = getToken()
   return {
     'Authorization': token ? (token.startsWith('Bearer ') ? token : `Bearer ${token}`) : ''
   }

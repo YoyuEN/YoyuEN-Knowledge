@@ -1,6 +1,7 @@
 ﻿import axios from 'axios'
-import { getToken, removeToken } from './auth'
+import { getToken } from './auth'
 import router from '../router/router'
+import { useUserStore } from '@/stores/user'
 
 const service = axios.create({
   baseURL: '/api',
@@ -13,9 +14,6 @@ service.interceptors.request.use(
     const token = getToken()
     if (token) {
       config.headers.Authorization = token.startsWith('Bearer ') ? token : `Bearer ${token}`
-      console.log('请求携带 token:', config.headers.Authorization.substring(0, 20) + '...')
-    } else {
-      console.warn('请求未携带 token')
     }
     return config
   },
@@ -39,9 +37,10 @@ service.interceptors.response.use(
     if (error.response) {
       const { status } = error.response
 
-      // 401 未授权：清除 token 并跳转到登录页
+      // 401 未授权：通过 Pinia store 清除状态并跳转到登录页
       if (status === 401) {
-        removeToken()
+        const userStore = useUserStore()
+        userStore.logout()
         router.push('/login')
         return Promise.reject(new Error('未登录或登录已过期，请重新登录'))
       }

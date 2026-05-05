@@ -41,6 +41,14 @@ public class SecurityFrameworkUtil {
         return loginUser != null ? loginUser.getId() : null;
     }
 
+    public static Long getCurrUserIdOrNull() {
+        try {
+            return getCurrUserId();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static Optional<SystemUser> tryGetLoginUser() {
         try {
             SystemUser loginUser = getLoginUser();

@@ -111,7 +111,6 @@ public class DocumentEntityServiceImpl implements DocumentEntityService {
             e.printStackTrace();
             throw new BusinessException(CoreCode.SYSTEM_ERROR, e.getMessage());
         }
-
     }
 
     @Override

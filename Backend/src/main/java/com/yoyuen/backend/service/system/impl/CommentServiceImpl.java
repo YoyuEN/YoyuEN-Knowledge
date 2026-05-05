@@ -108,6 +108,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
                     .like(Comment::getAuthor, keyword));
         }
 
+        if (status != null && !status.isEmpty()) {
+            wrapper.eq(Comment::getStatus, status);
+        }
+
         wrapper.orderByDesc(Comment::getCreateTime);
         return this.list(wrapper);
     }
@@ -116,7 +120,11 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     @Override
     public boolean approveComment(String id) {
         Comment comment = this.getById(id);
-        return comment != null;
+        if (comment == null) {
+            return false;
+        }
+        comment.setStatus("approved");
+        return this.updateById(comment);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -151,6 +159,27 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     public long countAll() {
         LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Comment::getDeleted, false);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public long countToday() {
+        java.time.LocalDateTime startOfDay = java.time.LocalDateTime.now().toLocalDate().atStartOfDay();
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getDeleted, false)
+                .ge(Comment::getCreateTime, startOfDay);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public long countRecentDays(int days) {
+        if (days <= 0) {
+            return 0;
+        }
+        java.time.LocalDateTime since = java.time.LocalDateTime.now().minusDays(days - 1L).toLocalDate().atStartOfDay();
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getDeleted, false)
+                .ge(Comment::getCreateTime, since);
         return this.count(wrapper);
     }
 }

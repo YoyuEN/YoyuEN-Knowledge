@@ -1,0 +1,854 @@
+{
+  "version": "2.10",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#FFFFFF",
+      "layout": "none"
+    },
+    {
+      "type": "frame",
+      "id": "mDJCl",
+      "x": 100,
+      "y": 100,
+      "name": "业务流程图",
+      "width": 1400,
+      "height": 900,
+      "fill": "#FFFFFF",
+      "stroke": {
+        "thickness": 2,
+        "fill": "#333333"
+      },
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "xsgKe",
+          "x": 0,
+          "y": 0,
+          "name": "标题",
+          "fill": "#000000",
+          "content": "智能知识库问答系统业务流程图",
+          "fontFamily": "Inter",
+          "fontSize": 24,
+          "fontWeight": "bold"
+        },
+        {
+          "type": "ellipse",
+          "id": "Q3xOi",
+          "x": 336,
+          "y": 0,
+          "name": "开始",
+          "fill": "#4CAF50",
+          "width": 100,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#2E7D32"
+          }
+        },
+        {
+          "type": "text",
+          "id": "xSoew",
+          "x": 436,
+          "y": 0,
+          "name": "userStartText",
+          "fill": "#FFFFFF",
+          "content": "用户访问",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "kg6Gm",
+          "x": 492,
+          "y": 0,
+          "name": "注册",
+          "fill": "#2196F3",
+          "width": 100,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#1565C0"
+          }
+        },
+        {
+          "type": "text",
+          "id": "4RRl5",
+          "x": 592,
+          "y": 0,
+          "name": "registerText",
+          "fill": "#FFFFFF",
+          "content": "注册账号",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "SBVoc",
+          "x": 648,
+          "y": 0,
+          "name": "登录",
+          "fill": "#2196F3",
+          "width": 100,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#1565C0"
+          }
+        },
+        {
+          "type": "text",
+          "id": "IhT4E",
+          "x": 748,
+          "y": 0,
+          "name": "loginText",
+          "fill": "#FFFFFF",
+          "content": "用户登录",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "cl6og",
+          "x": 804,
+          "y": 0,
+          "name": "知识库管理",
+          "fill": "#FF9800",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#E65100"
+          }
+        },
+        {
+          "type": "text",
+          "id": "p6Kqa",
+          "x": 924,
+          "y": 0,
+          "name": "kbManageText",
+          "fill": "#FFFFFF",
+          "content": "创建知识库",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "PNj5o",
+          "x": 994,
+          "y": 0,
+          "name": "上传文档",
+          "fill": "#FF9800",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#E65100"
+          }
+        },
+        {
+          "type": "text",
+          "id": "gTD6Z",
+          "x": 1114,
+          "y": 0,
+          "name": "uploadDocText",
+          "fill": "#FFFFFF",
+          "content": "上传文档",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "nxLru",
+          "x": 1170,
+          "y": 0,
+          "name": "解析文档",
+          "fill": "#9C27B0",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#6A1B9A"
+          }
+        },
+        {
+          "type": "text",
+          "id": "3OcsC",
+          "x": 1290,
+          "y": 0,
+          "name": "parseDocText",
+          "fill": "#FFFFFF",
+          "content": "文档解析",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "iTG2i",
+          "x": 1346,
+          "y": 0,
+          "name": "向量化",
+          "fill": "#9C27B0",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#6A1B9A"
+          }
+        },
+        {
+          "type": "text",
+          "id": "81tEO",
+          "x": 1466,
+          "y": 0,
+          "name": "vectorizeText",
+          "fill": "#FFFFFF",
+          "content": "向量化处理",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "MN3rV",
+          "x": 1536,
+          "y": 0,
+          "name": "存储向量",
+          "fill": "#9C27B0",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#6A1B9A"
+          }
+        },
+        {
+          "type": "text",
+          "id": "hpxdG",
+          "x": 1656,
+          "y": 0,
+          "name": "storeVectorText",
+          "fill": "#FFFFFF",
+          "content": "存储到向量库",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "V9sra",
+          "x": 750,
+          "y": 100,
+          "name": "AI问答",
+          "fill": "#00BCD4",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#0097A7"
+          }
+        },
+        {
+          "type": "text",
+          "id": "Z3t8U",
+          "x": 775,
+          "y": 120,
+          "name": "aiQuestionText",
+          "fill": "#FFFFFF",
+          "content": "用户提问",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "kYPm3",
+          "x": 750,
+          "y": 200,
+          "name": "选择知识库",
+          "fill": "#00BCD4",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#0097A7"
+          }
+        },
+        {
+          "type": "text",
+          "id": "xGtDN",
+          "x": 765,
+          "y": 220,
+          "name": "selectKBText",
+          "fill": "#FFFFFF",
+          "content": "选择知识库",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "oQ37v",
+          "x": 750,
+          "y": 300,
+          "name": "问题向量化",
+          "fill": "#673AB7",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#4527A0"
+          }
+        },
+        {
+          "type": "text",
+          "id": "uytXt",
+          "x": 760,
+          "y": 320,
+          "name": "embeddingText",
+          "fill": "#FFFFFF",
+          "content": "问题向量化",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "TLmdJ",
+          "x": 750,
+          "y": 400,
+          "name": "向量检索",
+          "fill": "#673AB7",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#4527A0"
+          }
+        },
+        {
+          "type": "text",
+          "id": "2nqpx",
+          "x": 765,
+          "y": 420,
+          "name": "searchText",
+          "fill": "#FFFFFF",
+          "content": "向量检索",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "Rpg68",
+          "x": 750,
+          "y": 500,
+          "name": "LLM生成",
+          "fill": "#673AB7",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#4527A0"
+          }
+        },
+        {
+          "type": "text",
+          "id": "fhmNg",
+          "x": 765,
+          "y": 520,
+          "name": "llmText",
+          "fill": "#FFFFFF",
+          "content": "LLM生成答案",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "kjUer",
+          "x": 750,
+          "y": 600,
+          "name": "返回答案",
+          "fill": "#00BCD4",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#0097A7"
+          }
+        },
+        {
+          "type": "text",
+          "id": "9knKP",
+          "x": 765,
+          "y": 620,
+          "name": "responseText",
+          "fill": "#FFFFFF",
+          "content": "返回答案",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "4sQbx",
+          "x": 1050,
+          "y": 100,
+          "name": "内容管理",
+          "fill": "#E91E63",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#AD1457"
+          }
+        },
+        {
+          "type": "text",
+          "id": "1QGgC",
+          "x": 1060,
+          "y": 120,
+          "name": "contentManageText",
+          "fill": "#FFFFFF",
+          "content": "创建内容",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "I1gac",
+          "x": 1050,
+          "y": 200,
+          "name": "编辑内容",
+          "fill": "#E91E63",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#AD1457"
+          }
+        },
+        {
+          "type": "text",
+          "id": "gVQcl",
+          "x": 1060,
+          "y": 220,
+          "name": "editContentText",
+          "fill": "#FFFFFF",
+          "content": "编辑内容",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "XKKEB",
+          "x": 1050,
+          "y": 300,
+          "name": "同步知识库",
+          "fill": "#9C27B0",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#6A1B9A"
+          }
+        },
+        {
+          "type": "text",
+          "id": "xeEyf",
+          "x": 1055,
+          "y": 320,
+          "name": "syncKBText",
+          "fill": "#FFFFFF",
+          "content": "同步到知识库",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "klmK4",
+          "x": 1050,
+          "y": 420,
+          "name": "发表评论",
+          "fill": "#FFC107",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#F57F17"
+          }
+        },
+        {
+          "type": "text",
+          "id": "7JvGD",
+          "x": 1060,
+          "y": 440,
+          "name": "commentText",
+          "fill": "#FFFFFF",
+          "content": "发表评论",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 8,
+          "id": "seXqK",
+          "x": 1050,
+          "y": 520,
+          "name": "评论同步",
+          "fill": "#9C27B0",
+          "width": 120,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#6A1B9A"
+          }
+        },
+        {
+          "type": "text",
+          "id": "Wren0",
+          "x": 1055,
+          "y": 540,
+          "name": "commentSyncText",
+          "fill": "#FFFFFF",
+          "content": "评论同步",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "ellipse",
+          "id": "8TEwN",
+          "x": 1050,
+          "y": 700,
+          "name": "结束",
+          "fill": "#F44336",
+          "width": 100,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "fill": "#C62828"
+          }
+        },
+        {
+          "type": "text",
+          "id": "z6JCb",
+          "x": 1075,
+          "y": 720,
+          "name": "endNodeText",
+          "fill": "#FFFFFF",
+          "content": "结束",
+          "textAlign": "center",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "line",
+          "id": "OyGF3",
+          "x": 100,
+          "y": 160,
+          "name": "line1",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "8u6xr",
+          "x": 100,
+          "y": 260,
+          "name": "line2",
+          "width": 0,
+          "height": 60,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "1mfuH",
+          "x": 100,
+          "y": 380,
+          "name": "line3",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "CRoHv",
+          "x": 170,
+          "y": 450,
+          "name": "line4",
+          "width": 50,
+          "height": 0,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "KnbOi",
+          "x": 340,
+          "y": 450,
+          "name": "line5",
+          "width": 50,
+          "height": 0,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "nhacn",
+          "x": 510,
+          "y": 450,
+          "name": "line6",
+          "width": 50,
+          "height": 0,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "iRbtq",
+          "x": 810,
+          "y": 160,
+          "name": "line7",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "ds5Wa",
+          "x": 810,
+          "y": 260,
+          "name": "line8",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "NuDyE",
+          "x": 810,
+          "y": 360,
+          "name": "line9",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "943WL",
+          "x": 810,
+          "y": 460,
+          "name": "line10",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "bYQod",
+          "x": 810,
+          "y": 560,
+          "name": "line11",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "gKGOD",
+          "x": 1110,
+          "y": 160,
+          "name": "line12",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "0JJoT",
+          "x": 1110,
+          "y": 260,
+          "name": "line13",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "line",
+          "id": "OTGnm",
+          "x": 1110,
+          "y": 480,
+          "name": "line14",
+          "width": 0,
+          "height": 40,
+          "stroke": {
+            "thickness": 2,
+            "cap": "round",
+            "fill": "#333333"
+          }
+        },
+        {
+          "type": "polygon",
+          "polygonCount": 3,
+          "id": "kTSHq",
+          "x": 95,
+          "y": 195,
+          "name": "arrow1",
+          "rotation": 180,
+          "fill": "#333333",
+          "width": 10,
+          "height": 10
+        },
+        {
+          "type": "polygon",
+          "polygonCount": 3,
+          "id": "x6XDa",
+          "x": 95,
+          "y": 315,
+          "name": "arrow2",
+          "rotation": 180,
+          "fill": "#333333",
+          "width": 10,
+          "height": 10
+        },
+        {
+          "type": "polygon",
+          "polygonCount": 3,
+          "id": "e4dB3",
+          "x": 95,
+          "y": 415,
+          "name": "arrow3",
+          "rotation": 180,
+          "fill": "#333333",
+          "width": 10,
+          "height": 10
+        },
+        {
+          "type": "polygon",
+          "polygonCount": 3,
+          "id": "eiuOR",
+          "x": 215,
+          "y": 445,
+          "name": "arrow4",
+          "rotation": 270,
+          "fill": "#333333",
+          "width": 10,
+          "height": 10
+        },
+        {
+          "type": "polygon",
+          "polygonCount": 3,
+          "id": "rFZ6m",
+          "x": 385,
+          "y": 445,
+          "name": "arrow5",
+          "rotation": 270,
+          "fill": "#333333",
+          "width": 10,
+          "height": 10
+        },
+        {
+          "type": "polygon",
+          "polygonCount": 3,
+          "id": "AbWwp",
+          "x": 555,
+          "y": 445,
+          "name": "arrow6",
+          "rotation": 270,
+          "fill": "#333333",
+          "width": 10,
+          "height": 10
+        }
+      ]
+    }
+  ]
+}

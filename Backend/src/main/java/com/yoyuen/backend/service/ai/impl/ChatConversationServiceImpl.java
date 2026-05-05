@@ -53,8 +53,7 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
         ChatConversation chatConversation = new ChatConversation();
         chatConversation.setTitle(title);
         chatConversation.setKnowledgeBaseId(conversation.getKnowledgeBaseId());
-//        chatConversation.setUserId(SecurityFrameworkUtil.getCurrUserId());
-        chatConversation.setUserId(1L);
+        chatConversation.setUserId(SecurityFrameworkUtil.getCurrUserIdOrNull());
         this.saveOrUpdate(chatConversation);
         ChatConversationVO chatConversationVO = new ChatConversationVO();
         chatConversationVO.setId(chatConversation.getId());
@@ -67,9 +66,13 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
 
     @Override
     public List<ChatConversationVO> listConversation() {
+        Long userId = SecurityFrameworkUtil.getCurrUserIdOrNull();
+        if (userId == null) {
+            return new ArrayList<>();
+        }
         LambdaQueryWrapper<ChatConversation> qw = new LambdaQueryWrapper<>();
         qw.orderByDesc(ChatConversation::getCreateTime);
-        qw.eq(ChatConversation::getUserId, SecurityFrameworkUtil.getCurrUserId());
+        qw.eq(ChatConversation::getUserId, userId);
         qw.last(" LIMIT 30");
         List<ChatConversation> list = this.list(qw);
         return transferChatConversation(list);
@@ -77,9 +80,13 @@ public class ChatConversationServiceImpl extends ServiceImpl<ChatConversationMap
 
     @Override
     public List<ChatConversationVO> listConversationsByKnowledgeBase(String knowledgeBaseId) {
+        Long userId = SecurityFrameworkUtil.getCurrUserIdOrNull();
+        if (userId == null) {
+            return new ArrayList<>();
+        }
         LambdaQueryWrapper<ChatConversation> qw = new LambdaQueryWrapper<>();
         qw.orderByDesc(ChatConversation::getCreateTime);
-        qw.eq(ChatConversation::getUserId, SecurityFrameworkUtil.getCurrUserId());
+        qw.eq(ChatConversation::getUserId, userId);
         if (knowledgeBaseId != null && !knowledgeBaseId.isEmpty()) {
             qw.eq(ChatConversation::getKnowledgeBaseId, knowledgeBaseId);
         }

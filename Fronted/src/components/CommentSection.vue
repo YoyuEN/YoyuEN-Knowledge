@@ -220,6 +220,7 @@
 import { ref } from "vue";
 import { ChatDotRound } from "@element-plus/icons-vue";
 import { createComment } from "@/api/comment/comment.js";
+import { marked } from "marked";
 
 // 定义组件属性
 const props = defineProps({
@@ -366,65 +367,12 @@ const handleAvatarChange = (file) => {
 const replyToCommentId = ref(null);
 const replyToUsername = ref(null);
 
-// 简单的Markdown渲染函数（实际项目中应使用专业的Markdown解析库）
+// 使用 marked 安全渲染 Markdown（默认转义 HTML，防止 XSS）
 const renderMarkdown = (content) => {
-  // 空值检查
   if (!content) {
     return "";
   }
-
-  let processedContent = content;
-  // 替换标题
-  processedContent = processedContent.replace(
-    /#{6}\s(.*?)(\n|$)/g,
-    "<h6>$1</h6>"
-  );
-  processedContent = processedContent.replace(
-    /#{5}\s(.*?)(\n|$)/g,
-    "<h5>$1</h5>"
-  );
-  processedContent = processedContent.replace(
-    /#{4}\s(.*?)(\n|$)/g,
-    "<h4>$1</h4>"
-  );
-  processedContent = processedContent.replace(
-    /#{3}\s(.*?)(\n|$)/g,
-    "<h3>$1</h3>"
-  );
-  processedContent = processedContent.replace(
-    /#{2}\s(.*?)(\n|$)/g,
-    "<h2>$1</h2>"
-  );
-  processedContent = processedContent.replace(
-    /#{1}\s(.*?)(\n|$)/g,
-    "<h1>$1</h1>"
-  );
-
-  // 替换图片
-  processedContent = processedContent.replace(
-    /!\[(.*?)\]\((.*?)\)/g,
-    '<img src="$2" alt="$1" style="max-width: 100%; height: auto;" />'
-  );
-
-  // 替换内联链接
-  processedContent = processedContent.replace(
-    /\[(.*?)\]\((.*?)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
-
-  // 替换普通URL（http://或https://开头）
-  processedContent = processedContent.replace(
-    /(https?:\/\/[^\s]+)/g,
-    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
-
-  // 替换段落 - 优化正则表达式，确保正确匹配非标题、非空行
-  processedContent = processedContent.replace(
-    /^(?!<h[1-6]|<\/h[1-6]|\s*$)(.*?)(\n\n|$)/gm,
-    "<p>$1</p>"
-  );
-
-  return processedContent;
+  return marked.parse(content, { breaks: true, gfm: true });
 };
 
 // 计算总评论数（包括主评论和子评论）

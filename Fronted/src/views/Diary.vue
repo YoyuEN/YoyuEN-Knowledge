@@ -11,57 +11,34 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import DiarySwiper from '@/components/DiarySwiper.vue'
+import { fetchDiaryList } from '@/api/diary/diary.js'
 
-const diaryEntries = ref([
-  {
-    date: '2026年4月9日',
-    weather: '☀️ 晴',
-    mood: '心情愉悦',
-    avatar: '/src/assets/picture/YoyuEN.png',
-    content: '今天完成了登录认证功能的开发，前后端联调顺利。看着自己一行行代码变成可用的功能，内心充满成就感。技术的魅力就在于此，将想法变为现实。'
-  },
-  {
-    date: '2026年4月8日',
-    weather: '🌤️ 多云',
-    mood: '专注思考',
-    avatar: '/src/assets/picture/YoyuEN.png',
-    content: '开始设计登录界面，使用了 Pencil 工具绘制原型。简洁的3:2布局，左侧介绍右侧登录，淡色系的配色让整个界面看起来很舒服。设计不仅是美观，更是用户体验的体现。'
-  },
-  {
-    date: '2026年4月7日',
-    weather: '🌧️ 雨',
-    mood: '平静安宁',
-    avatar: '/src/assets/picture/YoyuEN.png',
-    content: '雨天适合读书和思考。翻阅了几篇关于 JWT 认证的文章，对安全性有了更深的理解。技术的学习永无止境，每一次深入都能发现新的世界。'
-  },
-  {
-    date: '2026年4月6日',
-    weather: '☁️ 阴',
-    mood: '充实满足',
-    avatar: '/src/assets/picture/YoyuEN.png',
-    content: '优化了项目的路由守卫逻辑，添加了更完善的权限控制。代码重构虽然耗时，但看到更清晰的结构和更好的可维护性，一切都值得。'
-  },
-  {
-    date: '2026年4月5日',
-    weather: '🌤️ 晴转多云',
-    mood: '轻松愉快',
-    avatar: '/src/assets/picture/YoyuEN.png',
-    content: '周末去了图书馆，找到几本不错的技术书籍。在安静的环境中学习，效率格外高。生活需要这样的节奏，工作与学习的平衡。'
-  },
-  {
-    date: '2026年4月4日',
-    weather: '☀️ 晴',
-    mood: '充满动力',
-    avatar: '/src/assets/picture/YoyuEN.png',
-    content: '新的一周开始了，制定了本周的开发计划。目标明确，步骤清晰，相信这周会有不错的进展。每一个小目标的达成，都是向大目标迈进的一步。'
+const diaryEntries = ref([])
+const loading = ref(false)
+
+const loadDiaryData = async () => {
+  loading.value = true
+  try {
+    const res = await fetchDiaryList('diary')
+    diaryEntries.value = (res.data || []).map(item => ({
+      date: item.diaryDate || '',
+      weather: item.weather || '',
+      mood: item.mood || '',
+      avatar: item.avatar || '/src/assets/picture/YoyuEN.png',
+      content: item.content || ''
+    }))
+  } catch (e) {
+    console.error('获取日记数据失败', e)
+    ElMessage.error('获取日记数据失败')
+  } finally {
+    loading.value = false
   }
-])
+}
 
 onMounted(() => {
-  // 可以在这里从后端获取日记数据
-  // const res = await fetchDiaryList()
-  // diaryEntries.value = res.data || []
+  loadDiaryData()
 })
 </script>
 

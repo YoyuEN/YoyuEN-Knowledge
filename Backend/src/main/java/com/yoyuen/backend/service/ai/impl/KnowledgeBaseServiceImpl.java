@@ -1,15 +1,27 @@
 package com.yoyuen.backend.service.ai.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yoyuen.backend.controller.vo.KnowledgeBaseVO;
 import com.yoyuen.backend.controller.vo.SimpleBaseVO;
+import com.yoyuen.backend.mapper.DocumentEntityMapper;
 import com.yoyuen.backend.mapper.KnowledgeBaseMapper;
+import com.yoyuen.backend.mapper.OriginFileResourceMapper;
 import com.yoyuen.backend.mapper.SystemUserMapper;
+import com.yoyuen.backend.model.entity.ai.DocumentEntity;
 import com.yoyuen.backend.model.entity.ai.KnowledgeBase;
+import com.yoyuen.backend.model.entity.ai.OriginFileResource;
 import com.yoyuen.backend.model.entity.user.SystemUser;
 import com.yoyuen.backend.service.ai.KnowledgeBaseService;
+import com.yoyuen.backend.service.ai.LLMService;
+import com.yoyuen.backend.service.system.ObjectStoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.document.Document;
+import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.ai.vectorstore.filter.Filter;
+import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +39,11 @@ import java.util.List;
 public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, KnowledgeBase> implements KnowledgeBaseService {
 
     private final SystemUserMapper userMapper;
+    private final DocumentEntityMapper documentEntityMapper;
+    private final OriginFileResourceMapper originFileResourceMapper;
+    private final LLMService llmService;
+    private final ObjectStoreService objectStoreService;
+
     @Transactional(rollbackFor = Exception.class)
     @Override
     public String addKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO) {
@@ -53,7 +70,52 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
     @Override
     public Integer removeKnowledgeBase(KnowledgeBaseVO knowledgeBaseVO) {
         String id = knowledgeBaseVO.getId();
-        return this.removeById(id) ? 1 : 0;
+
+        // 1. 查询该知识库下的所有文档
+        LambdaQueryWrapper<DocumentEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DocumentEntity::getBaseId, id);
+        List<DocumentEntity> documents = documentEntityMapper.selectList(wrapper);
+
+        if (!documents.isEmpty()) {
+            VectorStore vectorStore = llmService.getVectorStore();
+            for (DocumentEntity document : documents) {
+                // 1.1 删除向量数据
+                try {
+                    Filter.Expression filterExpression = new FilterExpressionBuilder()
+                            .eq("document_id", document.getId()).build();
+                    SearchRequest searchRequest = SearchRequest.defaults()
+                            .withTopK(10000)
+                            .withFilterExpression(filterExpression);
+                    List<Document> vecDocs = vectorStore.similaritySearch(searchRequest);
+                    if (!vecDocs.isEmpty()) {
+                        List<String> vecIds = vecDocs.stream().map(Document::getId).toList();
+                        vectorStore.delete(vecIds);
+                    }
+                } catch (Exception e) {
+                    log.error("删除知识库 [{}] 文档 [{}] 向量数据失败: {}", id, document.getId(), e.getMessage());
+                }
+
+                // 1.2 删除 MinIO 物理文件及资源记录
+                if (document.getResourceId() != null) {
+                    OriginFileResource resource = originFileResourceMapper.selectById(document.getResourceId());
+                    if (resource != null) {
+                        try {
+                            objectStoreService.deleteFile(resource.getBucketName(), resource.getObjectName());
+                        } catch (Exception e) {
+                            log.error("删除 MinIO 文件失败 {}/{}: {}", resource.getBucketName(), resource.getObjectName(), e.getMessage());
+                        }
+                        originFileResourceMapper.deleteById(resource.getId());
+                    }
+                }
+
+                // 1.3 逻辑删除文档记录
+                documentEntityMapper.deleteById(document.getId());
+            }
+            log.info("知识库 [{}] 级联清理完成，共处理 {} 个文档", id, documents.size());
+        }
+
+        boolean removed = this.removeById(id);
+        return removed ? 1 : 0;
     }
 
     @Override
@@ -85,7 +147,7 @@ public class KnowledgeBaseServiceImpl extends ServiceImpl<KnowledgeBaseMapper, K
 
     @Override
     public List<SimpleBaseVO> simpleList() {
-        return List.of();
+        return transfer2Simple(this.list());
     }
 
     private List<KnowledgeBaseVO> transfer(List<KnowledgeBase> knowledgeBaseList) {

@@ -15,6 +15,7 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -51,7 +52,32 @@ public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatM
 
     @Override
     public List<ChatMessage> fromMessage(List<Message> messages) {
-        return List.of();
+        List<ChatMessage> result = new ArrayList<>();
+        int seq = 1;
+        for (Message message : messages) {
+            ChatMessage chatMessage = new ChatMessage();
+            chatMessage.setMessageNo(seq++);
+            chatMessage.setContent(message.getText());
+
+            String role;
+            boolean hasMedia = false;
+            if (message instanceof UserMessage userMessage) {
+                role = "user";
+                hasMedia = userMessage.getMedia() != null && !userMessage.getMedia().isEmpty();
+            } else if (message instanceof AssistantMessage) {
+                role = "assistant";
+            } else if (message instanceof SystemMessage) {
+                role = "system";
+            } else {
+                role = "unknown";
+            }
+            chatMessage.setRole(role);
+            chatMessage.setHasMedia(hasMedia);
+            chatMessage.setResourceIds(new ArrayList<>());
+            chatMessage.setIsClean(false);
+            result.add(chatMessage);
+        }
+        return result;
     }
 
 }

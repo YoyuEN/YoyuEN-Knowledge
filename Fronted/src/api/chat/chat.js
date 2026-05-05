@@ -1,3 +1,16 @@
+import { getToken } from '@/utils/auth'
+
+function buildAuthHeaders() {
+  const token = getToken()
+  const headers = {
+    'Content-Type': 'application/json',
+  }
+  if (token) {
+    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
+  }
+  return headers
+}
+
 /**
  * 创建新对话
  *
@@ -5,13 +18,7 @@
  * @returns {Promise<object>} - 后端返回的 BaseResponse data 字段
  */
 export async function createConversation(conversationVO = {}) {
-  const token = localStorage.getItem('token')
-  const headers = {
-    'Content-Type': 'application/json',
-  }
-  if (token) {
-    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
-  }
+  const headers = buildAuthHeaders()
 
   const response = await fetch('/api/conversation/create', {
     method: 'POST',
@@ -44,13 +51,7 @@ export async function createConversation(conversationVO = {}) {
 export function chatStream(message, conversationId, onChunk, onDone, onError) {
   const controller = new AbortController()
 
-  const token = localStorage.getItem('token')
-  const headers = {
-    'Content-Type': 'application/json',
-  }
-  if (token) {
-    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
-  }
+  const headers = buildAuthHeaders()
 
   fetch('/api/ai/chat/simple', {
     method: 'POST',
@@ -146,13 +147,7 @@ export function chatStream(message, conversationId, onChunk, onDone, onError) {
 export function chatStreamRAGWithReferences(message, conversationId, knowledgeBaseId, onChunk, onReferences, onDone, onError) {
   const controller = new AbortController()
 
-  const token = localStorage.getItem('token')
-  const headers = {
-    'Content-Type': 'application/json',
-  }
-  if (token) {
-    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
-  }
+  const headers = buildAuthHeaders()
 
   let referencesReceived = false
 
@@ -254,13 +249,7 @@ export function chatStreamRAGWithReferences(message, conversationId, knowledgeBa
 export function chatStreamRAG(message, conversationId, onChunk, onDone, onError) {
   const controller = new AbortController()
 
-  const token = localStorage.getItem('token')
-  const headers = {
-    'Content-Type': 'application/json',
-  }
-  if (token) {
-    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
-  }
+  const headers = buildAuthHeaders()
 
   fetch('/api/ai/chat/simpleRAG', {
     method: 'POST',
@@ -344,13 +333,7 @@ export function chatStreamRAG(message, conversationId, onChunk, onDone, onError)
  * @returns {Promise<Array>} - 对话历史列表
  */
 export async function fetchConversationList(knowledgeBaseId = null) {
-  const token = localStorage.getItem('token')
-  const headers = {
-    'Content-Type': 'application/json',
-  }
-  if (token) {
-    headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`
-  }
+  const headers = buildAuthHeaders()
 
   const url = new URL('/api/conversation/list', window.location.origin)
   if (knowledgeBaseId) {

@@ -4,6 +4,7 @@ import com.yoyuen.backend.service.ai.OriginFileResourceService;
 import com.yoyuen.backend.utils.BaseResponse;
 import com.yoyuen.backend.utils.ResultUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,11 +22,13 @@ public class OriginFileResourceController {
 
     private final OriginFileResourceService originFileResourceService;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/chat", headers = "Content-Type=multipart/form-data")
     public BaseResponse<String> chatFile(@RequestParam("file") MultipartFile file) {
         return ResultUtils.success(originFileResourceService.uploadFile(file));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/knowledge/{knowledgeId}", headers = "content-type=multipart/form-data")
     public BaseResponse<Long> uploadFile(@RequestParam(name = "file") MultipartFile file, @PathVariable(name = "knowledgeId") String knowledgeId ) {
         return ResultUtils.success(originFileResourceService.uploadFile(file, knowledgeId));

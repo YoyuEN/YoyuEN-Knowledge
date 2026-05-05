@@ -20,6 +20,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -76,6 +77,7 @@ public class ContentController {
         return ResultUtils.success(categories);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/category/create")
     public BaseResponse<Boolean> createCategory(@RequestBody ContentCategoryVO categoryVO) {
         if (categoryVO == null || categoryVO.getType() == null || categoryVO.getType().isBlank() ||
@@ -91,6 +93,7 @@ public class ContentController {
         return ResultUtils.success(true);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/category/update")
     public BaseResponse<Boolean> updateCategory(@RequestBody Map<String, String> payload) {
         String oldType = payload.get("oldType");
@@ -126,6 +129,7 @@ public class ContentController {
         return ResultUtils.success(true);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/category/remove")
     public BaseResponse<Boolean> removeCategory(@RequestBody Map<String, String> payload) {
         String type = payload.get("type");
@@ -152,6 +156,7 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/tag/create")
     public BaseResponse<Boolean> createTag(@RequestBody Map<String, String> payload) {
         String name = payload.get("name");
@@ -166,6 +171,7 @@ public class ContentController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/tag/update")
     public BaseResponse<Boolean> updateTag(@RequestBody Map<String, String> payload) {
         String oldName = payload.get("oldName");
@@ -186,6 +192,7 @@ public class ContentController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/tag/remove")
     public BaseResponse<Boolean> removeTag(@RequestBody Map<String, String> payload) {
         String name = payload.get("name");
@@ -263,6 +270,7 @@ public class ContentController {
         return ResultUtils.success(voList);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/recommend")
     public BaseResponse<Boolean> toggleRecommend(@RequestBody ContentVO contentVO) {
         boolean result = contentService.toggleRecommend(contentVO.getId(), contentVO.getIsRecommend());
@@ -284,6 +292,7 @@ public class ContentController {
         return ResultUtils.success(stats);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/upload-cover", consumes = "multipart/form-data")
     public BaseResponse<Map<String, String>> uploadCover(@RequestParam("file") MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -305,6 +314,7 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/upload-content-image", consumes = "multipart/form-data")
     public BaseResponse<Map<String, String>> uploadContentImage(@RequestParam("file") MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -344,6 +354,7 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/upload-video", consumes = "multipart/form-data")
     public BaseResponse<Map<String, Object>> uploadVideo(@RequestParam("file") MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -391,6 +402,7 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/extract-video-cover")
     public BaseResponse<Map<String, String>> extractVideoCover(@RequestBody Map<String, String> payload) {
         String videoUrl = payload.get("videoUrl");
@@ -405,6 +417,7 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public BaseResponse<String> create(@Valid @RequestBody ContentVO contentVO) {
         Content content = toEntity(contentVO);
@@ -418,6 +431,7 @@ public class ContentController {
         return ResultUtils.success(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/update")
     public BaseResponse<Boolean> update(@Valid @RequestBody ContentVO contentVO) {
         Content content = toEntity(contentVO);
@@ -431,6 +445,7 @@ public class ContentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/remove")
     public BaseResponse<Boolean> remove(@RequestBody ContentVO contentVO) {
         if (contentVO == null || contentVO.getId() == null || contentVO.getId().isBlank()) {

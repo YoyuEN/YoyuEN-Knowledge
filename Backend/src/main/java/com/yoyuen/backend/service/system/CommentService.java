@@ -29,4 +29,8 @@ public interface CommentService {
     int countByContentId(String contentId);
 
     long countAll();
+
+    long countToday();
+
+    long countRecentDays(int days);
 }

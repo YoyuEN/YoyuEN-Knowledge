@@ -7,8 +7,8 @@ import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.mapper.ContentMapper;
 import com.yoyuen.backend.service.ai.ImageGenerationService;
 import com.yoyuen.backend.service.ai.LLMService;
+import com.yoyuen.backend.service.system.CommentService;
 import com.yoyuen.backend.service.system.ContentService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -26,19 +26,43 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
 
     private final ImageGenerationService qwenImageService;
     private final LLMService llmService;
+    private final CommentService commentService;
 
     public ContentServiceImpl(
             @Qualifier("imageGenerationServiceImpl") ImageGenerationService qwenImageService,
-            LLMService llmService
+            LLMService llmService,
+            CommentService commentService
     ) {
         this.qwenImageService = qwenImageService;
         this.llmService = llmService;
+        this.commentService = commentService;
     }
 
     @Override
     public long countAll() {
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getDeleted, false);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public long countToday() {
+        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false)
+                .ge(Content::getCreateTime, startOfDay);
+        return this.count(wrapper);
+    }
+
+    @Override
+    public long countRecentDays(int days) {
+        if (days <= 0) {
+            return 0;
+        }
+        LocalDateTime since = LocalDateTime.now().minusDays(days - 1L).toLocalDate().atStartOfDay();
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false)
+                .ge(Content::getCreateTime, since);
         return this.count(wrapper);
     }
 
@@ -91,6 +115,15 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Content::getDeleted, false)
                 .orderByDesc(Content::getCreateTime)
+                .last("LIMIT " + limit);
+        return this.list(wrapper);
+    }
+
+    @Override
+    public List<Content> listTopByViews(int limit) {
+        LambdaQueryWrapper<Content> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Content::getDeleted, false)
+                .orderByDesc(Content::getViewCount)
                 .last("LIMIT " + limit);
         return this.list(wrapper);
     }
@@ -173,7 +206,12 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean removeContent(String id) {
-        return this.removeById(id);
+        boolean removed = this.removeById(id);
+        if (removed) {
+            int deletedComments = commentService.removeByContentId(id);
+            log.info("内容 [{}] 已逻辑删除，级联逻辑删除评论 {} 条", id, deletedComments);
+        }
+        return removed;
     }
 
     @Override

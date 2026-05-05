@@ -5,15 +5,15 @@
         <!-- 头像和基本信息 -->
         <div class="user-header">
           <div class="avatar">
-            <img src="/src/assets/picture/YoyuEN.png" alt="用户头像" />
+            <img :src="profile.avatar" alt="用户头像" />
           </div>
           <div class="user-basic">
-            <h3>YoyuEN</h3>
-            <p class="user-signature">宁鸣而死，不默而生！</p>           
+            <h3>{{ profile.nickname }}</h3>
+            <p class="user-signature">{{ profile.signature }}</p>
           </div>
         </div>
         <div class="welcome-container">
-           <p class="user-welcome">欢迎来到我的知识空间！这里记录着我的学习历程、技术探索和生活感悟。希望我的分享能给你带来一些启发和帮助。</p>
+           <p class="user-welcome">{{ profile.welcomeText }}</p>
         </div>
         <!-- 详细信息卡片 -->
         <div class="info-cards">
@@ -21,13 +21,13 @@
             <h4>个人信息</h4>
             <div class="card-content">
               <div class="info-row">
-                <span>北方民族大学 · 软件工程</span>
+                <span>{{ profile.school }}</span>
               </div>
               <div class="info-row">
-                <span>15839393171@163.com</span>
+                <span>{{ profile.email }}</span>
               </div>
               <div class="info-row">
-                <span>北京 · 昌平</span>
+                <span>{{ profile.location }}</span>
               </div>
             </div>
           </div>
@@ -82,28 +82,24 @@
 </template>
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
+import { ElMessage } from 'element-plus'
 import { fetchPhotoList } from "../api/photo/photo.js";
+import { fetchProfileDetail } from "../api/profile/profile.js";
 
 const photos = ref([]);
 
 const ROW_HEIGHT = 200; // 固定行高
 
-// 图片加载完成后计算宽度
-const handleImageLoad = (event, photo) => {
-  const img = event.target;
-  const aspectRatio = img.naturalWidth / img.naturalHeight;
-  const calculatedWidth = ROW_HEIGHT * aspectRatio;
-  photo.displayWidth = `${calculatedWidth}px`;
-};
-
-onMounted(async () => {
-  try {
-    const res = await fetchPhotoList();
-    photos.value = res.data || [];
-  } catch (e) {
-    console.error("获取照片列表失败", e);
-  }
-});
+// 个人资料
+const profile = ref({
+  nickname: 'YoyuEN',
+  avatar: '/src/assets/picture/YoyuEN.png',
+  signature: '宁鸣而死，不默而生！',
+  welcomeText: '欢迎来到我的知识空间！这里记录着我的学习历程、技术探索和生活感悟。希望我的分享能给你带来一些启发和帮助。',
+  school: '北方民族大学 · 软件工程',
+  email: '15839393171@163.com',
+  location: '北京 · 昌平',
+})
 
 // 技术栈
 const techStack = ref([
@@ -127,6 +123,64 @@ const tags = ref([
   "Running",
   "Gym",
 ]);
+
+// 图片加载完成后计算宽度
+const handleImageLoad = (event, photo) => {
+  const img = event.target;
+  const aspectRatio = img.naturalWidth / img.naturalHeight;
+  const calculatedWidth = ROW_HEIGHT * aspectRatio;
+  photo.displayWidth = `${calculatedWidth}px`;
+};
+
+const loadProfile = async () => {
+  try {
+    const res = await fetchProfileDetail()
+    if (res.data) {
+      const data = res.data
+      profile.value = {
+        nickname: data.nickname || profile.value.nickname,
+        avatar: data.avatar || profile.value.avatar,
+        signature: data.signature || profile.value.signature,
+        welcomeText: data.welcomeText || profile.value.welcomeText,
+        school: data.school || profile.value.school,
+        email: data.email || profile.value.email,
+        location: data.location || profile.value.location,
+      }
+      if (data.techStack) {
+        try {
+          const parsed = JSON.parse(data.techStack)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            techStack.value = parsed
+          }
+        } catch {
+          // 解析失败则保持默认值
+        }
+      }
+      if (data.tags) {
+        try {
+          const parsed = JSON.parse(data.tags)
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            tags.value = parsed
+          }
+        } catch {
+          // 解析失败则保持默认值
+        }
+      }
+    }
+  } catch (e) {
+    console.error("获取个人资料失败", e)
+  }
+}
+
+onMounted(async () => {
+  try {
+    const res = await fetchPhotoList();
+    photos.value = res.data || [];
+  } catch (e) {
+    console.error("获取照片列表失败", e);
+  }
+  await loadProfile()
+});
 </script>
 <style scoped>
 /* 头像浮动动画 */

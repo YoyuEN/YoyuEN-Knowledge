@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -67,6 +68,7 @@ public class CommentController {
         return ResultUtils.success(voList);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/approve")
     public BaseResponse<Boolean> approve(@RequestBody CommentVO commentVO) {
         boolean result = commentService.approveComment(commentVO.getId());
@@ -74,6 +76,7 @@ public class CommentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/recommend")
     public BaseResponse<Boolean> toggleRecommend(@RequestBody CommentVO commentVO) {
         boolean result = commentService.toggleRecommend(commentVO.getId(), commentVO.getIsRecommend());
@@ -124,6 +127,7 @@ public class CommentController {
         return ResultUtils.success(commentId);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/remove")
     public BaseResponse<Boolean> remove(@RequestBody CommentVO commentVO) {
         Comment existing = commentService.getById(commentVO.getId());
@@ -136,6 +140,7 @@ public class CommentController {
         return ResultUtils.success(result);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/remove/by-content")
     public BaseResponse<Integer> removeByContent(@RequestBody CommentVO commentVO) {
         if (commentVO == null || commentVO.getContentId() == null || commentVO.getContentId().isBlank()) {

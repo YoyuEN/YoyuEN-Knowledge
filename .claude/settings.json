@@ -3,7 +3,16 @@
     "allow": [
       "Bash(python3 add_table_numbers.py)",
       "Read(//^## 第三章/,/**)",
-      "Bash(psql -h localhost -U postgres -d know-ai -c \"\\\\d system_user\")"
+      "Bash(psql -h localhost -U postgres -d know-ai -c \"\\\\d system_user\")",
+      "Bash(awk 'NR>=269 && NR<=530 {if\\(/^## 第四章/\\) print NR\": \"$0}' '/e/YoyuEN/YoyuEN-Knowledge/毕业论文_完整版.md')",
+      "Bash(awk 'NR>=269 && NR<=530 {if\\(/^## [三四]章/\\) print NR\": \"$0}' '/e/YoyuEN/YoyuEN-Knowledge/毕业论文_完整版.md.backup')",
+      "Bash(awk '/^## 第[一二三四五六七]章/ {print NR\": \"$0}' '/e/YoyuEN/YoyuEN-Knowledge/毕业论文_完整版.md')",
+      "Read(//Users/**)",
+      "Bash(xargs grep *)",
+      "Bash(npm install *)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }
