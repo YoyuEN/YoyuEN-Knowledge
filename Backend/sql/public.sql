@@ -355,6 +355,7 @@ CREATE TABLE "comment" (
                            content      TEXT NOT NULL,
                            parent_id    VARCHAR(32),
                            is_recommend BOOLEAN DEFAULT FALSE,
+                           status       VARCHAR(20) DEFAULT 'approved',
                            create_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            update_time  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                            deleted      BOOLEAN DEFAULT FALSE,
@@ -550,3 +551,27 @@ INSERT INTO user_profile (id, nickname, avatar, signature, welcome_text, school,
  '北方民族大学 · 软件工程', '15839393171@163.com', '北京 · 昌平',
  '["Vue.js","React","TypeScript","Node.js","Python","Java","MySQL","Git"]',
  '["玄不救非,氪不改命","男神","手工","天然呆","篮球","Running","Gym"]');
+
+
+-- 1. 确认 ADMIN 角色存在
+SELECT * FROM system_role WHERE name = 'ADMIN';
+
+-- 2. 如果不存在，先创建角色
+INSERT INTO system_role (id, name, description, create_time, update_time, deleted)
+VALUES (1, 'ADMIN', '管理员', NOW(), NOW(), false)
+ON CONFLICT (id) DO NOTHING;
+
+-- 3. 给用户分配 ADMIN 角色（user_id 根据你的用户 ID 调整）
+INSERT INTO system_user_role (user_id, role_id)
+VALUES (1, 1)
+ON CONFLICT DO NOTHING;
+
+
+ALTER TABLE "comment"
+    ADD COLUMN status VARCHAR(20) DEFAULT 'approved';
+
+COMMENT ON COLUMN "comment".status IS '审核状态：pending/approved/rejected';
+
+-- 已有的旧评论补默认值
+UPDATE "comment" SET status = 'approved' WHERE status IS NULL;
+

@@ -57,7 +57,7 @@ public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatM
         for (Message message : messages) {
             ChatMessage chatMessage = new ChatMessage();
             chatMessage.setMessageNo(seq++);
-            chatMessage.setContent(message.getText());
+            chatMessage.setContent(message.getContent());
 
             String role;
             boolean hasMedia = false;

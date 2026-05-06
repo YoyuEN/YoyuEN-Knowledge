@@ -1,0 +1,91 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: yoyuen-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432"           # ← 加上这一行
+    volumes:
+      - ./data/pg:/var/lib/postgresql/data
+      - ./Backend/sql:/docker-entrypoint-initdb.d:ro   # 首次启动自动执行 SQL
+    networks: [yoyuen-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: yoyuen-redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes"]
+    volumes:
+      - ./data/redis:/data
+    networks: [yoyuen-net]
+
+  minio:
+    image: minio/minio:latest
+    container_name: yoyuen-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - ./data/minio:/data
+    ports:
+      - "9001:9001"          # 控制台（建议安全组限制 IP）
+    networks: [yoyuen-net]
+
+  backend:
+    build: ./backend
+    image: yoyuen-backend:latest
+    container_name: yoyuen-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      MINIO_BUCKET: ${MINIO_BUCKET}
+      DASHSCOPE_API_KEY: ${DASHSCOPE_API_KEY}
+      VOLCENGINE_ACCESS_KEY: ${VOLCENGINE_ACCESS_KEY}
+      VOLCENGINE_SECRET_KEY: ${VOLCENGINE_SECRET_KEY}
+      VOLCENGINE_ARK_API_KEY: ${VOLCENGINE_ARK_API_KEY}
+      TZ: Asia/Shanghai
+    networks: [yoyuen-net]
+
+  fronted:
+    build: ./fronted
+    image: yoyuen-fronted:latest
+    container_name: yoyuen-fronted
+    restart: unless-stopped
+    depends_on: [backend]
+    ports:
+      - "80:80"
+      # - "443:443"   # 启用 HTTPS 时再开
+    networks: [yoyuen-net]
+
+networks:
+  yoyuen-net:
+    driver: bridge

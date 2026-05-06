@@ -9,7 +9,14 @@
       "Bash(awk '/^## 第[一二三四五六七]章/ {print NR\": \"$0}' '/e/YoyuEN/YoyuEN-Knowledge/毕业论文_完整版.md')",
       "Read(//Users/**)",
       "Bash(xargs grep *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git checkout *)",
+      "Read(//c/Users/15839/yoyuen-knowledge/frontend/**)",
+      "Bash(sudo tee *)",
+      "Bash(grep -n \"^-- ----------------------------$\" e:/YoyuEN/YoyuEN-Knowledge/Backend/sql/init.sql)",
+      "Bash(docker exec *)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh repo *)"
     ],
     "additionalDirectories": [
       "\\tmp"
