@@ -19,7 +19,9 @@ import com.yoyuen.backend.utils.ResultUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.beans.BeanUtils;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -355,6 +357,35 @@ public class ContentController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(value = "/parse-document", consumes = "multipart/form-data")
+    public BaseResponse<Map<String, String>> parseDocument(@RequestParam("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "文件不能为空");
+        }
+        String name = file.getOriginalFilename();
+        if (name == null) name = "unknown";
+        String lower = name.toLowerCase();
+        if (!(lower.endsWith(".txt") || lower.endsWith(".md") || lower.endsWith(".doc") || lower.endsWith(".docx"))) {
+            return ResultUtils.error(CoreCode.PARAMS_ERROR, "仅支持 txt / md / doc / docx 文件");
+        }
+
+        try {
+            TikaDocumentReader reader = new TikaDocumentReader(new ByteArrayResource(file.getBytes()));
+            String text = reader.read().stream()
+                    .map(doc -> doc.getContent())
+                    .reduce("", (a, b) -> a + "\n" + b)
+                    .trim();
+            Map<String, String> result = new HashMap<>();
+            result.put("text", text);
+            result.put("fileName", name);
+            return ResultUtils.success(result);
+        } catch (Exception e) {
+            log.error("文档解析失败: {}", e.getMessage(), e);
+            return ResultUtils.error(CoreCode.SYSTEM_ERROR, "文档解析失败");
+        }
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping(value = "/upload-video", consumes = "multipart/form-data")
     public BaseResponse<Map<String, Object>> uploadVideo(@RequestParam("file") MultipartFile file) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -489,7 +520,11 @@ public class ContentController {
             int slash = cover.indexOf('/');
             String bucket = cover.substring(0, slash);
             String objectName = cover.substring(slash + 1);
-            vo.setCover(objectStoreService.getTmpFileUrl(bucket, objectName));
+            if (objectStoreService instanceof com.yoyuen.backend.objectstore.service.MinIOService minioService) {
+                vo.setCover(minioService.getPublicUrl(bucket, objectName));
+            } else {
+                vo.setCover(objectStoreService.getTmpFileUrl(bucket, objectName));
+            }
         }
 
         // 处理视频URL - 使用公开URL以支持更好的缓存和Range请求

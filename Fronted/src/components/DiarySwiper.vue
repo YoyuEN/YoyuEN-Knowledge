@@ -70,8 +70,27 @@ let swiperInstance = null
 
 // 格式化日期
 const formatDate = (date) => {
-  // 这里应该根据实际日期格式进行格式化
-  return date
+  if (!date) return ''
+  const str = String(date)
+  // 优先解析 YYYY-MM-DD，避免时区偏差
+  const match = str.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (match) {
+    const y = parseInt(match[1], 10)
+    const m = parseInt(match[2], 10)
+    const day = parseInt(match[3], 10)
+    const d = new Date(y, m - 1, day)
+    if (isNaN(d.getTime())) return str
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+    return `${y}年${m}月${day}日 ${weekdays[d.getDay()]}`
+  }
+  // 回退到通用解析
+  const d = new Date(str.replace(/-/g, '/'))
+  if (isNaN(d.getTime())) return str
+  const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+  const y = d.getFullYear()
+  const m = d.getMonth() + 1
+  const day = d.getDate()
+  return `${y}年${m}月${day}日 ${weekdays[d.getDay()]}`
 }
 
 // swiper实例
@@ -90,14 +109,14 @@ const onSlideChange = () => {
 <style scoped>
 .book-container {
   position: relative;
-  width: 90%;
-  height: 700px;
+  width: 100%;
+  height: 820px;
   display: flex;
   justify-content: center;
-  background: var(--diary-page-bg);
-  border-radius: 8px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--dt-hairline, #e6dfd8);
   padding: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .swiper-container {
@@ -119,7 +138,6 @@ const onSlideChange = () => {
   width: 100%;
   height: 100%;
   border-radius: 4px;
-  box-shadow: 0 2px 8px var(--shadow);
   display: flex;
   flex-direction: column;
   cursor: grab;
@@ -128,8 +146,6 @@ const onSlideChange = () => {
 
 .diary-page:active {
   cursor: grabbing;
-  transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* 左侧页面样式 */
@@ -146,13 +162,8 @@ const onSlideChange = () => {
   border-left: 1px solid var(--diary-border-color);
 }
 
-.diary-page:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-}
-
 .page-content {
-  padding: 40px;
+  padding: 28px;
   height: 100%;
   position: relative;
   flex: 1;
@@ -181,17 +192,15 @@ const onSlideChange = () => {
 }
 
 .avatar {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease;
 }
 
 .avatar:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .header-info {
@@ -249,7 +258,7 @@ const onSlideChange = () => {
 /* 页码 */
 .page-number {
   position: absolute;
-  bottom: 20px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   font-size: 12px;
@@ -272,7 +281,7 @@ const onSlideChange = () => {
 @media (max-width: 768px) {
   .book-container {
     width: 95%;
-    height: 550px;
+    height: 420px;
     padding: 8px;
   }
 
@@ -298,12 +307,12 @@ const onSlideChange = () => {
 
 @media (max-width: 480px) {
   .book-container {
-    height: 450px;
+    height: 340px;
     padding: 5px;
   }
 
   .page-content {
-    padding: 15px;
+    padding: 12px;
   }
 
   .entry-header {

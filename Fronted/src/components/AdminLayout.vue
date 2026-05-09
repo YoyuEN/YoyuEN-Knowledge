@@ -103,6 +103,14 @@
             <el-icon><Folder /></el-icon>
             <template #title>知识库管理</template>
           </el-menu-item>
+          <el-menu-item index="/admin/diary">
+            <el-icon><Notebook /></el-icon>
+            <template #title>日记管理</template>
+          </el-menu-item>
+          <el-menu-item index="/admin/profile">
+            <el-icon><UserFilled /></el-icon>
+            <template #title>个人信息</template>
+          </el-menu-item>
         </el-menu>
 
         <div class="admin-footer-link">
@@ -150,6 +158,8 @@ import {
   Close,
   Folder,
   Refresh,
+  Notebook,
+  UserFilled,
 } from '@element-plus/icons-vue'
 import '../views/admin/admin-theme.css'
 

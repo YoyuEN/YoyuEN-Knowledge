@@ -13,7 +13,7 @@
         <el-button type="primary">查询</el-button>
       </div>
 
-      <el-table :data="rows" stripe>
+      <el-table :data="rows">
         <el-table-column prop="name" label="用户名" min-width="160" />
         <el-table-column prop="email" label="邮箱" min-width="220" />
         <el-table-column prop="role" label="角色" width="140" />

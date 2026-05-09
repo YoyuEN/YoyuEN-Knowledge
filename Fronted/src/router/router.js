@@ -6,7 +6,6 @@ import Content from '../views/Content.vue'
 import ContentDetal from '../views/ContentDetal.vue'
 import Profile from '../views/Profile.vue'
 import Diary from '../views/Diary.vue'
-import LifeExperience from '../views/LifeExperience.vue'
 import Login from '../views/Login.vue'
 import AdminLayout from '../components/AdminLayout.vue'
 import Dashboard from '../views/admin/Dashboard.vue'
@@ -17,6 +16,8 @@ import CommentList from '../views/admin/CommentList.vue'
 import PhotoList from '../views/admin/PhotoList.vue'
 import Statistics from '../views/admin/Statistics.vue'
 import KnowledgeList from '../views/admin/KnowledgeList.vue'
+import DiaryList from '../views/admin/DiaryList.vue'
+import ProfileEdit from '../views/admin/ProfileEdit.vue'
 
 const routes = [
   {
@@ -52,12 +53,6 @@ const routes = [
         name: 'Diary',
         component: Diary,
         meta: { title: '时光手札' },
-      },
-      {
-        path: 'life-experience',
-        name: 'LifeExperience',
-        component: LifeExperience,
-        meta: { title: '生活经历' },
       },
       {
         path: 'profile',
@@ -127,6 +122,18 @@ const routes = [
         name: 'AdminKnowledge',
         component: KnowledgeList,
         meta: { title: '知识库管理' },
+      },
+      {
+        path: 'diary',
+        name: 'AdminDiary',
+        component: DiaryList,
+        meta: { title: '日记管理' },
+      },
+      {
+        path: 'profile',
+        name: 'AdminProfile',
+        component: ProfileEdit,
+        meta: { title: '个人信息' },
       },
       {
         path: 'content',

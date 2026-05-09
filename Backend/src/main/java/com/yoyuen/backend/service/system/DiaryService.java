@@ -8,6 +8,8 @@ public interface DiaryService {
 
     List<Diary> listByType(String type);
 
+    List<Diary> listAll(String type);
+
     Diary getById(String id);
 
     String addDiary(Diary diary);

@@ -475,7 +475,6 @@ watch(() => route.hash, (hash) => {
 
 .content-card-item {
   width: 100%;
-  height: 70%;
   cursor: pointer;
 }
 
@@ -517,9 +516,14 @@ watch(() => route.hash, (hash) => {
 }
 
 .article-body {
-  font-size: 14px;
+  font-size: 16px;
   color: #333;
-  line-height: 1.9;
+  line-height: 2;
+}
+
+.article-body :deep(p) {
+  margin: 0 0 16px;
+  text-indent: 2em;
 }
 
 .article-body :deep(h1) {
@@ -549,10 +553,6 @@ watch(() => route.hash, (hash) => {
   border-left: 3px solid #d0d0d0;
 }
 
-.article-body :deep(p) {
-  margin: 0 0 14px;
-  color: #555;
-}
 
 .article-body :deep(ul), .article-body :deep(ol) {
   padding-left: 20px;
@@ -622,7 +622,6 @@ watch(() => route.hash, (hash) => {
 
 /* 小图片居中显示 */
 .article-body :deep(p img) {
-  max-width: 80%;
   margin: 20px auto;
 }
 

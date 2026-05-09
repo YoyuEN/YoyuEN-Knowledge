@@ -5,7 +5,7 @@
         <div style="flex: 1;"></div>
         <el-button type="primary">新增角色</el-button>
       </div>
-      <el-table :data="rows" stripe>
+      <el-table :data="rows">
         <el-table-column prop="name" label="角色名称" min-width="160" />
         <el-table-column prop="code" label="角色编码" min-width="180" />
         <el-table-column prop="members" label="成员数" width="120" />

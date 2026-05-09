@@ -1,0 +1,99 @@
+/**
+ * Design Tokens — based on awesome-design-md (Claude warm-canvas editorial system)
+ * Adapted for Chinese typography and admin dashboard usage.
+ */
+
+:root {
+  /* ================================
+     Colors
+     ================================ */
+  --dt-primary: #cc785c;
+  --dt-primary-active: #a9583e;
+  --dt-primary-disabled: #e6dfd8;
+
+  --dt-ink: #141413;
+  --dt-body: #3d3d3a;
+  --dt-body-strong: #252523;
+  --dt-muted: #6c6a64;
+  --dt-muted-soft: #8e8b82;
+
+  --dt-hairline: #e6dfd8;
+  --dt-hairline-soft: #ebe6df;
+
+  --dt-canvas: #ffffff;
+  --dt-surface-soft: #f5f0e8;
+  --dt-surface-card: #efe9de;
+  --dt-surface-cream-strong: #e8e0d2;
+
+  --dt-surface-dark: #181715;
+  --dt-surface-dark-elevated: #252320;
+  --dt-surface-dark-soft: #1f1e1b;
+
+  --dt-on-primary: #ffffff;
+  --dt-on-dark: #faf9f5;
+  --dt-on-dark-soft: #a09d96;
+
+  --dt-accent-teal: #5db8a6;
+  --dt-accent-amber: #e8a55a;
+
+  --dt-success: #5db872;
+  --dt-warning: #d4a017;
+  --dt-error: #c64545;
+
+  /* ================================
+     Typography
+     ================================ */
+  --dt-font-display: "Noto Serif SC", "Songti SC", "STSong", "Georgia", serif;
+  --dt-font-body: "Inter", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+  --dt-font-mono: "JetBrains Mono", "Fira Code", "Consolas", "Monaco", monospace;
+
+  --dt-text-display-xl: 64px;
+  --dt-text-display-lg: 48px;
+  --dt-text-display-md: 36px;
+  --dt-text-display-sm: 28px;
+
+  --dt-text-title-lg: 22px;
+  --dt-text-title-md: 18px;
+  --dt-text-title-sm: 16px;
+
+  --dt-text-body-md: 16px;
+  --dt-text-body-sm: 14px;
+  --dt-text-caption: 13px;
+  --dt-text-caption-uppercase: 12px;
+
+  /* ================================
+     Spacing
+     ================================ */
+  --dt-space-xxs: 4px;
+  --dt-space-xs: 8px;
+  --dt-space-sm: 12px;
+  --dt-space-md: 16px;
+  --dt-space-lg: 24px;
+  --dt-space-xl: 32px;
+  --dt-space-xxl: 48px;
+  --dt-space-section: 96px;
+
+  /* ================================
+     Border Radius
+     ================================ */
+  --dt-radius-xs: 4px;
+  --dt-radius-sm: 6px;
+  --dt-radius-md: 8px;
+  --dt-radius-lg: 12px;
+  --dt-radius-xl: 16px;
+  --dt-radius-pill: 9999px;
+  --dt-radius-full: 9999px;
+
+  /* ================================
+     Shadows (warm, low-alpha)
+     ================================ */
+  --dt-shadow-soft: 0 1px 3px rgba(20, 20, 19, 0.08);
+  --dt-shadow-elevated: 0 4px 12px rgba(20, 20, 19, 0.10);
+  --dt-shadow-card-hover: 0 8px 24px rgba(20, 20, 19, 0.12);
+
+  /* ================================
+     Transition
+     ================================ */
+  --dt-transition-fast: all 0.2s ease;
+  --dt-transition-base: all 0.3s ease;
+}

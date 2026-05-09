@@ -53,7 +53,6 @@
               </div>
               <div class="photo-info">
                 <div class="photo-actions hide-on-mobile">
-                  <el-button link size="small" @click="openEdit(item)" :icon="Edit">编辑</el-button>
                   <el-button link size="small" type="danger" @click="removeRow(item)" :icon="Delete">删除</el-button>
                 </div>
               </div>
@@ -83,33 +82,6 @@
       </div>
     </ContextMenu>
 
-    <el-dialog
-      v-model="editVisible"
-      title="编辑图片信息"
-      width="480px"
-      :close-on-click-modal="false"
-      :lock-scroll="true"
-      class="custom-dialog"
-    >
-      <el-form :model="editForm" label-position="top">
-        <el-form-item label="图片预览">
-          <img :src="editForm.url" style="max-width: 100%; border-radius: 8px;" />
-        </el-form-item>
-        <el-form-item label="图片描述">
-          <el-input
-            v-model="editForm.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入图片描述"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="editVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveEdit" :icon="Check">保存</el-button>
-      </template>
-    </el-dialog>
-
     <el-image-viewer
       v-if="previewVisible"
       :url-list="[previewUrl]"
@@ -125,11 +97,9 @@ import {
   Picture,
   Plus,
   ZoomIn,
-  Edit,
   Delete,
-  Check,
 } from '@element-plus/icons-vue'
-import { fetchPhotoList, removePhoto, uploadPhoto, updatePhoto } from '@/api/photo/photo'
+import { fetchPhotoList, removePhoto, uploadPhoto } from '@/api/photo/photo'
 import ContextMenu from '@/components/ContextMenu.vue'
 import vLongpress from '@/directives/longpress'
 
@@ -139,8 +109,6 @@ const contextMenuRef = ref(null)
 const selectedRow = ref(null)
 const contextMenuTitle = ref('')
 const contextMenuActions = ref([])
-const editVisible = ref(false)
-const editForm = ref({ id: '', url: '', description: '' })
 const previewVisible = ref(false)
 const previewUrl = ref('')
 
@@ -190,26 +158,6 @@ const handleUpload = async ({ file }) => {
   }
 }
 
-const openEdit = (item) => {
-  editForm.value = {
-    id: item.id,
-    url: item.url,
-    description: item.description || '',
-  }
-  editVisible.value = true
-}
-
-const saveEdit = async () => {
-  try {
-    await updatePhoto(editForm.value)
-    ElMessage.success('更新成功')
-    editVisible.value = false
-    await loadData()
-  } catch (error) {
-    ElMessage.error(error.message || '更新失败')
-  }
-}
-
 const previewImage = (url) => {
   previewUrl.value = url
   previewVisible.value = true
@@ -219,11 +167,6 @@ const showContextMenu = (e, item) => {
   selectedRow.value = item
   contextMenuTitle.value = '图片详情'
   contextMenuActions.value = [
-    {
-      label: '编辑',
-      icon: Edit,
-      handler: () => openEdit(item)
-    },
     {
       label: '删除',
       icon: Delete,

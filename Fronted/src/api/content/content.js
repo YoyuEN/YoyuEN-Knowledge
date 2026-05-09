@@ -52,6 +52,14 @@ export function fetchActivityStats(days = 100) {
   return request.get('/content/activity', { params: { days } })
 }
 
+export function uploadContentImage(file) {
+  const form = new FormData()
+  form.append('file', file)
+  return request.post('/content/upload-content-image', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+}
+
 export function uploadContentCover(file) {
   const form = new FormData()
   form.append('file', file)
@@ -86,6 +94,14 @@ export function uploadVideo(file, onProgress) {
   return request.post('/content/upload-video', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
     onUploadProgress: onProgress
+  })
+}
+
+export function parseDocument(file) {
+  const form = new FormData()
+  form.append('file', file)
+  return request.post('/content/parse-document', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
   })
 }
 

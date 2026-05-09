@@ -79,25 +79,20 @@ public class DocumentEntityServiceImpl implements DocumentEntityService {
 
     @Override
     public Boolean deleteKnowledgeFile(DocumentVO documentVO) {
-        Long fileId = documentVO.getId();
-        String baseId = documentVO.getBaseId();
+        Long docId = documentVO.getId();
 
-        QueryWrapper<DocumentEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("base_id", baseId);
-        queryWrapper.eq("file_id", fileId);
-
-        DocumentEntity document = documentEntityMapper.selectOne(queryWrapper);
+        DocumentEntity document = documentEntityMapper.selectById(docId);
+        if (document == null) {
+            throw new BusinessException(CoreCode.FILE_NOT_FOUND);
+        }
 
         try {
-            // 删除文件
-            documentEntityMapper.deleteById(document);
+            documentEntityMapper.deleteById(docId);
             // 删除向量数据
             VectorStore vectorStore = llmService.getVectorStore();
-
-            // 通过filter查询匹配的文档，然后按ID删除
-            Filter.Expression filterExpression = new FilterExpressionBuilder().eq("document_id", fileId).build();
+            Filter.Expression filterExpression = new FilterExpressionBuilder().eq("document_id", docId).build();
             SearchRequest searchRequest = SearchRequest.defaults()
-                    .withTopK(10000)  // 获取所有匹配的文档
+                    .withTopK(10000)
                     .withFilterExpression(filterExpression);
 
             List<Document> documents = vectorStore.similaritySearch(searchRequest);
@@ -106,9 +101,8 @@ public class DocumentEntityServiceImpl implements DocumentEntityService {
                 vectorStore.delete(ids);
             }
             return true;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("删除文档失败: id={}", docId, e);
             throw new BusinessException(CoreCode.SYSTEM_ERROR, e.getMessage());
         }
     }

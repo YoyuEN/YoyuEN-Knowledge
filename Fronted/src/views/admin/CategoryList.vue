@@ -7,7 +7,7 @@
       </div>
 
       <div class="table-container">
-        <el-table :data="pagedRows" stripe v-loading="loading">
+        <el-table :data="pagedRows" v-loading="loading">
           <el-table-column prop="name" label="分类名称" min-width="200">
             <template #default="{ row }">
               <el-tag effect="light" size="large">{{ row.name }}</el-tag>

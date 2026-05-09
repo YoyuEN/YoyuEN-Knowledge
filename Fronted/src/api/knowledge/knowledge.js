@@ -91,3 +91,28 @@ export function uploadKnowledgeDocument(formData) {
     }
   })
 }
+
+/**
+ * 获取知识库文档列表（分页）
+ * @param {string} knowledgeId
+ * @param {{ pageNo?: number, pageSize?: number }} params
+ */
+export function fetchDocuments(knowledgeId, params = {}) {
+  return request.get(`/resource/knowledge/${knowledgeId}/documents`, { params })
+}
+
+/**
+ * 删除知识库文档
+ * @param {{ id: number, baseId: string, knowledgeBaseId: string }} data
+ */
+export function removeDocument(data) {
+  return request.post('/resource/document/delete', data)
+}
+
+/**
+ * 下载文档
+ * @param {number} fileId
+ */
+export function downloadDocumentUrl(fileId) {
+  return `/api/resource/document/download/${fileId}`
+}

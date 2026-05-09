@@ -19,7 +19,6 @@
       <div class="table-container">
         <el-table
           :data="pagedRows"
-          stripe
           v-loading="loading"
           :row-class-name="() => 'table-row-longpress'"
           @row-contextmenu="handleRowContextMenu"
@@ -43,9 +42,10 @@
             </template>
           </el-table-column>
           <el-table-column prop="createTime" label="创建时间" width="170" />
-          <el-table-column label="操作" width="320" fixed="right" class-name="hide-on-mobile">
+          <el-table-column label="操作" width="420" fixed="right" class-name="hide-on-mobile">
             <template #default="{ row }">
               <el-button link type="warning" @click="openUpload(row)" :icon="Upload">上传数据</el-button>
+              <el-button link type="info" @click="openDocuments(row)" :icon="FolderOpened">查看文档</el-button>
               <el-button link @click="openEdit(row)" :icon="Edit">编辑</el-button>
               <el-button link type="success" @click="toggleStatus(row)" :icon="Switch">
                 {{ row.status === 'active' ? '禁用' : '启用' }}
@@ -152,6 +152,61 @@
         <el-button @click="uploadVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <!-- 文档列表对话框 -->
+    <el-dialog
+      v-model="docVisible"
+      :title="`文档管理 — ${currentDocKnowledge?.name || ''}`"
+      width="900px"
+      :close-on-click-modal="false"
+      :lock-scroll="true"
+      class="custom-dialog"
+    >
+      <el-table :data="docRows" v-loading="docLoading" max-height="460">
+        <el-table-column label="文件名" min-width="240" show-overflow-tooltip>
+          <template #default="{ row }">
+            <el-icon style="vertical-align: -2px; margin-right: 6px; color: var(--admin-text-secondary);">
+              <Document />
+            </el-icon>
+            <span>{{ row.fileName }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="类型" width="90" align="center">
+          <template #default="{ row }">
+            <el-tag size="small" effect="light">{{ fileTypeLabel(row.fileType) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="向量化" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.isEmbedding ? 'success' : 'warning'" size="small" effect="plain">
+              {{ row.isEmbedding ? '已就绪' : '处理中' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="uploadTime" label="上传时间" width="170" />
+        <el-table-column label="操作" width="160" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="handleDownload(row)" :icon="Download">下载</el-button>
+            <el-button link type="danger" @click="handleDeleteDocument(row)" :icon="Delete">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <div style="display: flex; justify-content: center; margin-top: 16px;">
+        <el-pagination
+          small
+          background
+          layout="prev, pager, next"
+          :total="docTotal"
+          :page-size="docPageSize"
+          v-model:current-page="docPageNo"
+          @current-change="loadDocuments"
+        />
+      </div>
+      <template #footer>
+        <el-button @click="docVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </section>
 </template>
 
@@ -160,14 +215,17 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Edit, Delete, Search, RefreshLeft, Upload, Switch,
-  Folder, UploadFilled
+  Folder, FolderOpened, UploadFilled, Document, Download
 } from '@element-plus/icons-vue'
 import {
   fetchKnowledgeBaseList,
   createKnowledgeBase,
   updateKnowledgeBase,
   removeKnowledgeBase,
-  toggleKnowledgeBaseStatus
+  toggleKnowledgeBaseStatus,
+  fetchDocuments,
+  removeDocument,
+  downloadDocumentUrl
 } from '@/api/knowledge/knowledge'
 import ContextMenu from '@/components/ContextMenu.vue'
 import { useTableLongpress } from '@/composables/useTableLongpress'
@@ -229,6 +287,98 @@ const pagedRows = computed(() => {
 })
 
 const { handleRowContextMenu } = useTableLongpress(showContextMenu, pagedRows, { pageSize: pageSize.value })
+
+// ---------- 文档管理 ----------
+const docVisible = ref(false)
+const docLoading = ref(false)
+const docRows = ref([])
+const docTotal = ref(0)
+const docPageNo = ref(1)
+const docPageSize = ref(10)
+const currentDocKnowledge = ref(null)
+
+function fileTypeLabel(contentType) {
+  if (!contentType) return '未知'
+  const map = {
+    'application/pdf': 'PDF',
+    'application/msword': 'Word',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word',
+    'text/plain': 'TXT',
+    'text/markdown': 'MD',
+    'image/png': 'PNG',
+    'image/jpeg': 'JPG',
+  }
+  return map[contentType] || contentType.split('/').pop()?.toUpperCase() || '未知'
+}
+
+async function openDocuments(row) {
+  currentDocKnowledge.value = row
+  docPageNo.value = 1
+  docVisible.value = true
+  await loadDocuments()
+}
+
+async function loadDocuments() {
+  if (!currentDocKnowledge.value) return
+  docLoading.value = true
+  try {
+    const res = await fetchDocuments(currentDocKnowledge.value.id, {
+      pageNo: docPageNo.value,
+      pageSize: docPageSize.value,
+    })
+    const page = res.data || {}
+    docRows.value = page.records || []
+    docTotal.value = page.total || 0
+  } catch {
+    ElMessage.error('加载文档列表失败')
+    docRows.value = []
+    docTotal.value = 0
+  } finally {
+    docLoading.value = false
+  }
+}
+
+function handleDownload(row) {
+  const url = downloadDocumentUrl(row.id)
+  const token = getToken()
+  // 通过隐藏的 a 标签下载，携带 token
+  const link = document.createElement('a')
+  link.href = url
+  link.download = row.fileName || ''
+  // 使用 fetch 方式下载以携带认证头
+  fetch(url, { headers: { Authorization: `Bearer ${token}` } })
+    .then(res => res.blob())
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      a.download = row.fileName || 'download'
+      a.click()
+      URL.revokeObjectURL(blobUrl)
+    })
+    .catch(() => ElMessage.error('下载失败'))
+}
+
+async function handleDeleteDocument(row) {
+  try {
+    await ElMessageBox.confirm(`确定要删除文档「${row.fileName}」吗？`, '删除确认', {
+      type: 'warning',
+      confirmButtonText: '确认删除',
+      cancelButtonText: '取消',
+    })
+    await removeDocument({
+      id: row.id,
+      baseId: row.baseId,
+      knowledgeBaseId: currentDocKnowledge.value?.id,
+    })
+    ElMessage.success('删除成功')
+    await loadDocuments()
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || '删除失败')
+    }
+  }
+}
 
 const form = ref({
   name: '',

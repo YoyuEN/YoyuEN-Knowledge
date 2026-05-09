@@ -16,7 +16,9 @@
       "Bash(grep -n \"^-- ----------------------------$\" e:/YoyuEN/YoyuEN-Knowledge/Backend/sql/init.sql)",
       "Bash(docker exec *)",
       "WebFetch(domain:github.com)",
-      "Bash(gh repo *)"
+      "Bash(gh repo *)",
+      "Bash(python3 -c ' *)",
+      "Bash(python -c ' *)"
     ],
     "additionalDirectories": [
       "\\tmp"

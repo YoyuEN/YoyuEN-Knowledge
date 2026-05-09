@@ -22,6 +22,16 @@ public class DiaryServiceImpl extends ServiceImpl<DiaryMapper, Diary> implements
     }
 
     @Override
+    public List<Diary> listAll(String type) {
+        LambdaQueryWrapper<Diary> wrapper = new LambdaQueryWrapper<>();
+        if (type != null && !type.isEmpty()) {
+            wrapper.eq(Diary::getType, type);
+        }
+        wrapper.orderByDesc(Diary::getCreateTime);
+        return this.list(wrapper);
+    }
+
+    @Override
     public Diary getById(String id) {
         return super.getById(id);
     }

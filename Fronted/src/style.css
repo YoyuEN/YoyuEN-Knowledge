@@ -1,11 +1,17 @@
+@import url("https://fontsapi.zeoseven.com/862/main/result.css");
+
+/**
+ * Global base styles — adapted to DESIGN.md warm-canvas editorial system
+ */
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: var(--dt-font-body);
+  line-height: 1.55;
   font-weight: 400;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color-scheme: light;
+  color: var(--dt-ink);
+  background-color: var(--dt-canvas);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,11 +21,11 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: var(--dt-primary);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: var(--dt-primary-active);
 }
 
 body {
@@ -27,50 +33,63 @@ body {
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--dt-canvas);
+  color: var(--dt-ink);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--dt-font-display);
+  font-weight: 400;
+  color: var(--dt-ink);
+  margin-top: 0;
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: var(--dt-text-display-xl);
+  line-height: 1.05;
+  letter-spacing: -1.5px;
+}
+
+h2 {
+  font-size: var(--dt-text-display-lg);
   line-height: 1.1;
+  letter-spacing: -1px;
+}
+
+h3 {
+  font-size: var(--dt-text-display-md);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
 }
 
 button {
-  border-radius: 8px;
+  border-radius: var(--dt-radius-md);
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--dt-surface-card);
+  color: var(--dt-ink);
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: var(--dt-primary);
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 3px auto var(--dt-primary);
+  outline-offset: 2px;
 }
 
 .card {
   padding: 2em;
+  background: var(--dt-surface-card);
+  border-radius: var(--dt-radius-lg);
 }
 
 #app {
   width: 100%;
   height: 100vh;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
 }

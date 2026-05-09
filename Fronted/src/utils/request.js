@@ -5,7 +5,7 @@ import { useUserStore } from '@/stores/user'
 
 const service = axios.create({
   baseURL: '/api',
-  timeout: 15000,
+  timeout: 60000,
 })
 
 // 请求拦截器：添加 token

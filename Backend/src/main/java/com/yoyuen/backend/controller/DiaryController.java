@@ -18,8 +18,14 @@ public class DiaryController {
     private final DiaryService diaryService;
 
     @GetMapping("/list")
-    public BaseResponse<List<Diary>> list(@RequestParam String type) {
-        return ResultUtils.success(diaryService.listByType(type));
+    public BaseResponse<List<Diary>> list(@RequestParam(required = false) String type) {
+        return ResultUtils.success(diaryService.listAll(type));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/admin-list")
+    public BaseResponse<List<Diary>> adminList() {
+        return ResultUtils.success(diaryService.listAll(null));
     }
 
     @PreAuthorize("hasRole('ADMIN')")

@@ -9,27 +9,23 @@
     >
       <el-menu-item index="/">
         <el-icon><ChatDotRound /></el-icon>
-        <template #title>问道阁</template>
+        <template #title>AI 对话</template>
       </el-menu-item>
       <el-menu-item index="/content">
         <el-icon><Briefcase /></el-icon>
-        <template #title>墨香苑</template>
+        <template #title>内容管理</template>
       </el-menu-item>
       <el-menu-item index="/diary">
         <el-icon><Reading /></el-icon>
-        <template #title>时光手札</template>
-      </el-menu-item>
-      <el-menu-item index="/life-experience">
-        <el-icon><Compass /></el-icon>
-        <template #title>生活经历</template>
+        <template #title>日记</template>
       </el-menu-item>
       <el-menu-item index="/profile">
         <el-icon><User /></el-icon>
-        <template #title>归心居</template>
+        <template #title>个人中心</template>
       </el-menu-item>
       <el-menu-item index="/admin">
         <el-icon><Grid /></el-icon>
-        <template #title>匠心坊</template>
+        <template #title>后台管理</template>
       </el-menu-item>
     </el-menu>
   </div>
@@ -44,7 +40,6 @@ import {
   Briefcase,
   User,
   Grid,
-  Compass,
 } from '@element-plus/icons-vue'
 
 const props = defineProps({

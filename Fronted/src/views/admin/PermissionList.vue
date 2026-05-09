@@ -5,7 +5,7 @@
         <div style="flex: 1;"></div>
         <el-button type="primary">新增权限</el-button>
       </div>
-      <el-table :data="rows" row-key="id" stripe>
+      <el-table :data="rows" row-key="id">
         <el-table-column prop="module" label="模块" min-width="160" />
         <el-table-column prop="name" label="权限名称" min-width="200" />
         <el-table-column prop="code" label="权限标识" min-width="220" />

@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
 /**
- * 获取日记/生活经历列表
+ * 获取日记/生活经历列表（前台公开）
  * @param {string} type - 'diary' 或 'life_experience'
  */
 export function fetchDiaryList(type) {
@@ -9,6 +9,16 @@ export function fetchDiaryList(type) {
     url: '/diary/list',
     method: 'get',
     params: { type }
+  })
+}
+
+/**
+ * 获取日记列表（后台管理，需要权限）
+ */
+export function fetchDiaryAdminList() {
+  return request({
+    url: '/diary/admin-list',
+    method: 'get'
   })
 }
 

@@ -13,7 +13,7 @@
       </div>
 
       <div class="table-container">
-        <el-table :data="pagedRows" stripe v-loading="loading">
+        <el-table :data="pagedRows" v-loading="loading">
           <el-table-column prop="name" label="标签名" min-width="240">
             <template #default="{ row }">
               <el-tag effect="plain" size="large">{{ row.name }}</el-tag>
@@ -22,7 +22,6 @@
           <el-table-column prop="count" label="使用文章数" width="140" align="center">
             <template #default="{ row }">
               <el-tag type="info" effect="plain" size="small">
-                <el-icon style="vertical-align: -2px; margin-right: 4px;"><Document /></el-icon>
                 {{ row.count || 0 }}
               </el-tag>
             </template>

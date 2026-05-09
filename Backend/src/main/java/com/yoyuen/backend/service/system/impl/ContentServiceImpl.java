@@ -8,9 +8,9 @@ import com.yoyuen.backend.mapper.ContentMapper;
 import com.yoyuen.backend.service.ai.ImageGenerationService;
 import com.yoyuen.backend.service.ai.LLMService;
 import com.yoyuen.backend.service.system.CommentService;
+import org.springframework.scheduling.annotation.Async;
 import com.yoyuen.backend.service.system.ContentService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 @Service
 public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> implements ContentService {
 
-    private final ImageGenerationService qwenImageService;
+    private final ImageGenerationService imageGenerationService;
     private final LLMService llmService;
     private final CommentService commentService;
 
     public ContentServiceImpl(
-            @Qualifier("imageGenerationServiceImpl") ImageGenerationService qwenImageService,
+            ImageGenerationService imageGenerationService,
             LLMService llmService,
             CommentService commentService
     ) {
-        this.qwenImageService = qwenImageService;
+        this.imageGenerationService = imageGenerationService;
         this.llmService = llmService;
         this.commentService = commentService;
     }
@@ -158,22 +158,9 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         content.setCommentCount(0);
         content.setViewCount(0);
 
-        if (content.getCover() == null || content.getCover().isEmpty()) {
-            try {
-                log.info("Generating cover for article: {}", content.getTitle());
-                String coverUrl = qwenImageService.generateCoverForContent(
-                        content.getTitle(),
-                        content.getContent()
-                );
-                if (coverUrl != null) {
-                    content.setCover(coverUrl);
-                } else {
-                    content.setCover("default/default.jpg");
-                }
-            } catch (Exception e) {
-                log.error("Generate cover failed", e);
-                content.setCover("default/default.jpg");
-            }
+        boolean needAutoCover = content.getCover() == null || content.getCover().isEmpty();
+        if (needAutoCover) {
+            content.setCover("default/default.jpg");
         }
 
         if (content.getDescription() == null || content.getDescription().isEmpty()) {
@@ -194,13 +181,46 @@ public class ContentServiceImpl extends ServiceImpl<ContentMapper, Content> impl
         }
 
         this.save(content);
-        return content.getId();
+        String contentId = content.getId();
+
+        // 异步生成封面，不阻塞文章发布
+        if (needAutoCover) {
+            asyncGenerateCover(contentId, content.getTitle(), content.getContent());
+        }
+
+        return contentId;
+    }
+
+    /**
+     * 异步生成封面并更新 — 封面生成耗时较长（LLM + 豆包API），不阻塞文章保存
+     */
+    @Async
+    public void asyncGenerateCover(String contentId, String title, String content) {
+        try {
+            log.info("异步生成封面开始: article={}, title={}", contentId, title);
+            String coverUrl = imageGenerationService.generateCoverForContent(title, content);
+            if (coverUrl != null) {
+                LambdaUpdateWrapper<Content> wrapper = new LambdaUpdateWrapper<>();
+                wrapper.eq(Content::getId, contentId).set(Content::getCover, coverUrl);
+                this.update(wrapper);
+                log.info("异步封面生成成功并已更新: article={}, cover={}", contentId, coverUrl);
+            } else {
+                log.warn("异步封面生成返回null，保留默认封面: article={}", contentId);
+            }
+        } catch (Exception e) {
+            log.error("异步封面生成异常: article={}, error={}", contentId, e.getMessage(), e);
+        }
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public boolean updateContent(Content content) {
-        return this.updateById(content);
+        boolean updated = this.updateById(content);
+        // 如果更新后没有封面，异步生成
+        if (content.getCover() == null || content.getCover().isEmpty() || "default/default.jpg".equals(content.getCover())) {
+            asyncGenerateCover(content.getId(), content.getTitle(), content.getContent());
+        }
+        return updated;
     }
 
     @Transactional(rollbackFor = Exception.class)

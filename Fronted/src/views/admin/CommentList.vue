@@ -18,7 +18,6 @@
       <div class="table-container">
         <el-table
           :data="pagedRows"
-          stripe
           v-loading="loading"
           :row-class-name="() => 'table-row-longpress'"
           @row-contextmenu="handleRowContextMenu"

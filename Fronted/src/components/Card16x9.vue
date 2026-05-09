@@ -26,13 +26,17 @@ const props = defineProps({
   },
   height: {
     type: String,
-    default: '100%'
+    default: ''
   }
 })
 
-const cardStyle = computed(() => ({
-  height: props.height
-}))
+const cardStyle = computed(() => {
+  const style = {}
+  if (props.height) {
+    style.height = props.height
+  }
+  return style
+})
 </script>
 
 <style scoped>
