@@ -6,6 +6,7 @@ import com.yoyuen.backend.controller.vo.ContentVO;
 import com.yoyuen.backend.controller.vo.KnowledgeBaseVO;
 import com.yoyuen.backend.entity.Content;
 import com.yoyuen.backend.entity.ContentTag;
+import com.yoyuen.backend.service.ai.DocumentEntityService;
 import com.yoyuen.backend.service.ai.KnowledgeBaseService;
 import com.yoyuen.backend.service.ai.OriginFileResourceService;
 import com.yoyuen.backend.service.system.CommentService;
@@ -47,6 +48,7 @@ public class ContentController {
     private final ObjectStoreService objectStoreService;
     private final RedisService redisService;
     private final ContentTagService contentTagService;
+    private final DocumentEntityService documentEntityService;
 
     private static final String CATEGORY_META_KEY = "content:category:meta";
     private static final String COVER_BUCKET = "default";
@@ -557,13 +559,19 @@ public class ContentController {
                 log.warn("[知识库同步] no knowledge base, skip, title={}", contentVO.getTitle());
                 return;
             }
-            // 查找网站内容知识库（通过名称或描述识别，优先使用第一个）
             String knowledgeId = bases.stream()
                     .filter(base -> "YoyuEN".equals(base.getName()) || "Profile".equals(base.getDescription()))
                     .findFirst()
                     .orElse(bases.get(0))
                     .getId();
             String safeTitle = contentVO.getTitle().replaceAll("[\\\\/:*?\"<>|\\s]", "_");
+
+            // 更新操作时先删除旧文档，避免重复堆积
+            if ("更新".equals(operation)) {
+                int deleted = documentEntityService.deleteByBaseIdAndFileNamePrefix(knowledgeId, safeTitle);
+                log.info("[知识库同步] 清理旧文档: title={}, deleted={}", safeTitle, deleted);
+            }
+
             LocalDateTime now = LocalDateTime.now();
             String timeStr = now.format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
             String fileName = safeTitle + "_" + timeStr + ".md";

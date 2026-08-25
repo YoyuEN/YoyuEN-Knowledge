@@ -50,12 +50,21 @@
         <el-row :gutter="16">
           <el-col :span="12">
             <el-form-item label="日期">
-              <el-input v-model="form.diaryDate" placeholder="如 2026-05-07" />
+              <el-date-picker
+                v-model="form.diaryDate"
+                type="date"
+                placeholder="选择日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                style="width: 100%;"
+              />
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="天气">
-              <el-input v-model="form.weather" placeholder="如 晴" />
+              <el-select v-model="form.weather" placeholder="选择天气" style="width: 100%;" clearable>
+                <el-option v-for="w in weatherOptions" :key="w" :label="w" :value="w" />
+              </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -109,6 +118,8 @@ const query = ref({ keyword: '' })
 
 const editorVisible = ref(false)
 const isEdit = ref(false)
+const weatherOptions = ['晴', '多云', '阴', '小雨', '大雨', '雪', '大风', '雾']
+
 const form = ref({
   id: '',
   diaryDate: '',

@@ -17,4 +17,10 @@ public interface DocumentEntityService {
 
     void download(Long fileId, HttpServletResponse  response);
 
+    /**
+     * 按知识库ID + 文件名前缀删除文档（含向量数据）
+     * 用于更新文章/评论时清理旧的MD文件
+     */
+    int deleteByBaseIdAndFileNamePrefix(String baseId, String fileNamePrefix);
+
 }

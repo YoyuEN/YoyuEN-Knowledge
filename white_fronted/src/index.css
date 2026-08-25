@@ -1,0 +1,234 @@
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+ * Brand font — 快看世界体 (used for logo / decorative headings only)
+ * ------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'KuaiKanShiJie';
+  src:
+    url('@/assets/fonts/kuaikanshijieti.otf') format('opentype'),
+    url('@/assets/fonts/kuaikanshijieti.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------------------------------------------------------------------------
+ * Design tokens — light theme (default)
+ * NO colorful gradient backgrounds. Warm paper palette + coral accent.
+ * ------------------------------------------------------------------------- */
+:root {
+  /* surfaces */
+  --canvas: #ffffff;
+  --surface-soft: #f5f0e8;
+  --surface-card: #efe9de;
+  --surface-cream-strong: #e8e0d2;
+  --surface-dark: #181715;
+  --surface-dark-elevated: #252320;
+  --surface-dark-soft: #1f1e1b;
+
+  /* brand / primary */
+  --primary: #cc785c;
+  --primary-active: #a9583e;
+  --primary-disabled: #e6dfd8;
+  --primary-foreground: #ffffff;
+
+  /* text */
+  --ink: #141413;
+  --body: #3d3d3a;
+  --body-strong: #252523;
+  --muted: #6c6a64;
+  --muted-soft: #8e8b82;
+
+  /* lines */
+  --hairline: #e6dfd8;
+  --hairline-soft: #ebe6df;
+
+  /* status / accents */
+  --accent-teal: #5db8a6;
+  --accent-amber: #e8a55a;
+  --success: #5db872;
+  --warning: #d4a017;
+  --error: #c64545;
+
+  /* semantic aliases used across components */
+  --bg: var(--canvas);
+  --bg-soft: var(--surface-soft);
+  --bg-card: var(--surface-card);
+  --text: var(--body);
+  --text-strong: var(--body-strong);
+  --text-heading: var(--ink);
+  --text-muted: var(--muted);
+  --border: var(--hairline);
+  --border-soft: var(--hairline-soft);
+
+  /* elevation — low-alpha warm shadows */
+  --shadow-sm: 0 1px 2px rgba(20, 20, 19, 0.05);
+  --shadow-md: 0 4px 12px rgba(20, 20, 19, 0.08);
+  --shadow-lg: 0 12px 32px rgba(20, 20, 19, 0.1);
+
+  color-scheme: light;
+}
+
+/* ---------------------------------------------------------------------------
+ * Design tokens — dark theme
+ * Toggled via `.dark` on <html>. Coral primary stays; slightly brighter.
+ * Still no colorful gradients — warm near-black surfaces only.
+ * ------------------------------------------------------------------------- */
+.dark {
+  --canvas: #181715;
+  --surface-soft: #1f1e1b;
+  --surface-card: #252320;
+  --surface-cream-strong: #2d2a26;
+
+  --primary: #d98467;
+  --primary-active: #cc785c;
+  --primary-disabled: #3a352f;
+  --primary-foreground: #1a1815;
+
+  --ink: #faf9f5;
+  --body: #d6d3cb;
+  --body-strong: #ece9e2;
+  --muted: #a3a097;
+  --muted-soft: #82806f;
+
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-soft: rgba(255, 255, 255, 0.06);
+
+  --accent-teal: #6fc9b6;
+  --accent-amber: #eab876;
+  --success: #6fc985;
+  --warning: #e0b53a;
+  --error: #d96a6a;
+
+  --bg: var(--canvas);
+  --bg-soft: var(--surface-soft);
+  --bg-card: var(--surface-card);
+  --text: var(--body);
+  --text-strong: var(--body-strong);
+  --text-heading: var(--ink);
+  --text-muted: var(--muted);
+  --border: var(--hairline);
+  --border-soft: var(--hairline-soft);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------------
+ * Tailwind theme bridge — expose tokens as utility colors + fonts + radii
+ * ------------------------------------------------------------------------- */
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-card: var(--surface-card);
+  --color-surface-cream-strong: var(--surface-cream-strong);
+  --color-surface-dark: var(--surface-dark);
+
+  --color-primary: var(--primary);
+  --color-primary-active: var(--primary-active);
+  --color-primary-disabled: var(--primary-disabled);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-ink: var(--ink);
+  --color-body: var(--body);
+  --color-body-strong: var(--body-strong);
+  --color-muted: var(--muted);
+  --color-muted-soft: var(--muted-soft);
+
+  --color-hairline: var(--hairline);
+  --color-hairline-soft: var(--hairline-soft);
+
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-amber: var(--accent-amber);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+
+  --font-display: 'Noto Serif SC', serif;
+  --font-body: 'Inter', 'PingFang SC', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-brand: 'KuaiKanShiJie', 'Noto Serif SC', serif;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------- */
+* {
+  border-color: var(--border);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--canvas);
+  color: var(--body);
+  font-family: var(--font-body, 'Inter', 'PingFang SC', system-ui, sans-serif);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--ink);
+  font-family: var(--font-display, 'Noto Serif SC', serif);
+  font-weight: 600;
+}
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-active);
+}
+
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* thin, warm scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--hairline);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-soft);
+}
+
+/* brand utility for logo text */
+.font-brand {
+  font-family: var(--font-brand);
+}

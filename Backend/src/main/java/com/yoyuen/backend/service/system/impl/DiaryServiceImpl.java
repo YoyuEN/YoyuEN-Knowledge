@@ -17,7 +17,7 @@ public class DiaryServiceImpl extends ServiceImpl<DiaryMapper, Diary> implements
     public List<Diary> listByType(String type) {
         LambdaQueryWrapper<Diary> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Diary::getType, type)
-                .orderByDesc(Diary::getCreateTime);
+                .orderByDesc(Diary::getDiaryDate);
         return this.list(wrapper);
     }
 
@@ -27,7 +27,7 @@ public class DiaryServiceImpl extends ServiceImpl<DiaryMapper, Diary> implements
         if (type != null && !type.isEmpty()) {
             wrapper.eq(Diary::getType, type);
         }
-        wrapper.orderByDesc(Diary::getCreateTime);
+        wrapper.orderByDesc(Diary::getDiaryDate);
         return this.list(wrapper);
     }
 

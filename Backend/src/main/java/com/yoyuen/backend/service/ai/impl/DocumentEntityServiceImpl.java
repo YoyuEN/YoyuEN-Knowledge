@@ -78,6 +78,56 @@ public class DocumentEntityServiceImpl implements DocumentEntityService {
     }
 
     @Override
+    public int deleteByBaseIdAndFileNamePrefix(String baseId, String fileNamePrefix) {
+        LambdaQueryWrapper<DocumentEntity> qw = new LambdaQueryWrapper<>();
+        qw.eq(DocumentEntity::getBaseId, baseId);
+        qw.likeRight(DocumentEntity::getFileName, fileNamePrefix);
+        List<DocumentEntity> docs = documentEntityMapper.selectList(qw);
+        if (docs.isEmpty()) return 0;
+
+        VectorStore vectorStore = llmService.getVectorStore();
+        for (DocumentEntity doc : docs) {
+            try {
+                // 1. 删除向量数据
+                Filter.Expression filterExpression = new FilterExpressionBuilder()
+                        .eq("document_id", doc.getId()).build();
+                SearchRequest searchRequest = SearchRequest.defaults()
+                        .withTopK(10000)
+                        .withFilterExpression(filterExpression);
+                List<org.springframework.ai.document.Document> vectors =
+                        vectorStore.similaritySearch(searchRequest);
+                if (!vectors.isEmpty()) {
+                    List<String> ids = vectors.stream()
+                            .map(org.springframework.ai.document.Document::getId).toList();
+                    vectorStore.delete(ids);
+                }
+            } catch (Exception e) {
+                log.warn("删除向量数据失败: docId={}", doc.getId(), e);
+            }
+
+            // 2. 删除 MinIO 文件 + OriginFileResource 记录
+            if (doc.getResourceId() != null) {
+                OriginFileResource originFile = originFileResourceMapper.selectById(doc.getResourceId());
+                if (originFile != null) {
+                    try {
+                        ((MinIOService) objectStoreService).deleteFile(
+                                originFile.getBucketName(), originFile.getObjectName());
+                    } catch (Exception e) {
+                        log.warn("删除MinIO文件失败: bucket={}, object={}",
+                                originFile.getBucketName(), originFile.getObjectName(), e);
+                    }
+                    originFileResourceMapper.deleteById(originFile.getId());
+                }
+            }
+
+            // 3. 删除文档实体记录
+            documentEntityMapper.deleteById(doc);
+        }
+        log.info("按前缀批量删除文档: baseId={}, prefix={}, count={}", baseId, fileNamePrefix, docs.size());
+        return docs.size();
+    }
+
+    @Override
     public Boolean deleteKnowledgeFile(DocumentVO documentVO) {
         Long docId = documentVO.getId();
 
