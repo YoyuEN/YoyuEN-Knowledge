@@ -1,1 +1,27 @@
-/EOF
+# Java / Maven
+Backend/target/
+target/
+*.jar
+*.war
+
+# Node / 前端构建产物
+node_modules/
+dist/
+Fronted/dist/
+white_fronted/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 日志
+*.log
+
+# 本地环境配置（含密钥）
+docker/.env
+.env
